@@ -4,13 +4,14 @@
 соответствующую таблицу по полю source_id (upsert: обновляет существующую
 запись или создаёт новую). Запросы защищены заголовком X-API-Key.
 """
+import json
 import os
 from datetime import date
 from functools import wraps
 
 from flask import Blueprint, jsonify, request
 
-from models import Athlete, Competition, Event, Referee, SyncLog, db
+from models import Athlete, Competition, CompetitionDocument, Event, Referee, SyncLog, db
 
 bp = Blueprint('api', __name__)
 
@@ -19,6 +20,13 @@ SOURCE_BY_SYNC_TYPE = {
     'athletes': 'REGTEAM_RAFTING',
     'referees': 'SPORTS_REFEREE',
     'events': 'SPORTS_REFEREE',
+    'protocols': 'COREZ',
+}
+
+PROTOCOL_DOC_TYPES = ('стартовый_протокол', 'протокол_результатов')
+PROTOCOL_TITLES = {
+    'стартовый_протокол': 'Стартовый протокол',
+    'протокол_результатов': 'Протокол результатов',
 }
 
 
@@ -251,6 +259,67 @@ def sync_events():
 
     db.session.commit()
     log_sync('events', created + updated,
+             message=f'создано: {created}, обновлено: {updated}, пропущено: {skipped}')
+
+    return jsonify({
+        'status': 'ok', 'received': len(items),
+        'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors,
+    })
+
+
+@bp.route('/sync/protocols', methods=['POST'])
+@require_api_key
+def sync_protocols():
+    """Принимает от COREZ структурированные стартовые протоколы / протоколы результатов.
+
+    Каждый элемент привязывается к соревнованию по его source_id и заменяет
+    существующий документ соответствующего типа (или создаёт новый).
+    """
+    items = get_items_from_request()
+    if items is None:
+        return jsonify({'error': 'Тело запроса должно быть JSON вида {"items": [...]}.'}), 400
+
+    created = updated = skipped = 0
+    errors = []
+
+    for item in items:
+        competition_source_id = item.get('competition_source_id')
+        doc_type = item.get('doc_type')
+        rows = item.get('rows')
+
+        if (
+            competition_source_id is None
+            or doc_type not in PROTOCOL_DOC_TYPES
+            or not isinstance(rows, list)
+        ):
+            skipped += 1
+            errors.append(
+                f'competition_source_id={competition_source_id}: '
+                'нужны competition_source_id, doc_type (стартовый_протокол/протокол_результатов) и rows (список)'
+            )
+            continue
+
+        competition = Competition.query.filter_by(source_id=competition_source_id).first()
+        if competition is None:
+            skipped += 1
+            errors.append(f'competition_source_id={competition_source_id}: соревнование не найдено')
+            continue
+
+        document = CompetitionDocument.query.filter_by(
+            competition_id=competition.id, doc_type=doc_type,
+        ).first()
+        if document is None:
+            document = CompetitionDocument(competition_id=competition.id, doc_type=doc_type)
+            db.session.add(document)
+            created += 1
+        else:
+            updated += 1
+
+        document.title = item.get('title') or PROTOCOL_TITLES[doc_type]
+        document.results_data = json.dumps(rows, ensure_ascii=False)
+
+    db.session.commit()
+    log_sync('protocols', created + updated,
              message=f'создано: {created}, обновлено: {updated}, пропущено: {skipped}')
 
     return jsonify({

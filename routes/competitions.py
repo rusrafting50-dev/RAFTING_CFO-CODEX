@@ -1,4 +1,5 @@
 """Соревнования: календарный план, текущие, архив, страница соревнования."""
+import json
 from datetime import date
 
 from flask import Blueprint, render_template, request
@@ -75,6 +76,17 @@ def detail(competition_id):
 
     documents_by_type = {}
     for document in documents:
+        if document.results_data:
+            # Протокол пришёл от COREZ как структурированные данные — строим таблицу.
+            # Столбцы — объединение ключей всех строк с сохранением порядка появления.
+            rows = json.loads(document.results_data)
+            columns = []
+            for row in rows:
+                for key in row.keys():
+                    if key not in columns:
+                        columns.append(key)
+            document.protocol_rows = rows
+            document.protocol_columns = columns
         documents_by_type.setdefault(document.doc_type, []).append(document)
 
     return render_template(

@@ -9,6 +9,8 @@
                        href="{{ url_for('admin.dashboard') }}">Дашборд</a>
                     <a class="list-group-item list-group-item-action {{ 'active' if active == 'news' }}"
                        href="{{ url_for('admin.news_list') }}">Новости</a>
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'competitions' }}"
+                       href="{{ url_for('admin.competitions_list') }}">Соревнования</a>
                     <a class="list-group-item list-group-item-action {{ 'active' if active == 'documents' }}"
                        href="{{ url_for('admin.documents_list') }}">Документы</a>
                     <a class="list-group-item list-group-item-action {{ 'active' if active == 'members' }}"

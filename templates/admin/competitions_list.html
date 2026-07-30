@@ -1,0 +1,44 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'competitions' %}
+
+{% block title %}Соревнования — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">Соревнования</h1>
+    <p class="text-muted">
+        Список соревнований формируется автоматически из COREZ. Здесь можно загрузить
+        документы (положение, регламент, протоколы и т.д.) для каждого соревнования.
+    </p>
+
+    {% if competitions %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Даты</th>
+                        <th>Наименование</th>
+                        <th>Статус</th>
+                        <th>Документы</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for competition in competitions %}
+                        <tr>
+                            <td>{{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}</td>
+                            <td>{{ competition.name }}</td>
+                            <td>{{ competition.status }}</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="{{ url_for('admin.competition_documents', competition_id=competition.id) }}">
+                                    Документы ({{ competition.documents|length }})
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Соревнования пока не поступили из COREZ.</p>
+    {% endif %}
+{% endblock %}

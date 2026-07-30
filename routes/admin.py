@@ -12,8 +12,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from models import (
-    Athlete, Competition, Document, FederationMember, News, Referee,
-    SyncLog, User, db,
+    Athlete, Competition, CompetitionDocument, Document, FederationMember,
+    News, Referee, SyncLog, User, db,
 )
 
 bp = Blueprint('admin', __name__)
@@ -26,6 +26,12 @@ DOC_CATEGORY_CHOICES = ['федеральный', 'региональный', 'w
 NEWS_CATEGORY_CHOICES = ['соревнование', 'мероприятие', 'федерация']
 NEWS_LEVEL_CHOICES = ['цфо', 'регион', 'отделение', 'клуб']
 ROLE_CHOICES = ['admin', 'editor', 'viewer']
+COMPETITION_DOC_TYPE_CHOICES = [
+    'положение', 'регламент', 'состав_гск', 'расписание',
+    'график_допуска', 'регламент_жеребьёвки', 'протокол_совещания_гск',
+    'справка_о_субъектах', 'справка_о_судьях', 'заявки',
+    'стартовый_протокол', 'протокол_результатов',
+]
 
 
 def roles_required(*roles):
@@ -260,6 +266,83 @@ def documents_delete(document_id):
     db.session.commit()
     flash('Документ удалён.', 'success')
     return redirect(url_for('admin.documents_list'))
+
+
+# ---------- Документы соревнований ----------
+
+@bp.route('/competitions')
+@login_required
+def competitions_list():
+    competitions = Competition.query.order_by(Competition.start_date.desc()).all()
+    return render_template('admin/competitions_list.html', active='competitions', competitions=competitions)
+
+
+@bp.route('/competitions/<int:competition_id>/documents')
+@login_required
+def competition_documents(competition_id):
+    competition = Competition.query.get_or_404(competition_id)
+    documents = (
+        CompetitionDocument.query.filter_by(competition_id=competition_id)
+        .order_by(CompetitionDocument.doc_type)
+        .all()
+    )
+    return render_template(
+        'admin/competition_documents.html', active='competitions',
+        competition=competition, documents=documents,
+        doc_type_choices=COMPETITION_DOC_TYPE_CHOICES,
+    )
+
+
+@bp.route('/competitions/<int:competition_id>/documents/new', methods=['POST'])
+@roles_required('admin', 'editor')
+def competition_document_new(competition_id):
+    competition = Competition.query.get_or_404(competition_id)
+    doc_type = request.form.get('doc_type')
+    title = request.form.get('title', '').strip()
+    file = request.files.get('file')
+
+    if doc_type not in COMPETITION_DOC_TYPE_CHOICES or not title or not file or file.filename == '':
+        flash('Тип документа, название и файл обязательны.', 'error')
+        return redirect(url_for('admin.competition_documents', competition_id=competition.id))
+
+    if not allowed_document(file.filename):
+        flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
+        return redirect(url_for('admin.competition_documents', competition_id=competition.id))
+
+    filename = secure_filename(file.filename)
+    unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
+    upload_dir = current_app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_dir, exist_ok=True)
+    file.save(os.path.join(upload_dir, unique_name))
+
+    document = CompetitionDocument(
+        competition_id=competition.id,
+        doc_type=doc_type,
+        title=title,
+        file_path=f"uploads/{unique_name}",
+    )
+    db.session.add(document)
+    db.session.commit()
+    flash('Документ соревнования загружен.', 'success')
+    return redirect(url_for('admin.competition_documents', competition_id=competition.id))
+
+
+@bp.route('/competitions/<int:competition_id>/documents/<int:document_id>/delete', methods=['POST'])
+@roles_required('admin', 'editor')
+def competition_document_delete(competition_id, document_id):
+    document = CompetitionDocument.query.filter_by(
+        id=document_id, competition_id=competition_id,
+    ).first_or_404()
+
+    if document.file_path:
+        file_path = os.path.join(current_app.root_path, 'static', document.file_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    db.session.delete(document)
+    db.session.commit()
+    flash('Документ удалён.', 'success')
+    return redirect(url_for('admin.competition_documents', competition_id=competition_id))
 
 
 # ---------- Члены органов федерации ----------

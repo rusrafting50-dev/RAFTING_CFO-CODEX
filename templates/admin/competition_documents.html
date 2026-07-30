@@ -1,0 +1,82 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'competitions' %}
+
+{% block title %}Документы: {{ competition.name }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-1"><a href="{{ url_for('admin.competitions_list') }}">&laquo; Соревнования</a></p>
+    <h1 class="h4 mb-4">Документы: {{ competition.name }}</h1>
+
+    {% if documents %}
+        <div class="table-responsive mb-4">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Тип</th>
+                        <th>Название</th>
+                        <th>Загружен</th>
+                        <th>Источник</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                        <tr>
+                            <td>{{ document.doc_type }}</td>
+                            <td>{{ document.title }}</td>
+                            <td>{{ document.uploaded_at.strftime('%d.%m.%Y') if document.uploaded_at else '' }}</td>
+                            <td>
+                                {% if document.results_data %}
+                                    <span class="badge bg-info text-dark">данные COREZ</span>
+                                {% elif document.file_path %}
+                                    <a href="{{ url_for('static', filename=document.file_path) }}" download>Скачать файл</a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td>
+                                    <form method="post"
+                                          action="{{ url_for('admin.competition_document_delete', competition_id=competition.id, document_id=document.id) }}"
+                                          onsubmit="return confirm('Удалить документ?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Документы к этому соревнованию пока не загружены.</p>
+    {% endif %}
+
+    {% if current_user.role in ('admin', 'editor') %}
+        <h2 class="h5 mb-3">Загрузить документ</h2>
+        <form method="post" enctype="multipart/form-data"
+              action="{{ url_for('admin.competition_document_new', competition_id=competition.id) }}"
+              class="card p-4">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="doc_type" class="form-label">Тип документа</label>
+                    <select class="form-select" id="doc_type" name="doc_type" required>
+                        <option value="">—</option>
+                        {% for choice in doc_type_choices %}
+                            <option value="{{ choice }}">{{ choice }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="title" class="form-label">Название документа</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="file" class="form-label">Файл (PDF, DOCX)</label>
+                <input type="file" class="form-control" id="file" name="file" accept=".pdf,.docx" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Загрузить</button>
+        </form>
+    {% endif %}
+{% endblock %}

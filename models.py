@@ -52,10 +52,14 @@ class CompetitionDocument(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     competition_id = db.Column(db.Integer, db.ForeignKey('competition.id'), nullable=False)
-    doc_type = db.Column(db.String(50))  # положение / регламент / состав_гск / ...
+    doc_type = db.Column(db.String(50))  # положение / регламент / состав_гск / расписание / заявки / стартовый_протокол / протокол_результатов / ...
     title = db.Column(db.String(255))
     file_path = db.Column(db.String(500))
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # JSON-список строк протокола (только для стартовый_протокол / протокол_результатов),
+    # заполняется через API синхронизации, если COREZ присылает структурированные данные,
+    # а не только файл
+    results_data = db.Column(db.Text)
 
 
 class Athlete(db.Model):
