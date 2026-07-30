@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Новости — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Новости Федерации рафтинга Центрального федерального округа{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-4">Новости</h1>
+
+        {% if categories %}
+            <div class="mb-4 d-flex flex-wrap gap-2">
+                <a class="btn btn-sm {{ 'btn-primary' if not selected_category else 'btn-outline-primary' }}"
+                   href="{{ url_for('main.news') }}">Все</a>
+                {% for category in categories %}
+                    <a class="btn btn-sm {{ 'btn-primary' if selected_category == category else 'btn-outline-primary' }}"
+                       href="{{ url_for('main.news', category=category) }}">{{ category }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if news_items %}
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                {% for item in news_items %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <p class="text-muted small mb-1">
+                                    {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                </p>
+                                <h2 class="h6 card-title">{{ item.title }}</h2>
+                                <p class="card-text small">{{ item.content[:150] }}{% if item.content|length > 150 %}…{% endif %}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if pagination.pages > 1 %}
+                <nav class="mt-4" aria-label="Страницы новостей">
+                    <ul class="pagination">
+                        <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+                            <a class="page-link" href="{{ url_for('main.news', page=pagination.prev_num, category=selected_category) }}">Назад</a>
+                        </li>
+                        {% for page_num in pagination.iter_pages() %}
+                            {% if page_num %}
+                                <li class="page-item {{ 'active' if page_num == pagination.page }}">
+                                    <a class="page-link" href="{{ url_for('main.news', page=page_num, category=selected_category) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">…</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+                            <a class="page-link" href="{{ url_for('main.news', page=pagination.next_num, category=selected_category) }}">Вперёд</a>
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
+        {% else %}
+            <p class="text-muted">Новостей пока нет.</p>
+        {% endif %}
+    </div>
+{% endblock %}

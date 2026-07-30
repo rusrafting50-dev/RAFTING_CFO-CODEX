@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Мероприятия — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Семинары судей, тренеров и руководителей{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-4">Мероприятия</h1>
+
+        <div class="mb-4 d-flex flex-wrap gap-2">
+            <a class="btn btn-sm {{ 'btn-primary' if not selected_event_type else 'btn-outline-primary' }}"
+               href="{{ url_for('events.index') }}">Все</a>
+            <a class="btn btn-sm {{ 'btn-primary' if selected_event_type == 'семинар_судей' else 'btn-outline-primary' }}"
+               href="{{ url_for('events.index', event_type='семинар_судей') }}">Семинары судей</a>
+            <a class="btn btn-sm {{ 'btn-primary' if selected_event_type == 'семинар_тренеров' else 'btn-outline-primary' }}"
+               href="{{ url_for('events.index', event_type='семинар_тренеров') }}">Семинары тренеров</a>
+            <a class="btn btn-sm {{ 'btn-primary' if selected_event_type == 'семинар_руководителей' else 'btn-outline-primary' }}"
+               href="{{ url_for('events.index', event_type='семинар_руководителей') }}">Семинары руководителей</a>
+        </div>
+
+        {% if events %}
+            <div class="table-responsive">
+                <table class="table table-zebra align-middle">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>Даты</th>
+                            <th>Наименование</th>
+                            <th>Тип</th>
+                            <th>Место проведения</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                            <tr>
+                                <td>
+                                    {{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '' }}
+                                    {% if event.end_date and event.end_date != event.start_date %}
+                                        &ndash; {{ event.end_date.strftime('%d.%m.%Y') }}
+                                    {% endif %}
+                                </td>
+                                <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
+                                <td>{{ event.event_type }}</td>
+                                <td>{{ event.location }}</td>
+                                <td>{{ event.status }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">Мероприятий пока не запланировано.</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Структура — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Органы управления Федерации рафтинга ЦФО: исполком, коллегия судей, тренерский совет{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-4">Структура федерации</h1>
+
+        {% if members_by_body %}
+            {% for body, members in members_by_body.items() %}
+                <h2 class="h5 mt-4 mb-3">{{ body_labels.get(body, body) }}</h2>
+                <div class="table-responsive">
+                    <table class="table table-zebra align-middle">
+                        <thead>
+                            <tr class="table-dark">
+                                <th>ФИО</th>
+                                <th>Должность</th>
+                                <th>Контакты</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in members %}
+                                <tr>
+                                    <td>{{ member.full_name }}</td>
+                                    <td>{{ member.position }}</td>
+                                    <td>{{ member.contacts }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">Состав органов федерации пока не заполнен.</p>
+        {% endif %}
+    </div>
+{% endblock %}

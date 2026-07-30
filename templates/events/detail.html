@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ event.name }}: даты и место проведения{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-3">{{ event.name }}</h1>
+        <div class="card">
+            <div class="card-body">
+                <p class="mb-1"><strong>Даты:</strong>
+                    {{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '—' }}
+                    {% if event.end_date and event.end_date != event.start_date %}
+                        &ndash; {{ event.end_date.strftime('%d.%m.%Y') }}
+                    {% endif %}
+                </p>
+                <p class="mb-1"><strong>Тип:</strong> {{ event.event_type or '—' }}</p>
+                <p class="mb-1"><strong>Место проведения:</strong> {{ event.location or '—' }}</p>
+                <p class="mb-0"><strong>Статус:</strong> {{ event.status or '—' }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

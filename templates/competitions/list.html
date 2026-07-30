@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ title }} по рафтингу{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-4">{{ title }}</h1>
+
+        {% if archive and years %}
+            <div class="mb-4 d-flex flex-wrap gap-2">
+                <a class="btn btn-sm {{ 'btn-primary' if not selected_year else 'btn-outline-primary' }}"
+                   href="{{ url_for('competitions.archive') }}">Все годы</a>
+                {% for y in years %}
+                    <a class="btn btn-sm {{ 'btn-primary' if selected_year == y else 'btn-outline-primary' }}"
+                       href="{{ url_for('competitions.archive', year=y) }}">{{ y }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if competitions %}
+            <div class="table-responsive">
+                <table class="table table-zebra align-middle">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>Даты</th>
+                            <th>Наименование</th>
+                            <th>Уровень</th>
+                            <th>Место проведения</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for competition in competitions %}
+                            <tr>
+                                <td>
+                                    {{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}
+                                    {% if competition.end_date and competition.end_date != competition.start_date %}
+                                        &ndash; {{ competition.end_date.strftime('%d.%m.%Y') }}
+                                    {% endif %}
+                                </td>
+                                <td><a href="{{ url_for('competitions.detail', competition_id=competition.id) }}">{{ competition.name }}</a></td>
+                                <td>{{ competition.level }}</td>
+                                <td>{{ competition.location }}</td>
+                                <td>{{ competition.status }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">Соревнований не найдено.</p>
+        {% endif %}
+    </div>
+{% endblock %}
