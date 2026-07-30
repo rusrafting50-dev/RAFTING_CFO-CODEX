@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Сборная команда — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Спортсмены и тренеры сборной команды по рафтингу{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-4">Сборная команда</h1>
+
+        <form class="row g-2 mb-4" method="get">
+            <div class="col-auto">
+                <select class="form-select" name="role" onchange="this.form.submit()">
+                    <option value="">Все роли</option>
+                    <option value="спортсмен" {{ 'selected' if selected_role == 'спортсмен' }}>Спортсмены</option>
+                    <option value="тренер" {{ 'selected' if selected_role == 'тренер' }}>Тренеры</option>
+                </select>
+            </div>
+            {% if disciplines %}
+                <div class="col-auto">
+                    <select class="form-select" name="discipline" onchange="this.form.submit()">
+                        <option value="">Все дисциплины</option>
+                        {% for discipline in disciplines %}
+                            <option value="{{ discipline }}" {{ 'selected' if selected_discipline == discipline }}>{{ discipline }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            {% if territories %}
+                <div class="col-auto">
+                    <select class="form-select" name="territory" onchange="this.form.submit()">
+                        <option value="">Все территории</option>
+                        {% for territory in territories %}
+                            <option value="{{ territory }}" {{ 'selected' if selected_territory == territory }}>{{ territory }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+        </form>
+
+        {% if athletes %}
+            <div class="table-responsive">
+                <table class="table table-zebra align-middle">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>ФИО</th>
+                            <th>Роль</th>
+                            <th>Дисциплина</th>
+                            <th>Разряд / звание</th>
+                            <th>Территория</th>
+                            <th>Организация</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for athlete in athletes %}
+                            <tr>
+                                <td>{{ athlete.full_name }}</td>
+                                <td>{{ athlete.role }}</td>
+                                <td>{{ athlete.discipline }}</td>
+                                <td>{{ athlete.rank }}</td>
+                                <td>{{ athlete.territory }}</td>
+                                <td>{{ athlete.organization }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">Данные о составе сборной пока не поступили.</p>
+        {% endif %}
+    </div>
+{% endblock %}

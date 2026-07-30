@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Нормативные документы — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Нормативные документы Федерации рафтинга ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-4">Нормативные документы</h1>
+
+        {% if documents_by_category %}
+            {% for category, documents in documents_by_category.items() %}
+                <h2 class="h5 mt-4 mb-3">{{ category }}</h2>
+                <ul class="list-group mb-3">
+                    {% for document in documents %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ document.title }}</span>
+                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('static', filename=document.file_path) }}" download>Скачать</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">Документы пока не загружены.</p>
+        {% endif %}
+    </div>
+{% endblock %}

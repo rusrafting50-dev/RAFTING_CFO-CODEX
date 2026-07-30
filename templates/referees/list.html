@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Судьи — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Судьи всероссийской категории по рафтингу{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-4">Судьи</h1>
+
+        <form class="row g-2 mb-4" method="get">
+            {% if categories %}
+                <div class="col-auto">
+                    <select class="form-select" name="category" onchange="this.form.submit()">
+                        <option value="">Все категории</option>
+                        {% for category in categories %}
+                            <option value="{{ category }}" {{ 'selected' if selected_category == category }}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+            {% if territories %}
+                <div class="col-auto">
+                    <select class="form-select" name="territory" onchange="this.form.submit()">
+                        <option value="">Все территории</option>
+                        {% for territory in territories %}
+                            <option value="{{ territory }}" {{ 'selected' if selected_territory == territory }}>{{ territory }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+        </form>
+
+        {% if referees %}
+            <div class="table-responsive">
+                <table class="table table-zebra align-middle">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>ФИО</th>
+                            <th>Категория</th>
+                            <th>Дисциплины</th>
+                            <th>Территория</th>
+                            <th>Организация</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for referee in referees %}
+                            <tr>
+                                <td>{{ referee.full_name }}</td>
+                                <td>{{ referee.category }}</td>
+                                <td>{{ referee.disciplines }}</td>
+                                <td>{{ referee.territory }}</td>
+                                <td>{{ referee.organization }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">Данные о судьях пока не поступили.</p>
+        {% endif %}
+    </div>
+{% endblock %}

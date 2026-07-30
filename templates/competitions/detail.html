@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ competition.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ competition.name }}: даты, место проведения, документы{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h3 mb-3">{{ competition.name }}</h1>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <p class="mb-1"><strong>Даты:</strong>
+                    {{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '—' }}
+                    {% if competition.end_date and competition.end_date != competition.start_date %}
+                        &ndash; {{ competition.end_date.strftime('%d.%m.%Y') }}
+                    {% endif %}
+                </p>
+                <p class="mb-1"><strong>Место проведения:</strong> {{ competition.location or '—' }}</p>
+                <p class="mb-1"><strong>Уровень:</strong> {{ competition.level or '—' }}</p>
+                <p class="mb-1"><strong>Тип:</strong> {{ competition.comp_type or '—' }}</p>
+                <p class="mb-0"><strong>Статус:</strong> {{ competition.status or '—' }}</p>
+            </div>
+        </div>
+
+        <h2 class="h5 mb-3">Документы</h2>
+        {% if documents_by_type %}
+            <ul class="nav nav-tabs" id="docTabs" role="tablist">
+                {% for doc_type, docs in documents_by_type.items() %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link {{ 'active' if loop.first }}"
+                                id="tab-{{ loop.index }}" data-bs-toggle="tab"
+                                data-bs-target="#pane-{{ loop.index }}" type="button" role="tab">
+                            {{ doc_type }}
+                        </button>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="tab-content border border-top-0 p-3" id="docTabsContent">
+                {% for doc_type, docs in documents_by_type.items() %}
+                    <div class="tab-pane fade {{ 'show active' if loop.first }}"
+                         id="pane-{{ loop.index }}" role="tabpanel">
+                        {% for doc in docs %}
+                            {% if doc.results_data %}
+                                <h3 class="h6">{{ doc.title }}</h3>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-zebra align-middle">
+                                        <thead>
+                                            <tr class="table-dark">
+                                                {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for row in doc.protocol_rows %}
+                                                <tr>
+                                                    {% for column in doc.protocol_columns %}<td>{{ row.get(column, '') }}</td>{% endfor %}
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% elif doc.file_path %}
+                                <p class="mb-2">
+                                    <a href="{{ url_for('static', filename=doc.file_path) }}" download>{{ doc.title }}</a>
+                                </p>
+                            {% else %}
+                                <p class="text-muted mb-2">{{ doc.title }} — данные пока не поступили.</p>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">Документы пока не загружены.</p>
+        {% endif %}
+    </div>
+{% endblock %}

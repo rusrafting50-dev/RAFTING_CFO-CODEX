@@ -1,0 +1,66 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'dashboard' %}
+
+{% block title %}Дашборд — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">Дашборд</h1>
+
+    <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+        <div class="col">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <p class="display-6 mb-0">{{ stats.news }}</p>
+                    <p class="text-muted mb-0">Новостей</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <p class="display-6 mb-0">{{ stats.competitions }}</p>
+                    <p class="text-muted mb-0">Соревнований</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <p class="display-6 mb-0">{{ stats.referees }}</p>
+                    <p class="text-muted mb-0">Судей</p>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <p class="display-6 mb-0">{{ stats.athletes }}</p>
+                    <p class="text-muted mb-0">Спортсменов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="h5 mb-3">Статус синхронизации</h2>
+    <div class="table-responsive">
+        <table class="table table-zebra align-middle">
+            <thead>
+                <tr class="table-dark">
+                    <th>Источник</th>
+                    <th>Последняя синхронизация</th>
+                    <th>Записей</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for source, log in latest_syncs.items() %}
+                    <tr>
+                        <td>{{ source }}</td>
+                        <td>{{ log.synced_at.strftime('%d.%m.%Y %H:%M') if log else 'ещё не было синхронизации' }}</td>
+                        <td>{{ log.records_count if log else '—' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.sync_status') }}">Подробнее</a>
+{% endblock %}

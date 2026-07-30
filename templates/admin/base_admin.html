@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container-fluid py-4">
+        <div class="row">
+            <aside class="col-md-3 col-lg-2 mb-4">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'dashboard' }}"
+                       href="{{ url_for('admin.dashboard') }}">Дашборд</a>
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'news' }}"
+                       href="{{ url_for('admin.news_list') }}">Новости</a>
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'competitions' }}"
+                       href="{{ url_for('admin.competitions_list') }}">Соревнования</a>
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'documents' }}"
+                       href="{{ url_for('admin.documents_list') }}">Документы</a>
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'members' }}"
+                       href="{{ url_for('admin.members_list') }}">Члены органов</a>
+                    {% if current_user.role == 'admin' %}
+                        <a class="list-group-item list-group-item-action {{ 'active' if active == 'users' }}"
+                           href="{{ url_for('admin.users_list') }}">Пользователи</a>
+                    {% endif %}
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'sync' }}"
+                       href="{{ url_for('admin.sync_status') }}">Синхронизация</a>
+                    <a class="list-group-item list-group-item-action" href="{{ url_for('admin.logout') }}">Выйти</a>
+                </div>
+            </aside>
+            <section class="col-md-9 col-lg-10">
+                {% set admin_section_labels = {
+                    'dashboard': 'Дашборд', 'news': 'Новости', 'competitions': 'Соревнования',
+                    'documents': 'Документы', 'members': 'Члены органов', 'users': 'Пользователи',
+                    'sync': 'Синхронизация',
+                } %}
+                <nav aria-label="Хлебные крошки" class="mb-3">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Панель администратора</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">{{ admin_section_labels.get(active, active) }}</li>
+                    </ol>
+                </nav>
+                {% block admin_content %}{% endblock %}
+            </section>
+        </div>
+    </div>
+{% endblock %}

@@ -1,5 +1,5 @@
 @echo off
-cd /d "D:\Projects Claude Code\RAFTING_CFO"
+cd /d "%~dp0"
 echo [1/3] Git pull...
 git pull origin main
 echo [2/3] pip install...

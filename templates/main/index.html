@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Главная — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Новости, соревнования и мероприятия Федерации рафтинга Центрального федерального округа{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <div class="container text-center">
+            <h1>Федерация рафтинга Центрального федерального округа</h1>
+            <p class="lead mb-0">Соревнования, сборная команда и судейство рафтинга в регионах ЦФО</p>
+        </div>
+    </section>
+
+    <div class="container py-5">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="h4 mb-3">Ближайшие соревнования</h2>
+                {% if upcoming_competitions %}
+                    <div class="list-group">
+                        {% for competition in upcoming_competitions %}
+                            <a href="{{ url_for('competitions.detail', competition_id=competition.id) }}"
+                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <span>{{ competition.name }}</span>
+                                <span class="text-muted">{{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Ближайших соревнований пока нет.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="h4 mb-3">Последние новости</h2>
+                {% if latest_news %}
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                        {% for item in latest_news %}
+                            <div class="col">
+                                <div class="card h-100">
+                                    <div class="card-img-placeholder"></div>
+                                    <div class="card-body">
+                                        <p class="text-muted small mb-1">
+                                            {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                        </p>
+                                        <h3 class="h6 card-title">{{ item.title }}</h3>
+                                        <p class="card-text small">{{ item.content[:150] }}{% if item.content|length > 150 %}…{% endif %}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('main.news') }}" class="btn btn-outline-dark mt-3">Все новости</a>
+                {% else %}
+                    <p class="text-muted">Новостей пока нет.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <h2 class="h4 mb-3">Быстрые ссылки</h2>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-outline-primary" href="{{ url_for('competitions.calendar') }}">Календарный план</a>
+                    <a class="btn btn-outline-primary" href="{{ url_for('team.index') }}">Сборная команда</a>
+                    <a class="btn btn-outline-primary" href="{{ url_for('referees.index') }}">Судьи</a>
+                    <a class="btn btn-outline-primary" href="{{ url_for('documents.index') }}">Документы</a>
+                    <a class="btn btn-outline-primary" href="{{ url_for('events.index') }}">Мероприятия</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

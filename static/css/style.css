@@ -1,0 +1,156 @@
+/* ===== Общие переменные (стиль rfs.ru, см. CLAUDE.md) ===== */
+:root {
+    --color-dark: #1a1a2e;
+    --color-accent: #0066cc;
+    --color-bg: #f5f5f5;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--color-bg);
+    margin: 0;
+}
+
+/* ===== Шапка (динамическая) =====
+   Фиксированная высота с анимацией (90px -> 55px) применяется только на
+   широких экранах, где навигация не сворачивается в гамбургер (>=992px,
+   совпадает с брейкпоинтом navbar-expand-lg). На мобильных/планшетах
+   высота автоматическая, иначе раскрытое меню не помещается в 90px и
+   "вылезает" поверх контента без фона. */
+header {
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--color-dark);
+    padding: 10px 0;
+}
+
+header.scrolled {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 992px) {
+    header {
+        height: 90px;
+        padding: 0;
+        transition: height 0.3s ease, padding 0.3s ease;
+    }
+
+    header.scrolled {
+        height: 55px;
+    }
+}
+
+header .navbar {
+    width: 100%;
+    padding: 0;
+}
+
+header .logo {
+    height: 50px;
+    margin-right: 12px;
+    transition: height 0.3s ease;
+}
+
+header.scrolled .logo {
+    height: 32px;
+}
+
+header .logo-text {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.3rem;
+    transition: font-size 0.3s ease;
+}
+
+header.scrolled .logo-text {
+    font-size: 1rem;
+}
+
+.navbar-nav .nav-link {
+    color: #fff;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--color-accent);
+}
+
+.dropdown-menu {
+    background: var(--color-dark);
+}
+
+.dropdown-item {
+    color: #fff;
+}
+
+.dropdown-item:hover {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+/* ===== Баннер-герой ===== */
+.hero {
+    background:
+        linear-gradient(rgba(26, 26, 46, 0.55), rgba(26, 26, 46, 0.55)),
+        url('../img/hero.svg') center/cover no-repeat;
+    color: #fff;
+    padding: 110px 0;
+}
+
+.hero h1 {
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* ===== Карточки ===== */
+.card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-placeholder {
+    height: 160px;
+    background: center/cover no-repeat url('../img/news-placeholder.svg');
+    border-top-left-radius: calc(0.375rem - 1px);
+    border-top-right-radius: calc(0.375rem - 1px);
+}
+
+/* ===== Хлебные крошки ===== */
+.breadcrumb {
+    padding-top: 1rem;
+}
+
+/* ===== Подвал ===== */
+footer {
+    background: var(--color-dark);
+    color: #fff;
+}
+
+footer h2 {
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    color: #8b8ba7;
+}
+
+footer a {
+    color: #ccc;
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+footer hr {
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ===== Таблицы результатов (чередование строк) ===== */
+table.table-zebra tbody tr:nth-child(odd) {
+    background: #fff;
+}
+
+table.table-zebra tbody tr:nth-child(even) {
+    background: #f8f8f8;
+}

@@ -1,0 +1,61 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'news' %}
+
+{% block title %}Новости — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Новости</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.news_new') }}">Добавить новость</a>
+        {% endif %}
+    </div>
+
+    {% if news_items %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Заголовок</th>
+                        <th>Категория</th>
+                        <th>Дата</th>
+                        <th>Статус</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in news_items %}
+                        <tr>
+                            <td>{{ item.title }}</td>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</td>
+                            <td>
+                                {% if item.is_published %}
+                                    <span class="badge bg-success">Опубликовано</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Черновик</span>
+                                {% endif %}
+                            </td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.news_edit', news_id=item.id) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.news_toggle_publish', news_id=item.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                            {{ 'Снять с публикации' if item.is_published else 'Опубликовать' }}
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{{ url_for('admin.news_delete', news_id=item.id) }}"
+                                          onsubmit="return confirm('Удалить новость?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Новостей пока нет.</p>
+    {% endif %}
+{% endblock %}

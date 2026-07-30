@@ -1,0 +1,44 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'sync' %}
+
+{% block title %}Статус синхронизации — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">Статус синхронизации</h1>
+    <p class="text-muted">Данные поступают автоматически из проектов COREZ, REGTEAM_RAFTING и SPORTS_REFEREE через API.</p>
+
+    <div class="table-responsive">
+        <table class="table table-zebra align-middle">
+            <thead>
+                <tr class="table-dark">
+                    <th>Источник</th>
+                    <th>Последняя синхронизация</th>
+                    <th>Тип данных</th>
+                    <th>Записей</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for source, log in latest_syncs.items() %}
+                    <tr>
+                        <td>{{ source }}</td>
+                        <td>{{ log.synced_at.strftime('%d.%m.%Y %H:%M') if log else 'ещё не было синхронизации' }}</td>
+                        <td>{{ log.sync_type if log else '—' }}</td>
+                        <td>{{ log.records_count if log else '—' }}</td>
+                        <td>
+                            {% if log %}
+                                {% if log.status == 'success' %}
+                                    <span class="badge bg-success">Успешно</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Ошибка</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Нет данных</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
