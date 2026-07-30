@@ -1,0 +1,101 @@
+/* ===== Общие переменные (стиль rfs.ru, см. CLAUDE.md) ===== */
+:root {
+    --color-dark: #1a1a2e;
+    --color-accent: #0066cc;
+    --color-bg: #f5f5f5;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--color-bg);
+    margin: 0;
+}
+
+/* ===== Шапка (динамическая) ===== */
+header {
+    height: 90px;
+    display: flex;
+    align-items: center;
+    transition: height 0.3s ease, padding 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--color-dark);
+}
+
+header.scrolled {
+    height: 55px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+header .navbar {
+    width: 100%;
+    padding: 0;
+}
+
+header .logo-text {
+    color: #fff;
+    font-weight: bold;
+    font-size: 1.3rem;
+    transition: font-size 0.3s ease;
+}
+
+header.scrolled .logo-text {
+    font-size: 1rem;
+}
+
+.navbar-nav .nav-link {
+    color: #fff;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--color-accent);
+}
+
+.dropdown-menu {
+    background: var(--color-dark);
+}
+
+.dropdown-item {
+    color: #fff;
+}
+
+.dropdown-item:hover {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+/* ===== Баннер-герой (фото добавится на Этапе 6) ===== */
+.hero {
+    background: linear-gradient(135deg, var(--color-dark), var(--color-accent));
+    color: #fff;
+    padding: 80px 0;
+}
+
+/* ===== Карточки ===== */
+.card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Подвал ===== */
+footer {
+    background: var(--color-dark);
+    color: #fff;
+}
+
+footer a {
+    color: #ccc;
+}
+
+footer a:hover {
+    color: #fff;
+}
+
+/* ===== Таблицы результатов (чередование строк) ===== */
+table.table-zebra tbody tr:nth-child(odd) {
+    background: #fff;
+}
+
+table.table-zebra tbody tr:nth-child(even) {
+    background: #f8f8f8;
+}
