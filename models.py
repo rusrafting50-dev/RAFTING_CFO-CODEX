@@ -128,3 +128,15 @@ class FederationMember(db.Model):
     level = db.Column(db.String(50))  # цфо / регион
     photo_path = db.Column(db.String(500))
     contacts = db.Column(db.String(255))
+
+
+class SyncLog(db.Model):
+    """Журнал синхронизации данных, поступающих от COREZ, REGTEAM_RAFTING, SPORTS_REFEREE."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    source = db.Column(db.String(50), nullable=False)  # COREZ / REGTEAM_RAFTING / SPORTS_REFEREE
+    sync_type = db.Column(db.String(50))  # competitions / athletes / referees / events
+    records_count = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(20), default='success')  # success / error
+    message = db.Column(db.String(500))
+    synced_at = db.Column(db.DateTime, default=datetime.utcnow)

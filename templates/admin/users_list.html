@@ -1,0 +1,44 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'users' %}
+
+{% block title %}Пользователи — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Пользователи</h1>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.users_new') }}">Добавить пользователя</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-zebra align-middle">
+            <thead>
+                <tr class="table-dark">
+                    <th>Логин</th>
+                    <th>Роль</th>
+                    <th>Активен</th>
+                    <th>Изменить роль</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>{{ 'да' if user.is_active else 'нет' }}</td>
+                        <td>
+                            <form method="post" action="{{ url_for('admin.users_change_role', user_id=user.id) }}"
+                                  class="d-flex gap-2">
+                                <select name="role" class="form-select form-select-sm" style="width: auto;">
+                                    {% for choice in role_choices %}
+                                        <option value="{{ choice }}" {{ 'selected' if user.role == choice }}>{{ choice }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

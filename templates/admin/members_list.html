@@ -1,0 +1,52 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'members' %}
+
+{% block title %}Члены органов федерации — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Состав органов федерации</h1>
+        {% if current_user.role == 'admin' %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.members_new') }}">Добавить</a>
+        {% endif %}
+    </div>
+
+    {% if members %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>ФИО</th>
+                        <th>Должность</th>
+                        <th>Орган</th>
+                        <th>Уровень</th>
+                        <th>Контакты</th>
+                        {% if current_user.role == 'admin' %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        <tr>
+                            <td>{{ member.full_name }}</td>
+                            <td>{{ member.position }}</td>
+                            <td>{{ member.body }}</td>
+                            <td>{{ member.level }}</td>
+                            <td>{{ member.contacts }}</td>
+                            {% if current_user.role == 'admin' %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.members_edit', member_id=member.id) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.members_delete', member_id=member.id) }}"
+                                          onsubmit="return confirm('Удалить запись?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Состав органов федерации пока не заполнен.</p>
+    {% endif %}
+{% endblock %}

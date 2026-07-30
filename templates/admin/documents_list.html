@@ -1,0 +1,51 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'documents' %}
+
+{% block title %}Документы — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Нормативные документы</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.documents_new') }}">Загрузить документ</a>
+        {% endif %}
+    </div>
+
+    {% if documents %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Название</th>
+                        <th>Категория</th>
+                        <th>Уровень</th>
+                        <th>Загружен</th>
+                        <th>Файл</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                        <tr>
+                            <td>{{ document.title }}</td>
+                            <td>{{ document.doc_category }}</td>
+                            <td>{{ document.level }}</td>
+                            <td>{{ document.uploaded_at.strftime('%d.%m.%Y') if document.uploaded_at else '' }}</td>
+                            <td><a href="{{ url_for('static', filename=document.file_path) }}" download>Скачать</a></td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td>
+                                    <form method="post" action="{{ url_for('admin.documents_delete', document_id=document.id) }}"
+                                          onsubmit="return confirm('Удалить документ?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Документы пока не загружены.</p>
+    {% endif %}
+{% endblock %}

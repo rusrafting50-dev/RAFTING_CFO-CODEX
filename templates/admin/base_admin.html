@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container-fluid py-4">
+        <div class="row">
+            <aside class="col-md-3 col-lg-2 mb-4">
+                <div class="list-group">
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'dashboard' }}"
+                       href="{{ url_for('admin.dashboard') }}">Дашборд</a>
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'news' }}"
+                       href="{{ url_for('admin.news_list') }}">Новости</a>
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'documents' }}"
+                       href="{{ url_for('admin.documents_list') }}">Документы</a>
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'members' }}"
+                       href="{{ url_for('admin.members_list') }}">Члены органов</a>
+                    {% if current_user.role == 'admin' %}
+                        <a class="list-group-item list-group-item-action {{ 'active' if active == 'users' }}"
+                           href="{{ url_for('admin.users_list') }}">Пользователи</a>
+                    {% endif %}
+                    <a class="list-group-item list-group-item-action {{ 'active' if active == 'sync' }}"
+                       href="{{ url_for('admin.sync_status') }}">Синхронизация</a>
+                    <a class="list-group-item list-group-item-action" href="{{ url_for('admin.logout') }}">Выйти</a>
+                </div>
+            </aside>
+            <section class="col-md-9 col-lg-10">
+                {% block admin_content %}{% endblock %}
+            </section>
+        </div>
+    </div>
+{% endblock %}
