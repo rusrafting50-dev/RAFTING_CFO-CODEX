@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 500" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Река с порогами и рафт">
+    <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a7bd5"/>
+            <stop offset="100%" stop-color="#6bb3ec"/>
+        </linearGradient>
+        <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0066cc"/>
+            <stop offset="100%" stop-color="#132a52"/>
+        </linearGradient>
+    </defs>
+    <rect width="1600" height="500" fill="url(#sky)"/>
+    <polygon points="0,320 250,150 480,320" fill="#16213e"/>
+    <polygon points="300,320 600,120 900,320" fill="#1a1a2e"/>
+    <polygon points="750,320 1050,170 1350,320" fill="#16213e"/>
+    <polygon points="1150,320 1450,140 1600,320" fill="#1a1a2e"/>
+    <rect y="270" width="1600" height="230" fill="url(#water)"/>
+    <path d="M0 295 Q 200 270 400 295 T 800 295 T 1200 295 T 1600 295 V500 H0 Z" fill="#0d1b33" opacity="0.5"/>
+    <path d="M0 325 Q 200 302 400 325 T 800 325 T 1200 325 T 1600 325 V500 H0 Z" fill="#0a1530" opacity="0.6"/>
+    <g transform="translate(1180,430)">
+        <ellipse cx="0" cy="14" rx="70" ry="15" fill="#0d1b33"/>
+        <ellipse cx="-42" cy="0" rx="8" ry="11" fill="#f2f2f2"/>
+        <ellipse cx="-12" cy="-3" rx="8" ry="11" fill="#f2f2f2"/>
+        <ellipse cx="18" cy="0" rx="8" ry="11" fill="#f2f2f2"/>
+        <ellipse cx="46" cy="-2" rx="8" ry="11" fill="#f2f2f2"/>
+    </g>
+</svg>

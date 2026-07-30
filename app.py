@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 from dotenv import load_dotenv
-from flask import Flask
+from flask import Flask, render_template
 
 from auth import create_default_admin, login_manager
 from models import db
@@ -37,6 +37,10 @@ def create_app():
     @app.context_processor
     def inject_now():
         return {'now': datetime.utcnow()}
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return render_template('404.html'), 404
 
     return app
 

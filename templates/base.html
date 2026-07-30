@@ -15,6 +15,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <img class="logo" src="{{ url_for('static', filename='img/logo.svg') }}" alt="">
                 <span class="logo-text">Федерация рафтинга ЦФО</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
@@ -63,18 +64,63 @@
         {% endif %}
     {% endwith %}
 
+    {% if breadcrumbs %}
+        <div class="container">
+            <nav aria-label="Хлебные крошки">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Главная</a></li>
+                    {% for crumb in breadcrumbs %}
+                        {% if loop.last %}
+                            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
+                        {% else %}
+                            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ol>
+            </nav>
+        </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
 </main>
 
 <footer>
-    <div class="container py-4">
-        <p class="text-center mb-2">
-            <a href="{{ url_for('federation.about') }}">О федерации</a>
-            &middot;
-            <a href="{{ url_for('federation.structure') }}">Структура</a>
-            &middot;
-            <a href="{{ url_for('main.contacts') }}">Контакты</a>
-        </p>
+    <div class="container py-5">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+            <div class="col">
+                <h2 class="h6 text-uppercase">Федерация</h2>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('federation.about') }}">О федерации</a></li>
+                    <li><a href="{{ url_for('federation.structure') }}">Структура</a></li>
+                    <li><a href="{{ url_for('main.contacts') }}">Контакты</a></li>
+                </ul>
+            </div>
+            <div class="col">
+                <h2 class="h6 text-uppercase">Соревнования</h2>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('competitions.calendar') }}">Календарный план</a></li>
+                    <li><a href="{{ url_for('competitions.current') }}">Текущие</a></li>
+                    <li><a href="{{ url_for('competitions.archive') }}">Архив</a></li>
+                </ul>
+            </div>
+            <div class="col">
+                <h2 class="h6 text-uppercase">Спорт</h2>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('team.index') }}">Сборная команда</a></li>
+                    <li><a href="{{ url_for('referees.index') }}">Судьи</a></li>
+                    <li><a href="{{ url_for('events.index') }}">Мероприятия</a></li>
+                </ul>
+            </div>
+            <div class="col">
+                <h2 class="h6 text-uppercase">Информация</h2>
+                <ul class="list-unstyled">
+                    <li><a href="{{ url_for('documents.index') }}">Нормативные документы</a></li>
+                    <li><a href="{{ url_for('main.news') }}">Новости</a></li>
+                    <li><a href="{{ url_for('admin.login') }}">Вход для сотрудников</a></li>
+                </ul>
+            </div>
+        </div>
+        <hr>
         <p class="mb-0 text-center">&copy; {{ now.year }} Федерация рафтинга Центрального федерального округа</p>
     </div>
 </footer>

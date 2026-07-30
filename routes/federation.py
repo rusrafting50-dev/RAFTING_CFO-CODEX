@@ -1,5 +1,5 @@
 """О федерации: описание, структура и органы управления."""
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, url_for
 
 from models import FederationMember
 
@@ -15,7 +15,7 @@ BODY_LABELS = {
 
 @bp.route('/')
 def about():
-    return render_template('federation/about.html')
+    return render_template('federation/about.html', breadcrumbs=[{'label': 'О федерации'}])
 
 
 @bp.route('/structure')
@@ -30,4 +30,8 @@ def structure():
         'federation/structure.html',
         members_by_body=members_by_body,
         body_labels=BODY_LABELS,
+        breadcrumbs=[
+            {'label': 'О федерации', 'url': url_for('federation.about')},
+            {'label': 'Структура'},
+        ],
     )

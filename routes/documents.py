@@ -14,4 +14,7 @@ def index():
     for document in documents:
         documents_by_category.setdefault(document.doc_category or 'Прочее', []).append(document)
 
-    return render_template('documents/list.html', documents_by_category=documents_by_category)
+    return render_template(
+        'documents/list.html', documents_by_category=documents_by_category,
+        breadcrumbs=[{'label': 'Нормативные документы'}],
+    )

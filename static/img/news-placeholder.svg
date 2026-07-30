@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Изображение новости">
+    <rect width="400" height="200" fill="#1a1a2e"/>
+    <path d="M0 130 Q 50 110 100 130 T 200 130 T 300 130 T 400 130 V200 H0 Z" fill="#0066cc" opacity="0.6"/>
+    <path d="M0 155 Q 50 140 100 155 T 200 155 T 300 155 T 400 155 V200 H0 Z" fill="#0066cc" opacity="0.9"/>
+    <circle cx="330" cy="55" r="28" fill="#ffffff" opacity="0.15"/>
+</svg>

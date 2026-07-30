@@ -55,9 +55,10 @@ def news():
         news_items=pagination.items,
         categories=categories,
         selected_category=category,
+        breadcrumbs=[{'label': 'Новости'}],
     )
 
 
 @bp.route('/contacts')
 def contacts():
-    return render_template('main/contacts.html')
+    return render_template('main/contacts.html', breadcrumbs=[{'label': 'Контакты'}])

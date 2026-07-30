@@ -19,10 +19,11 @@
         {% endif %}
 
         {% if news_items %}
-            <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
                 {% for item in news_items %}
                     <div class="col">
                         <div class="card h-100">
+                            <div class="card-img-placeholder"></div>
                             <div class="card-body">
                                 <p class="text-muted small mb-1">
                                     {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}

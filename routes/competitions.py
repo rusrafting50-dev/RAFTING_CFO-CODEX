@@ -2,7 +2,7 @@
 import json
 from datetime import date
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, url_for
 from sqlalchemy import extract
 
 from models import Competition, CompetitionDocument
@@ -21,7 +21,10 @@ def calendar():
         .all()
     )
 
-    return render_template('competitions/calendar.html', competitions=competitions, year=year)
+    return render_template(
+        'competitions/calendar.html', competitions=competitions, year=year,
+        breadcrumbs=[{'label': 'Соревнования'}],
+    )
 
 
 @bp.route('/current')
@@ -35,6 +38,10 @@ def current():
         'competitions/list.html',
         competitions=competitions,
         title='Текущие соревнования',
+        breadcrumbs=[
+            {'label': 'Соревнования', 'url': url_for('competitions.calendar')},
+            {'label': 'Текущие'},
+        ],
     )
 
 
@@ -62,6 +69,10 @@ def archive():
         archive=True,
         years=years,
         selected_year=year,
+        breadcrumbs=[
+            {'label': 'Соревнования', 'url': url_for('competitions.calendar')},
+            {'label': 'Архив'},
+        ],
     )
 
 
@@ -93,4 +104,8 @@ def detail(competition_id):
         'competitions/detail.html',
         competition=competition,
         documents_by_type=documents_by_type,
+        breadcrumbs=[
+            {'label': 'Соревнования', 'url': url_for('competitions.calendar')},
+            {'label': competition.name},
+        ],
     )

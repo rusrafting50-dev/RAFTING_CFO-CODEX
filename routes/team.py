@@ -39,4 +39,5 @@ def index():
         selected_role=role,
         selected_discipline=discipline,
         selected_territory=territory,
+        breadcrumbs=[{'label': 'Спортсмены и тренеры'}],
     )

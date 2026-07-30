@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Страница не найдена — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Запрошенная страница не найдена{% endblock %}
+
+{% block content %}
+    <div class="container py-5 text-center">
+        <p class="display-1 fw-bold text-muted">404</p>
+        <h1 class="h3 mb-3">Страница не найдена</h1>
+        <p class="text-muted mb-4">Возможно, страница была удалена или адрес введён неверно.</p>
+        <a class="btn btn-primary" href="{{ url_for('main.index') }}">На главную</a>
+    </div>
+{% endblock %}
