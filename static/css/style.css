@@ -37,7 +37,11 @@ header.scrolled {
 }
 
 .header-top {
-    padding: 16px 0;
+    /* Нижний паддинг меньше верхнего ровно на паддинг-топ меню (8px),
+       чтобы визуальный отступ "до надписи сверху" и "от надписи до
+       пунктов меню" совпадали — второй складывается из этого паддинга
+       и паддинга самого меню. */
+    padding: 16px 0 8px;
     transition: padding 0.3s ease;
 }
 
@@ -82,7 +86,7 @@ header.scrolled {
         height: 60px;
     }
 
-    header.scrolled .org-subtitle {
+    header.scrolled .org-name {
         display: none;
     }
 }
@@ -126,6 +130,7 @@ header.scrolled {
     color: #fff;
     text-transform: uppercase;
     font-size: 0.9rem;
+    font-weight: bold;
     letter-spacing: 0.03em;
 }
 
@@ -141,6 +146,7 @@ header.scrolled {
     color: #fff;
     text-transform: uppercase;
     font-size: 0.9rem;
+    font-weight: bold;
 }
 
 .dropdown-item:hover {
