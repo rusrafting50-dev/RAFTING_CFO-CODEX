@@ -12,52 +12,74 @@ body {
 }
 
 /* ===== Шапка =====
-   Две строки: header-top (логотип по центру на радиальном градиенте,
-   название федерации слева, уровень справа) и header-nav (меню, слева
-   и справа от логотипа). Анимация сжатия при прокрутке применяется
-   только к header-top и только на экранах >=992px — на меньших ширинах
-   меню сворачивается в гамбургер, и жёсткая высота мешала бы раскрытому
-   списку поместиться. */
+   Единый блок с горизонтальным градиентом (тёмный по краям, чуть
+   светлее в центре) — визуально без разделения на строки, обе
+   внутренние секции (header-top, header-nav) прозрачны и просто
+   наследуют фон header. Логотип не привязан к отдельной строке: на
+   широких экранах он позиционируется абсолютно по центру и перекрывает
+   обе строки одновременно. Анимация сжатия при прокрутке применяется
+   только на экранах >=992px — на меньших ширинах меню сворачивается в
+   гамбургер, и жёсткая высота мешала бы раскрытому списку поместиться. */
 header {
     position: sticky;
     top: 0;
     z-index: 1000;
+    background: linear-gradient(90deg, var(--color-dark) 0%, #3a3d6e 50%, var(--color-dark) 100%);
 }
 
 header.scrolled {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
+.header-top,
+.header-nav {
+    background: transparent;
+}
+
 .header-top {
-    background: radial-gradient(ellipse at center, #34365e 0%, var(--color-dark) 75%);
-    padding: 18px 0;
+    padding: 16px 0;
     transition: padding 0.3s ease;
 }
 
 .header-top-inner {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 16px;
 }
 
 .logo-link {
-    justify-self: center;
+    display: block;
     line-height: 0;
+    text-align: center;
+    padding: 8px 0;
 }
 
 .logo {
-    height: 72px;
+    height: 64px;
     transition: height 0.3s ease;
 }
 
 @media (min-width: 992px) {
+    .logo-link {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        padding: 0;
+    }
+
+    .logo {
+        height: 100px;
+    }
+
     header.scrolled .header-top {
         padding: 6px 0;
     }
 
     header.scrolled .logo {
-        height: 44px;
+        height: 60px;
     }
 
     header.scrolled .org-subtitle {
@@ -92,11 +114,6 @@ header.scrolled {
     transition: opacity 0.2s ease;
 }
 
-.header-nav {
-    background: var(--color-dark);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
 .header-nav-inner {
     padding: 0;
 }
@@ -107,6 +124,9 @@ header.scrolled {
 
 .navbar-nav .nav-link {
     color: #fff;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
 }
 
 .navbar-nav .nav-link:hover {
@@ -119,6 +139,8 @@ header.scrolled {
 
 .dropdown-item {
     color: #fff;
+    text-transform: uppercase;
+    font-size: 0.9rem;
 }
 
 .dropdown-item:hover {
@@ -126,15 +148,12 @@ header.scrolled {
     color: #fff;
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 991.98px) {
     .header-top-inner {
-        grid-template-columns: 1fr;
-        justify-items: center;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
-    }
-
-    .logo-link {
-        order: -1;
+        gap: 4px;
     }
 
     .org-name-left,
