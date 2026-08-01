@@ -12,37 +12,46 @@
 </head>
 <body>
 <header>
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+    <div class="header-top">
+        <div class="container header-top-inner">
+            <div class="org-name org-name-left">
+                <span class="org-title">ФЕДЕРАЦИЯ РАФТИНГА РОССИИ</span>
+                <span class="org-subtitle">Общероссийская общественная организация</span>
+            </div>
+            <a class="logo-link" href="{{ url_for('main.index') }}" aria-label="На главную">
                 <img class="logo" src="{{ url_for('static', filename='img/ФРР лого.png') }}" alt="Федерация рафтинга России">
-                <span class="logo-text">Федерация рафтинга ЦФО</span>
             </a>
+            <div class="org-name org-name-right">
+                <span class="org-title">Центральный федеральный округ</span>
+                <span class="org-subtitle">РОССИЙСКОЙ ФЕДЕРАЦИИ</span>
+            </div>
+        </div>
+    </div>
+    <nav class="header-nav navbar navbar-expand-lg navbar-dark">
+        <div class="container header-nav-inner">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
                     aria-controls="mainNav" aria-expanded="false" aria-label="Открыть меню">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav nav-left">
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('main.news') }}">Новости</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Региональные федерации</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Регионы</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('documents.index') }}">Нормативные документы</a></li>
+                </ul>
+                <ul class="navbar-nav nav-right">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Календарь</a></li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                            aria-expanded="false">
                             Соревнования
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('competitions.calendar') }}">Календарный план</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('competitions.current') }}">Текущие</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('competitions.archive') }}">Архив</a></li>
                         </ul>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('team.index') }}">Спортсмены и тренеры</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('referees.index') }}">Судьи</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('documents.index') }}">Нормативные документы</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Оборудование и снаряжение</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Представители ЦФО в ФРР</a></li>
                 </ul>
             </div>
         </div>
