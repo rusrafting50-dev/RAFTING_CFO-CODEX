@@ -86,9 +86,49 @@ header.scrolled {
         height: 60px;
     }
 
-    header.scrolled .org-name {
-        display: none;
+    /* Надписи не пропадают резко, а плавно "уезжают" за пределы шапки
+       (влево / вправо) с уменьшением на 30% (scale 0.7). header-top
+       обрезает их по своим границам, чтобы не появлялся горизонтальный
+       скролл. Расстояние translateX взято с большим запасом (150vw),
+       чтобы гарантированно уйти за край при любой ширине экрана. */
+    header.scrolled .org-name-left {
+        transform: translateX(-150vw) scale(0.7);
+        opacity: 0;
     }
+
+    header.scrolled .org-name-right {
+        transform: translateX(150vw) scale(0.7);
+        opacity: 0;
+    }
+
+    /* Пункты меню центрируются каждый в своей половине шапки:
+       слева — между левым краем и логотипом, справа — между
+       логотипом и правым краем. */
+    .header-nav .navbar-collapse {
+        display: flex;
+    }
+
+    .header-nav .nav-left,
+    .header-nav .nav-right {
+        flex: 1 1 0%;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Запас с внутренней стороны (к логотипу), чтобы центрируемые
+       пункты меню не наезжали на логотип, когда он перекрывает обе
+       строки шапки. */
+    .header-nav .nav-left {
+        padding-right: 110px;
+    }
+
+    .header-nav .nav-right {
+        padding-left: 110px;
+    }
+}
+
+.header-top {
+    overflow: hidden;
 }
 
 .org-name {
@@ -96,6 +136,7 @@ header.scrolled {
     flex-direction: column;
     color: #fff;
     line-height: 1.25;
+    transition: transform 0.4s ease, opacity 0.35s ease;
 }
 
 .org-name-left {
@@ -108,28 +149,23 @@ header.scrolled {
 
 .org-title {
     font-weight: bold;
-    font-size: 0.95rem;
+    font-size: 1.425rem;
     text-transform: uppercase;
 }
 
 .org-subtitle {
-    font-size: 0.75rem;
+    font-size: 1.125rem;
     color: #b7b7cf;
-    transition: opacity 0.2s ease;
 }
 
 .header-nav-inner {
     padding: 0;
 }
 
-.header-nav .navbar-collapse {
-    justify-content: space-between;
-}
-
 .navbar-nav .nav-link {
     color: #fff;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: 1.35rem;
     font-weight: bold;
     letter-spacing: 0.03em;
 }
@@ -145,7 +181,7 @@ header.scrolled {
 .dropdown-item {
     color: #fff;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: 1.35rem;
     font-weight: bold;
 }
 
