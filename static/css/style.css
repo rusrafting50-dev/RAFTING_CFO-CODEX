@@ -76,7 +76,7 @@ header.scrolled {
     }
 
     .logo {
-        height: 100px;
+        height: 88px;
     }
 
     header.scrolled .header-top {
@@ -87,18 +87,14 @@ header.scrolled {
         height: 60px;
     }
 
-    /* Надписи не пропадают резко, а плавно "уезжают" за пределы шапки
-       (влево / вправо) с уменьшением на 30% (scale 0.7). header-top
-       обрезает их по своим границам, чтобы не появлялся горизонтальный
-       скролл. Расстояние translateX взято с большим запасом (150vw),
-       чтобы гарантированно уйти за край при любой ширине экрана. */
-    header.scrolled .org-name-left {
-        transform: translateX(-150vw) scale(0.7);
-        opacity: 0;
-    }
-
+    /* Надписи не пропадают резко, а плавно "уезжают" вверх вместе со
+       строкой (той же строкой, что сжимается — header-top) с
+       уменьшением на 30% (scale 0.7). header-top обрезает их по своим
+       границам, чтобы уехавший текст не оставлял пустого места и не
+       появлялся горизонтальный/вертикальный скролл. */
+    header.scrolled .org-name-left,
     header.scrolled .org-name-right {
-        transform: translateX(150vw) scale(0.7);
+        transform: translateY(-100px) scale(0.7);
         opacity: 0;
     }
 
