@@ -6,7 +6,8 @@
 }
 
 body {
-    font-family: Arial, Helvetica, sans-serif;
+    /* На rfs.ru используется 'Roboto', sans-serif (проверено через DevTools) */
+    font-family: 'Roboto', Arial, Helvetica, sans-serif;
     background: var(--color-bg);
     margin: 0;
 }

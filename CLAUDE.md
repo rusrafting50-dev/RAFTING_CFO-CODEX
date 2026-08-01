@@ -365,7 +365,9 @@ header.scrolled .logo {
 - Строка копирайта внизу
 
 ### Шрифт
-- Системный стек: `font-family: Arial, Helvetica, sans-serif`
+- `font-family: 'Roboto', Arial, Helvetica, sans-serif` — на rfs.ru используется Roboto
+  (проверено через DevTools), подключается через Google Fonts; Arial/Helvetica — запасной
+  вариант, если шрифт не загрузился
 
 ### Адаптивность
 - Bootstrap 5 grid
