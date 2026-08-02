@@ -43,7 +43,9 @@ header.scrolled {
        пунктов меню" совпадали — второй складывается из этого паддинга
        и паддинга самого меню. */
     padding: 16px 0 8px;
-    transition: padding 0.3s ease;
+    max-height: 200px;
+    overflow: hidden;
+    transition: padding 0.3s ease, max-height 0.35s ease;
 }
 
 .header-top-inner {
@@ -79,8 +81,11 @@ header.scrolled {
         height: 88px;
     }
 
+    /* Верхняя строка схлопывается до нуля — после анимации остаётся
+       одна строка (header-nav) с логотипом строго по центру шапки. */
     header.scrolled .header-top {
-        padding: 6px 0;
+        padding: 0;
+        max-height: 0;
     }
 
     header.scrolled .logo {
@@ -122,10 +127,6 @@ header.scrolled {
     .header-nav .nav-right {
         padding-left: 110px;
     }
-}
-
-.header-top {
-    overflow: hidden;
 }
 
 .org-name {
