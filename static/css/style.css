@@ -41,11 +41,13 @@ header.scrolled {
     /* Нижний паддинг меньше верхнего ровно на паддинг-топ меню (8px),
        чтобы визуальный отступ "до надписи сверху" и "от надписи до
        пунктов меню" совпадали — второй складывается из этого паддинга
-       и паддинга самого меню. */
+       и паддинга самого меню. Актуально только для мобильной/планшетной
+       раскладки (<992px) — на широких экранах высота фиксированная,
+       см. ниже. */
     padding: 16px 0 8px;
     max-height: 200px;
     overflow: hidden;
-    transition: padding 0.3s ease, max-height 0.35s ease;
+    transition: padding 0.3s ease, max-height 0.35s ease, height 0.35s ease;
 }
 
 .header-top-inner {
@@ -68,6 +70,22 @@ header.scrolled {
 }
 
 @media (min-width: 992px) {
+    /* Точные высоты шапки: 120px в обычном состоянии (56 + 64),
+       64px после сжатия (0 + 64) — header-nav всегда 64px, header-top
+       анимируется между 56px и 0. Логотип центрируется абсолютно
+       относительно всей шапки, поэтому пересчитывается сам. */
+    .header-top {
+        height: 56px;
+        padding: 0;
+        max-height: none;
+        display: flex;
+        align-items: center;
+    }
+
+    .header-nav {
+        height: 64px;
+    }
+
     .logo-link {
         position: absolute;
         top: 50%;
@@ -82,10 +100,9 @@ header.scrolled {
     }
 
     /* Верхняя строка схлопывается до нуля — после анимации остаётся
-       одна строка (header-nav) с логотипом строго по центру шапки. */
+       одна строка (header-nav, 64px) с логотипом строго по центру шапки. */
     header.scrolled .header-top {
-        padding: 0;
-        max-height: 0;
+        height: 0;
     }
 
     header.scrolled .logo {
