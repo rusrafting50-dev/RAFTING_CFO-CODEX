@@ -32,54 +32,88 @@
     });
 })();
 
-// Синхронизация зазора у логотипа: расстояние от "Рафтинг ЦФО" до
-// логотипа должно совпадать с расстоянием от логотипа до "Календарь
-// ЦФО". Правая группа пунктов прижата к правому краю шапки (CSS), и
-// получившийся зазор справа зависит от ширины контейнера Bootstrap
-// (она меняется по брейкпоинтам, а не плавно с шириной окна) — поэтому
-// один фиксированный отступ в CSS не может быть верным сразу для всех
-// ширин экрана. Здесь этот зазор измеряется по факту и применяется
-// слева, при любой ширине окна и в обычном, и в свёрнутом состоянии
-// шапки.
+// Точное позиционирование левой группы пунктов меню (Новости /
+// Регионы ЦФО / Рафтинг ЦФО):
+//   - левый край "Новости" — строго под левым краем надписи
+//     "Федерация рафтинга России";
+//   - правый край "Рафтинг ЦФО" — на том же расстоянии от логотипа,
+//     что и расстояние от логотипа до "Календарь ЦФО" справа;
+//   - "Регионы ЦФО" — точно между ними (justify-content: space-between
+//     для 3 пунктов даёт равные промежутки с обеих сторон среднего).
+// Оба опорных значения (надпись слева, зазор у логотипа справа)
+// зависят от ширины контейнера Bootstrap, которая меняется по
+// брейкпоинтам, а не плавно с шириной окна — поэтому единственный
+// способ всегда попадать точно — измерять по факту и позиционировать
+// левую группу через JS, а не через фиксированные значения в CSS.
 (function () {
     var logo = document.querySelector('.logo');
     var navLeft = document.querySelector('.header-nav .nav-left');
+    var navbarCollapse = document.querySelector('.header-nav .navbar-collapse');
+    var orgNameLeft = document.querySelector('.org-name-left');
     var firstRightLink = document.querySelector('.header-nav .nav-right .nav-link');
 
-    if (!logo || !navLeft || !firstRightLink) {
+    if (!logo || !navLeft || !navbarCollapse || !orgNameLeft || !firstRightLink) {
         return;
     }
 
-    function syncGap() {
+    var header = document.querySelector('header');
+    var cachedTargetLeft = null;
+
+    function syncNavLeft() {
         if (window.innerWidth < 992) {
+            navLeft.style.left = '';
+            navLeft.style.width = '';
             navLeft.style.paddingRight = '';
+            return;
+        }
+
+        var collapseRect = navbarCollapse.getBoundingClientRect();
+
+        // Надпись "Федерация рафтинга России" сама уезжает и уменьшается
+        // при сжатии шапки (см. предыдущую анимацию), поэтому её текущие
+        // координаты в этот момент не отражают положение "в развёрнутом
+        // виде". Запоминаем целевой левый край только пока шапка НЕ
+        // сжата, а в сжатом состоянии используем последнее сохранённое
+        // значение — иначе "Новости" будет "прыгать" вслед за уезжающей
+        // надписью.
+        if (!header || !header.classList.contains('scrolled')) {
+            var orgLeftRect = orgNameLeft.getBoundingClientRect();
+            cachedTargetLeft = orgLeftRect.left - collapseRect.left;
+        }
+
+        if (cachedTargetLeft === null) {
             return;
         }
 
         var logoRect = logo.getBoundingClientRect();
         var rightItemRect = firstRightLink.getBoundingClientRect();
-        var navLeftRect = navLeft.getBoundingClientRect();
 
-        var gapRight = rightItemRect.left - logoRect.right;
-        var neededPadding = (navLeftRect.right - logoRect.left) + gapRight;
+        // Зазор логотип -> "Календарь ЦФО" (справа) — тот же самый
+        // зазор нужен слева, между "Рафтинг ЦФО" и логотипом. Логотип
+        // меняет размер при сжатии шапки, поэтому этот зазор пересчитываем
+        // всегда, в отличие от левого края.
+        var gapAtLogo = rightItemRect.left - logoRect.right;
+        var targetRight = (logoRect.left - gapAtLogo) - collapseRect.left;
 
-        navLeft.style.paddingRight = Math.max(0, neededPadding) + 'px';
+        navLeft.style.left = cachedTargetLeft + 'px';
+        navLeft.style.width = Math.max(0, targetRight - cachedTargetLeft) + 'px';
+        navLeft.style.paddingRight = '0';
     }
 
     var resizeTimer = null;
     window.addEventListener('resize', function () {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(syncGap, 100);
+        resizeTimer = setTimeout(syncNavLeft, 100);
     });
 
     // Логотип и другие элементы шапки анимированы через CSS transition
-    // (сжатие при прокрутке) — пересчитываем зазор и по её завершении.
-    logo.addEventListener('transitionend', syncGap);
+    // (сжатие при прокрутке) — пересчитываем позицию и по её завершении.
+    logo.addEventListener('transitionend', syncNavLeft);
 
     if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(syncGap);
+        document.fonts.ready.then(syncNavLeft);
     }
 
-    window.addEventListener('load', syncGap);
-    syncGap();
+    window.addEventListener('load', syncNavLeft);
+    syncNavLeft();
 })();
