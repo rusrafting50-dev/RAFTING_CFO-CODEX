@@ -59,6 +59,14 @@
     var header = document.querySelector('header');
     var cachedTargetLeft = null;
 
+    // У .nav-link есть собственный горизонтальный padding (Bootstrap
+    // --bs-navbar-nav-link-padding-x, 8px) — видимый текст "Новости"
+    // начинается на 8px правее левого края своего блока. Чтобы
+    // выровнять именно текст (а не блок) с надписью "Федерация
+    // рафтинга России", целевой левый край блока сдвигается на эти же
+    // 8px влево.
+    var NAV_LINK_PADDING_X = 8;
+
     function syncNavLeft() {
         if (window.innerWidth < 992) {
             navLeft.style.left = '';
@@ -78,7 +86,7 @@
         // надписью.
         if (!header || !header.classList.contains('scrolled')) {
             var orgLeftRect = orgNameLeft.getBoundingClientRect();
-            cachedTargetLeft = orgLeftRect.left - collapseRect.left;
+            cachedTargetLeft = (orgLeftRect.left - collapseRect.left) - NAV_LINK_PADDING_X;
         }
 
         if (cachedTargetLeft === null) {
