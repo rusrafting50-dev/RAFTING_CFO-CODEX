@@ -74,16 +74,27 @@ header.scrolled {
        64px после сжатия (0 + 64) — header-nav всегда 64px, header-top
        анимируется между 56px и 0. Логотип центрируется абсолютно
        относительно всей шапки, поэтому пересчитывается сам. */
+    /* align-items: flex-start + padding-top (не center) — чтобы отступ
+       "сверху шапки до надписи" (6px) и отступ "снизу надписи до
+       пунктов меню" (тоже 6px: 0 здесь + 6px у .nav-left/.nav-right
+       ниже) совпадали. При центрировании через align-items:center
+       вторая величина неизбежно оказывается больше первой на отступ,
+       который сам добавляет строка меню. */
     .header-top {
         height: 56px;
-        padding: 0;
+        padding: 6px 0 0;
         max-height: none;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
     }
 
     .header-nav {
         height: 64px;
+        /* Обнуляем встроенный вертикальный паддинг Bootstrap .navbar
+           (0.5rem сверху/снизу) — вертикальное положение пунктов меню
+           точно задаётся padding-top у .nav-left/.nav-right ниже. */
+        padding-top: 0;
+        padding-bottom: 0;
     }
 
     .logo-link {
@@ -129,11 +140,26 @@ header.scrolled {
        отключённого JS). nav-left/nav-right позиционируются абсолютно
        и независимо друг от друга, чтобы JS мог менять размеры и
        положение левой группы, не задевая правую. */
+    /* header-nav-inner и navbar-collapse сами по себе схлопываются до
+       нулевой высоты: все их значимые дети — position:absolute
+       (.nav-left/.nav-right), то есть исключены из потока и не
+       формируют высоту родителя. Явная height:100% нужна, чтобы
+       top:0/bottom:0 у .nav-left/.nav-right отсчитывались от полной
+       высоты строки меню (64px), а не от нулевой точки. */
+    .header-nav-inner,
+    .header-nav .navbar-collapse {
+        height: 100%;
+    }
+
     .header-nav .navbar-collapse {
         display: flex;
         position: relative;
     }
 
+    /* align-items: flex-start + padding-top: 6px (не center) — чтобы
+       верхняя граница пунктов меню отстояла от нижнего края надписей
+       ровно на те же 6px, что и надписи от верхнего края шапки (см.
+       .header-top выше). */
     .header-nav .nav-left,
     .header-nav .nav-right {
         position: absolute;
@@ -141,7 +167,8 @@ header.scrolled {
         bottom: 0;
         width: 50%;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
+        padding-top: 6px;
     }
 
     .header-nav .nav-right {
