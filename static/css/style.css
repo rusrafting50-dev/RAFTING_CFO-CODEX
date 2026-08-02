@@ -156,10 +156,12 @@ header.scrolled {
         position: relative;
     }
 
-    /* align-items: flex-start + padding-top: 6px (не center) — чтобы
-       верхняя граница пунктов меню отстояла от нижнего края надписей
-       ровно на те же 6px, что и надписи от верхнего края шапки (см.
-       .header-top выше). */
+    /* padding-top подобран по фактическому положению ТЕКСТА (не
+       блока): у строки внутри line-height есть свой "воздух" сверху
+       (леддинг), и он разный у надписей и у пункта меню, поэтому
+       значение здесь НЕ равно padding-top у .header-top — только
+       после его вычитания видимый текст пунктов меню оказывается на
+       том же расстоянии от надписей, что и они — от края шапки. */
     .header-nav .nav-left,
     .header-nav .nav-right {
         position: absolute;
@@ -168,7 +170,7 @@ header.scrolled {
         width: 50%;
         display: flex;
         align-items: flex-start;
-        padding-top: 6px;
+        padding-top: 2px;
     }
 
     /* right: -8px (не 0) компенсирует собственный правый padding
@@ -228,6 +230,12 @@ header.scrolled {
     font-size: 16px;
     font-weight: 700;
     line-height: 26px;
+    /* Обнуляем встроенный вертикальный padding Bootstrap
+       (--bs-nav-link-padding-y, 8px сверху/снизу) — вертикальное
+       положение пунктов меню полностью задаётся padding-top у
+       .nav-left/.nav-right. */
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .navbar-nav .nav-link:hover {
