@@ -14,20 +14,71 @@
     <div class="container py-5">
         <div class="row mb-4">
             <div class="col-12">
-                <h2 class="h4 mb-3">СОРЕВНОВАНИЯ</h2>
-                {% if upcoming_competitions %}
-                    <div class="list-group">
-                        {% for competition in upcoming_competitions %}
-                            <a href="{{ url_for('competitions.detail', competition_id=competition.id) }}"
-                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                                <span>{{ competition.name }}</span>
-                                <span class="text-muted">{{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}</span>
-                            </a>
-                        {% endfor %}
+                <ul class="nav home-tabs" id="homeTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tab-competitions-btn" data-bs-toggle="tab"
+                                data-bs-target="#tab-competitions" type="button" role="tab"
+                                aria-controls="tab-competitions" aria-selected="true">
+                            Соревнования
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-events-btn" data-bs-toggle="tab"
+                                data-bs-target="#tab-events" type="button" role="tab"
+                                aria-controls="tab-events" aria-selected="false">
+                            Мероприятия
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="homeTabsContent">
+                    <div class="tab-pane fade show active" id="tab-competitions" role="tabpanel"
+                         aria-labelledby="tab-competitions-btn">
+                        {% if upcoming_competitions %}
+                            <div class="home-carousel">
+                                <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                                <div class="home-carousel-track">
+                                    {% for competition in upcoming_competitions %}
+                                        <a href="{{ url_for('competitions.detail', competition_id=competition.id) }}"
+                                           class="home-carousel-card">
+                                            <span class="home-carousel-badge">{{ competition.comp_type or 'Соревнование' }}</span>
+                                            <span class="home-carousel-card-title">{{ competition.name }}</span>
+                                            <span class="home-carousel-card-meta">
+                                                <span>{{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}</span>
+                                                {% if competition.location %}<span>{{ competition.location }}</span>{% endif %}
+                                            </span>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                                <button class="home-carousel-btn home-carousel-next" type="button" aria-label="Вперёд">&rsaquo;</button>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">Ближайших соревнований пока нет.</p>
+                        {% endif %}
                     </div>
-                {% else %}
-                    <p class="text-muted">Ближайших соревнований пока нет.</p>
-                {% endif %}
+                    <div class="tab-pane fade" id="tab-events" role="tabpanel" aria-labelledby="tab-events-btn">
+                        {% if upcoming_events %}
+                            <div class="home-carousel">
+                                <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                                <div class="home-carousel-track">
+                                    {% for event in upcoming_events %}
+                                        <a href="{{ url_for('events.detail', event_id=event.id) }}"
+                                           class="home-carousel-card">
+                                            <span class="home-carousel-badge">{{ (event.event_type or 'Мероприятие').replace('_', ' ') }}</span>
+                                            <span class="home-carousel-card-title">{{ event.name }}</span>
+                                            <span class="home-carousel-card-meta">
+                                                <span>{{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '' }}</span>
+                                                {% if event.location %}<span>{{ event.location }}</span>{% endif %}
+                                            </span>
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                                <button class="home-carousel-btn home-carousel-next" type="button" aria-label="Вперёд">&rsaquo;</button>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">Ближайших мероприятий пока нет.</p>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
 

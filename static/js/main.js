@@ -125,3 +125,29 @@
     window.addEventListener('load', syncNavLeft);
     syncNavLeft();
 })();
+
+// Карусель карточек на главной (вкладки "Соревнования" / "Мероприятия"):
+// стрелки прокручивают ленту на ширину одной карточки + отступ, а не
+// на фиксированное число пикселей — так шаг всегда совпадает с
+// реальным размером карточки независимо от ширины экрана.
+(function () {
+    var CARD_GAP = 16;
+
+    document.querySelectorAll('.home-carousel').forEach(function (carousel) {
+        var track = carousel.querySelector('.home-carousel-track');
+        var prevBtn = carousel.querySelector('.home-carousel-prev');
+        var nextBtn = carousel.querySelector('.home-carousel-next');
+        if (!track || !prevBtn || !nextBtn) {
+            return;
+        }
+
+        function scrollByCard(direction) {
+            var card = track.querySelector('.home-carousel-card');
+            var step = card ? card.getBoundingClientRect().width + CARD_GAP : track.clientWidth;
+            track.scrollBy({ left: direction * step, behavior: 'smooth' });
+        }
+
+        prevBtn.addEventListener('click', function () { scrollByCard(-1); });
+        nextBtn.addEventListener('click', function () { scrollByCard(1); });
+    });
+})();

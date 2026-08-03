@@ -3,7 +3,7 @@ from datetime import date
 
 from flask import Blueprint, render_template, request
 
-from models import Competition, News
+from models import Competition, Event, News
 
 bp = Blueprint('main', __name__)
 
@@ -21,13 +21,20 @@ def index():
     upcoming_competitions = (
         Competition.query.filter(Competition.start_date >= date.today())
         .order_by(Competition.start_date.asc())
-        .limit(5)
+        .limit(8)
+        .all()
+    )
+    upcoming_events = (
+        Event.query.filter(Event.start_date >= date.today())
+        .order_by(Event.start_date.asc())
+        .limit(8)
         .all()
     )
     return render_template(
         'main/index.html',
         latest_news=latest_news,
         upcoming_competitions=upcoming_competitions,
+        upcoming_events=upcoming_events,
     )
 
 
