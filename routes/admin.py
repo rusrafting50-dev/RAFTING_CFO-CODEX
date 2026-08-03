@@ -26,6 +26,16 @@ DOC_CATEGORY_CHOICES = ['федеральный', 'региональный', 'w
 NEWS_CATEGORY_CHOICES = ['соревнование', 'мероприятие', 'федерация']
 NEWS_LEVEL_CHOICES = ['цфо', 'регион', 'отделение', 'клуб']
 ROLE_CHOICES = ['admin', 'editor', 'viewer']
+# Разделы панели, доступ к которым назначается сотруднику индивидуально
+# (роль admin получает их все автоматически, см. User.can_access).
+SECTION_CHOICES = [
+    ('news', 'Новости'),
+    ('competitions', 'Соревнования'),
+    ('documents', 'Документы'),
+    ('members', 'Члены органов'),
+    ('sync', 'Синхронизация'),
+]
+SECTION_KEYS = [key for key, _ in SECTION_CHOICES]
 COMPETITION_DOC_TYPE_CHOICES = [
     'положение', 'регламент', 'состав_гск', 'расписание',
     'график_допуска', 'регламент_жеребьёвки', 'протокол_совещания_гск',
@@ -45,6 +55,30 @@ def roles_required(*roles):
             return view(*args, **kwargs)
         return login_required(wrapped)
     return decorator
+
+
+def section_required(section):
+    """Ограничивает доступ к разделу панели — по индивидуальному списку
+    разрешённых разделов сотрудника (роль admin проходит всегда)."""
+    def decorator(view):
+        @wraps(view)
+        def wrapped(*args, **kwargs):
+            if not current_user.can_access(section):
+                flash('У вас нет доступа к этому разделу панели.', 'error')
+                return redirect(url_for('admin.dashboard'))
+            return view(*args, **kwargs)
+        return login_required(wrapped)
+    return decorator
+
+
+def is_last_active_admin(user):
+    """True, если это единственный активный admin — такого нельзя разжаловать/отключить."""
+    if user.role != 'admin' or not user.is_active:
+        return False
+    other_active_admins = User.query.filter(
+        User.role == 'admin', User.is_active.is_(True), User.id != user.id,
+    ).count()
+    return other_active_admins == 0
 
 
 def allowed_document(filename):
@@ -115,13 +149,14 @@ def dashboard():
 # ---------- Новости ----------
 
 @bp.route('/news')
-@login_required
+@section_required('news')
 def news_list():
     items = News.query.order_by(News.published_at.desc()).all()
     return render_template('admin/news_list.html', active='news', news_items=items)
 
 
 @bp.route('/news/new', methods=['GET', 'POST'])
+@section_required('news')
 @roles_required('admin', 'editor')
 def news_new():
     if request.method == 'POST':
@@ -155,6 +190,7 @@ def news_new():
 
 
 @bp.route('/news/<int:news_id>/edit', methods=['GET', 'POST'])
+@section_required('news')
 @roles_required('admin', 'editor')
 def news_edit(news_id):
     news_item = News.query.get_or_404(news_id)
@@ -186,6 +222,7 @@ def news_edit(news_id):
 
 
 @bp.route('/news/<int:news_id>/delete', methods=['POST'])
+@section_required('news')
 @roles_required('admin', 'editor')
 def news_delete(news_id):
     news_item = News.query.get_or_404(news_id)
@@ -196,6 +233,7 @@ def news_delete(news_id):
 
 
 @bp.route('/news/<int:news_id>/toggle-publish', methods=['POST'])
+@section_required('news')
 @roles_required('admin', 'editor')
 def news_toggle_publish(news_id):
     news_item = News.query.get_or_404(news_id)
@@ -208,13 +246,14 @@ def news_toggle_publish(news_id):
 # ---------- Документы ----------
 
 @bp.route('/documents')
-@login_required
+@section_required('documents')
 def documents_list():
     items = Document.query.order_by(Document.doc_category, Document.title).all()
     return render_template('admin/documents_list.html', active='documents', documents=items)
 
 
 @bp.route('/documents/new', methods=['GET', 'POST'])
+@section_required('documents')
 @roles_required('admin', 'editor')
 def documents_new():
     if request.method == 'POST':
@@ -256,6 +295,7 @@ def documents_new():
 
 
 @bp.route('/documents/<int:document_id>/delete', methods=['POST'])
+@section_required('documents')
 @roles_required('admin', 'editor')
 def documents_delete(document_id):
     document = Document.query.get_or_404(document_id)
@@ -271,14 +311,14 @@ def documents_delete(document_id):
 # ---------- Документы соревнований ----------
 
 @bp.route('/competitions')
-@login_required
+@section_required('competitions')
 def competitions_list():
     competitions = Competition.query.order_by(Competition.start_date.desc()).all()
     return render_template('admin/competitions_list.html', active='competitions', competitions=competitions)
 
 
 @bp.route('/competitions/<int:competition_id>/documents')
-@login_required
+@section_required('competitions')
 def competition_documents(competition_id):
     competition = Competition.query.get_or_404(competition_id)
     documents = (
@@ -294,6 +334,7 @@ def competition_documents(competition_id):
 
 
 @bp.route('/competitions/<int:competition_id>/documents/new', methods=['POST'])
+@section_required('competitions')
 @roles_required('admin', 'editor')
 def competition_document_new(competition_id):
     competition = Competition.query.get_or_404(competition_id)
@@ -328,6 +369,7 @@ def competition_document_new(competition_id):
 
 
 @bp.route('/competitions/<int:competition_id>/documents/<int:document_id>/delete', methods=['POST'])
+@section_required('competitions')
 @roles_required('admin', 'editor')
 def competition_document_delete(competition_id, document_id):
     document = CompetitionDocument.query.filter_by(
@@ -348,13 +390,14 @@ def competition_document_delete(competition_id, document_id):
 # ---------- Члены органов федерации ----------
 
 @bp.route('/members')
-@login_required
+@section_required('members')
 def members_list():
     members = FederationMember.query.order_by(FederationMember.body, FederationMember.full_name).all()
     return render_template('admin/members_list.html', active='members', members=members)
 
 
 @bp.route('/members/new', methods=['GET', 'POST'])
+@section_required('members')
 @roles_required('admin')
 def members_new():
     if request.method == 'POST':
@@ -381,6 +424,7 @@ def members_new():
 
 
 @bp.route('/members/<int:member_id>/edit', methods=['GET', 'POST'])
+@section_required('members')
 @roles_required('admin')
 def members_edit(member_id):
     member = FederationMember.query.get_or_404(member_id)
@@ -406,6 +450,7 @@ def members_edit(member_id):
 
 
 @bp.route('/members/<int:member_id>/delete', methods=['POST'])
+@section_required('members')
 @roles_required('admin')
 def members_delete(member_id):
     member = FederationMember.query.get_or_404(member_id)
@@ -417,11 +462,18 @@ def members_delete(member_id):
 
 # ---------- Пользователи (только admin) ----------
 
+def _sections_from_form():
+    return ','.join(key for key in request.form.getlist('sections') if key in SECTION_KEYS)
+
+
 @bp.route('/users')
 @roles_required('admin')
 def users_list():
     users = User.query.order_by(User.username).all()
-    return render_template('admin/users_list.html', active='users', users=users, role_choices=ROLE_CHOICES)
+    return render_template(
+        'admin/users_list.html', active='users', users=users,
+        role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+    )
 
 
 @bp.route('/users/new', methods=['GET', 'POST'])
@@ -434,11 +486,17 @@ def users_new():
 
         if not username or not password:
             flash('Логин и пароль обязательны.', 'error')
-            return render_template('admin/user_form.html', active='users', role_choices=ROLE_CHOICES)
+            return render_template(
+                'admin/user_form.html', active='users', user=None,
+                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+            )
 
         if User.query.filter_by(username=username).first():
             flash('Пользователь с таким логином уже существует.', 'error')
-            return render_template('admin/user_form.html', active='users', role_choices=ROLE_CHOICES)
+            return render_template(
+                'admin/user_form.html', active='users', user=None,
+                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+            )
 
         if role not in ROLE_CHOICES:
             role = 'viewer'
@@ -448,34 +506,66 @@ def users_new():
             password_hash=generate_password_hash(password),
             role=role,
             is_active=True,
+            allowed_sections=_sections_from_form(),
         )
         db.session.add(user)
         db.session.commit()
         flash('Пользователь создан.', 'success')
         return redirect(url_for('admin.users_list'))
 
-    return render_template('admin/user_form.html', active='users', role_choices=ROLE_CHOICES)
+    return render_template(
+        'admin/user_form.html', active='users', user=None,
+        role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+    )
 
 
-@bp.route('/users/<int:user_id>/role', methods=['POST'])
+@bp.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])
 @roles_required('admin')
-def users_change_role(user_id):
+def users_edit(user_id):
     user = User.query.get_or_404(user_id)
-    role = request.form.get('role')
 
-    if role not in ROLE_CHOICES:
-        flash('Недопустимая роль.', 'error')
+    if request.method == 'POST':
+        role = request.form.get('role', user.role)
+        is_active = bool(request.form.get('is_active'))
+
+        if role not in ROLE_CHOICES:
+            flash('Недопустимая роль.', 'error')
+            return render_template(
+                'admin/user_form.html', active='users', user=user,
+                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+            )
+
+        if is_last_active_admin(user) and (role != 'admin' or not is_active):
+            flash(
+                'Нельзя понизить в роли или отключить последнего активного администратора.',
+                'error',
+            )
+            return render_template(
+                'admin/user_form.html', active='users', user=user,
+                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+            )
+
+        user.role = role
+        user.is_active = is_active
+        user.allowed_sections = _sections_from_form()
+
+        new_password = request.form.get('password', '')
+        if new_password:
+            user.password_hash = generate_password_hash(new_password)
+
+        db.session.commit()
+        flash('Доступ пользователя обновлён.', 'success')
         return redirect(url_for('admin.users_list'))
 
-    user.role = role
-    db.session.commit()
-    flash('Роль пользователя обновлена.', 'success')
-    return redirect(url_for('admin.users_list'))
+    return render_template(
+        'admin/user_form.html', active='users', user=user,
+        role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+    )
 
 
 # ---------- Статус синхронизации ----------
 
 @bp.route('/sync')
-@login_required
+@section_required('sync')
 def sync_status():
     return render_template('admin/sync_status.html', active='sync', latest_syncs=latest_sync_by_source())

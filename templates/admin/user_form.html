@@ -1,30 +1,57 @@
 {% extends "admin/base_admin.html" %}
 {% set active = 'users' %}
 
-{% block title %}Новый пользователь — Панель администратора{% endblock %}
+{% block title %}{{ 'Изменение доступа' if user else 'Новый пользователь' }} — Панель администратора{% endblock %}
 
 {% block admin_content %}
-    <h1 class="h4 mb-4">Новый пользователь</h1>
+    <h1 class="h4 mb-4">{{ 'Изменение доступа: ' + user.username if user else 'Новый пользователь' }}</h1>
 
     <form method="post" class="card p-4">
+        {% if not user %}
+            <div class="mb-3">
+                <label for="username" class="form-label">Логин</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+        {% endif %}
         <div class="mb-3">
-            <label for="username" class="form-label">Логин</label>
-            <input type="text" class="form-control" id="username" name="username" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Пароль</label>
-            <input type="password" class="form-control" id="password" name="password" required>
+            <label for="password" class="form-label">
+                Пароль{% if user %} (оставьте пустым, чтобы не менять){% endif %}
+            </label>
+            <input type="password" class="form-control" id="password" name="password" {{ 'required' if not user }}>
         </div>
         <div class="mb-3">
             <label for="role" class="form-label">Роль</label>
             <select class="form-select" id="role" name="role">
                 {% for choice in role_choices %}
-                    <option value="{{ choice }}" {{ 'selected' if choice == 'viewer' }}>{{ choice }}</option>
+                    <option value="{{ choice }}"
+                            {{ 'selected' if (user and user.role == choice) or (not user and choice == 'viewer') }}>
+                        {{ choice }}
+                    </option>
                 {% endfor %}
             </select>
+            <div class="form-text">admin — полный доступ ко всем разделам. editor — может редактировать
+                контент только в отмеченных ниже разделах. viewer — может только просматривать отмеченные разделы.</div>
+        </div>
+        {% if user %}
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                       {{ 'checked' if user.is_active }}>
+                <label class="form-check-label" for="is_active">Учётная запись активна</label>
+            </div>
+        {% endif %}
+        <div class="mb-3">
+            <label class="form-label">Доступные разделы панели</label>
+            <div class="form-text mb-2">Не применяется к роли admin — у неё всегда полный доступ.</div>
+            {% for key, label in section_choices %}
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="section-{{ key }}" name="sections"
+                           value="{{ key }}" {{ 'checked' if user and key in user.sections() }}>
+                    <label class="form-check-label" for="section-{{ key }}">{{ label }}</label>
+                </div>
+            {% endfor %}
         </div>
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Создать</button>
+            <button type="submit" class="btn btn-primary">{{ 'Сохранить' if user else 'Создать' }}</button>
             <a class="btn btn-outline-secondary" href="{{ url_for('admin.users_list') }}">Отмена</a>
         </div>
     </form>

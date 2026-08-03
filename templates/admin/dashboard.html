@@ -62,5 +62,7 @@
             </tbody>
         </table>
     </div>
-    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.sync_status') }}">Подробнее</a>
+    {% if current_user.can_access('sync') %}
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('admin.sync_status') }}">Подробнее</a>
+    {% endif %}
 {% endblock %}

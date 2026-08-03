@@ -120,6 +120,16 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default='viewer', nullable=False)  # admin / editor / viewer
     is_active = db.Column(db.Boolean, default=True, nullable=False)
+    # Разделы панели администратора, доступные пользователю (через запятую,
+    # см. admin.SECTION_CHOICES) — только для role=editor/viewer, у admin
+    # всегда полный доступ независимо от этого поля.
+    allowed_sections = db.Column(db.String(255), default='', nullable=False)
+
+    def sections(self):
+        return set(filter(None, (self.allowed_sections or '').split(',')))
+
+    def can_access(self, section):
+        return self.role == 'admin' or section in self.sections()
 
 
 class FederationMember(db.Model):
