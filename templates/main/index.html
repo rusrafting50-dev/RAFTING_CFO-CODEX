@@ -86,23 +86,36 @@
             <div class="col-12">
                 <h2 class="h4 mb-3">НОВОСТИ</h2>
                 {% if latest_news %}
-                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-                        {% for item in latest_news %}
-                            <div class="col">
-                                <div class="card h-100">
-                                    <div class="card-img-placeholder"></div>
-                                    <div class="card-body">
-                                        <p class="text-muted small mb-1">
-                                            {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
-                                        </p>
-                                        <h3 class="h6 card-title">{{ item.title }}</h3>
-                                        <p class="card-text small">{{ item.content[:150] }}{% if item.content|length > 150 %}…{% endif %}</p>
+                    <div class="row g-4">
+                        <div class="col-lg-9">
+                            <div class="row row-cols-1 row-cols-sm-2 g-4">
+                                {% for item in latest_news %}
+                                    <div class="col">
+                                        <a href="{{ url_for('main.news') }}" class="news-card-link">
+                                            <div class="card h-100 news-card">
+                                                <div class="card-img-placeholder"></div>
+                                                <div class="card-body">
+                                                    <h3 class="h6 news-card-title">{{ item.title }}</h3>
+                                                    <p class="news-card-excerpt">{{ item.content[:120] }}{% if item.content|length > 120 %}…{% endif %}</p>
+                                                    <p class="news-card-date">
+                                                        {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </a>
                                     </div>
-                                </div>
+                                {% endfor %}
                             </div>
-                        {% endfor %}
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="d-flex flex-column h-100 gap-4 news-banners">
+                                <div class="news-banner-placeholder">Реклама</div>
+                                <div class="news-banner-placeholder">Реклама</div>
+                                <div class="news-banner-placeholder">Реклама</div>
+                            </div>
+                        </div>
                     </div>
-                    <a href="{{ url_for('main.news') }}" class="btn btn-outline-dark mt-3">Все новости</a>
+                    <a href="{{ url_for('main.news') }}" class="btn btn-outline-primary mt-4">ВСЕ НОВОСТИ</a>
                 {% else %}
                     <p class="text-muted">Новостей пока нет.</p>
                 {% endif %}

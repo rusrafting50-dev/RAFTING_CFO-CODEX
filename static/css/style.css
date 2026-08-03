@@ -431,6 +431,72 @@ header.scrolled {
     border-top-right-radius: calc(0.375rem - 1px);
 }
 
+/* ===== Новости на главной (крупные карточки + колонка баннеров) ===== */
+.news-card-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.news-card {
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.news-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.news-card .card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+.news-card-title {
+    color: var(--color-accent);
+    font-weight: 700;
+}
+
+.news-card-excerpt {
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.news-card-date {
+    /* Прижимаем дату к низу карточки, чтобы у карточек с разной
+       длиной заголовка/анонса дата всё равно оказывалась на одной
+       линии по нижнему краю (flex-column + margin-top:auto). */
+    margin-top: auto;
+    margin-bottom: 0;
+    color: #888;
+    font-size: 0.85rem;
+}
+
+.news-banners {
+    /* Три баннера растягиваются на всю высоту колонки новостей
+       (2 строки карточек), делятся поровну через flex:1. */
+}
+
+.news-banner-placeholder {
+    flex: 1 1 0;
+    min-height: 140px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--color-dark), var(--color-accent));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 12px;
+}
+
 /* ===== Хлебные крошки ===== */
 .breadcrumb {
     padding-top: 1rem;

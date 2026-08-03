@@ -15,7 +15,7 @@ def index():
     latest_news = (
         News.query.filter_by(is_published=True)
         .order_by(News.published_at.desc())
-        .limit(5)
+        .limit(4)
         .all()
     )
     upcoming_competitions = (
