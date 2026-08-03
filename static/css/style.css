@@ -480,6 +480,23 @@ header.scrolled {
        (2 строки карточек), делятся поровну через flex:1. */
 }
 
+.btn-all-news {
+    background: var(--color-dark);
+    color: #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 0.03em;
+    padding: 12px 24px;
+    border-radius: 4px;
+    border: none;
+}
+
+.btn-all-news:hover {
+    background: var(--color-accent);
+    color: #fff;
+}
+
 .news-banner-placeholder {
     flex: 1 1 0;
     min-height: 140px;

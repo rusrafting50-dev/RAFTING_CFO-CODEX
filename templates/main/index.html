@@ -115,23 +115,10 @@
                             </div>
                         </div>
                     </div>
-                    <a href="{{ url_for('main.news') }}" class="btn btn-outline-primary mt-4">ВСЕ НОВОСТИ</a>
+                    <a href="{{ url_for('main.news') }}" class="btn btn-all-news mt-4">ВСЕ НОВОСТИ</a>
                 {% else %}
                     <p class="text-muted">Новостей пока нет.</p>
                 {% endif %}
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-12">
-                <h2 class="h4 mb-3">Быстрые ссылки</h2>
-                <div class="d-flex flex-wrap gap-2">
-                    <a class="btn btn-outline-primary" href="{{ url_for('competitions.calendar') }}">Календарный план</a>
-                    <a class="btn btn-outline-primary" href="{{ url_for('team.index') }}">Сборная команда</a>
-                    <a class="btn btn-outline-primary" href="{{ url_for('referees.index') }}">Судьи</a>
-                    <a class="btn btn-outline-primary" href="{{ url_for('documents.index') }}">Документы</a>
-                    <a class="btn btn-outline-primary" href="{{ url_for('events.index') }}">Мероприятия</a>
-                </div>
             </div>
         </div>
     </div>
