@@ -7,7 +7,16 @@
     <section class="hero">
         <div class="container text-center">
             <h1>Федерация рафтинга Центрального федерального округа</h1>
-            <p class="lead mb-0">Соревнования, сборная команда и судейство рафтинга в регионах ЦФО</p>
+            <p class="lead {{ 'mb-4' if latest_news else 'mb-0' }}">Соревнования, сборная команда и судейство рафтинга в регионах ЦФО</p>
+            {% if latest_news %}
+                <a href="{{ url_for('main.news') }}" class="hero-news-card">
+                    <span class="hero-news-badge">Свежая новость</span>
+                    <span class="hero-news-title">{{ latest_news[0].title }}</span>
+                    <span class="hero-news-excerpt">
+                        {{ latest_news[0].content[:140] }}{% if latest_news[0].content|length > 140 %}…{% endif %}
+                    </span>
+                </a>
+            {% endif %}
         </div>
     </section>
 
