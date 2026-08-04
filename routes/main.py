@@ -12,12 +12,14 @@ NEWS_PER_PAGE = 9
 
 @bp.route('/')
 def index():
-    latest_news = (
-        News.query.filter_by(is_published=True)
-        .order_by(News.published_at.desc())
-        .limit(4)
-        .all()
-    )
+    published_news = News.query.filter_by(is_published=True).order_by(News.published_at.desc())
+    # Самая свежая новость идёт на баннер, а не в сетку карточек ниже —
+    # там показываются следующие по свежести, без дублирования. Как
+    # только выходит новая новость, баннерная автоматически "спускается"
+    # в сетку — деление всегда идёт по первому/остальным элементам одной
+    # и той же выборки, отдельного признака "уже показана" не нужно.
+    hero_news = published_news.first()
+    latest_news = published_news.offset(1).limit(4).all() if hero_news else []
     upcoming_competitions = (
         Competition.query.filter(Competition.start_date >= date.today())
         .order_by(Competition.start_date.asc())
@@ -32,6 +34,7 @@ def index():
     )
     return render_template(
         'main/index.html',
+        hero_news=hero_news,
         latest_news=latest_news,
         upcoming_competitions=upcoming_competitions,
         upcoming_events=upcoming_events,

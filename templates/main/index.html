@@ -5,14 +5,14 @@
 
 {% block content %}
     <section class="hero"
-              {% if latest_news and latest_news[0].image_path %}
-              style="background-image: linear-gradient(rgba(26, 26, 46, 0.55), rgba(26, 26, 46, 0.55)), url('{{ url_for('static', filename=latest_news[0].image_path) }}')"
+              {% if hero_news and hero_news.image_path %}
+              style="background-image: url('{{ url_for('static', filename=hero_news.image_path) }}')"
               {% endif %}>
         <div class="container text-center">
-            {% if latest_news %}
-                <h1>{{ latest_news[0].title }}</h1>
+            {% if hero_news %}
+                <h1>{{ hero_news.title }}</h1>
                 <p class="lead mb-0">
-                    {{ latest_news[0].content[:140] }}{% if latest_news[0].content|length > 140 %}…{% endif %}
+                    {{ hero_news.content[:140] }}{% if hero_news.content|length > 140 %}…{% endif %}
                 </p>
             {% else %}
                 <h1>Федерация рафтинга Центрального федерального округа</h1>

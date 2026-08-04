@@ -281,16 +281,24 @@ header.scrolled {
     }
 }
 
-/* ===== Баннер-герой ===== */
+/* ===== Баннер-герой =====
+   Фото новости не затемняется — только у фолбэка (нет новости с фото)
+   поверх стоит градиент, у самой иллюстрации hero.svg недостаточно
+   контраста для белого текста без него. Заголовок/подзаголовок прижаты
+   к нижнему краю баннера (align-items: flex-end), а не по центру. */
 .hero {
+    display: flex;
+    align-items: flex-end;
+    min-height: 420px;
     background:
         linear-gradient(rgba(26, 26, 46, 0.55), rgba(26, 26, 46, 0.55)),
         url('../img/hero.svg') center/cover no-repeat;
     color: #fff;
-    padding: 110px 0;
+    padding: 32px 0 40px;
 }
 
-.hero h1 {
+.hero h1,
+.hero .lead {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
