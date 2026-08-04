@@ -294,52 +294,6 @@ header.scrolled {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.hero-news-card {
-    display: inline-block;
-    max-width: 640px;
-    width: 100%;
-    text-align: left;
-    text-decoration: none;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 8px;
-    padding: 16px 24px;
-    transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-.hero-news-card:hover {
-    background: rgba(255, 255, 255, 0.22);
-    border-color: #fff;
-    color: #fff;
-}
-
-.hero-news-badge {
-    display: inline-block;
-    background: var(--color-accent);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-}
-
-.hero-news-title {
-    display: block;
-    font-weight: 700;
-    font-size: 18px;
-    margin-bottom: 4px;
-}
-
-.hero-news-excerpt {
-    display: block;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.85);
-}
-
 /* ===== Вкладки + карусель карточек на главной (стиль rfs.ru) ===== */
 .home-tabs {
     border-bottom: 2px solid #e0e0e0;

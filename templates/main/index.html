@@ -4,18 +4,19 @@
 {% block description %}Новости, соревнования и мероприятия Федерации рафтинга Центрального федерального округа{% endblock %}
 
 {% block content %}
-    <section class="hero">
+    <section class="hero"
+              {% if latest_news and latest_news[0].image_path %}
+              style="background-image: linear-gradient(rgba(26, 26, 46, 0.55), rgba(26, 26, 46, 0.55)), url('{{ url_for('static', filename=latest_news[0].image_path) }}')"
+              {% endif %}>
         <div class="container text-center">
-            <h1>Федерация рафтинга Центрального федерального округа</h1>
-            <p class="lead {{ 'mb-4' if latest_news else 'mb-0' }}">Соревнования, сборная команда и судейство рафтинга в регионах ЦФО</p>
             {% if latest_news %}
-                <a href="{{ url_for('main.news') }}" class="hero-news-card">
-                    <span class="hero-news-badge">Свежая новость</span>
-                    <span class="hero-news-title">{{ latest_news[0].title }}</span>
-                    <span class="hero-news-excerpt">
-                        {{ latest_news[0].content[:140] }}{% if latest_news[0].content|length > 140 %}…{% endif %}
-                    </span>
-                </a>
+                <h1>{{ latest_news[0].title }}</h1>
+                <p class="lead mb-0">
+                    {{ latest_news[0].content[:140] }}{% if latest_news[0].content|length > 140 %}…{% endif %}
+                </p>
+            {% else %}
+                <h1>Федерация рафтинга Центрального федерального округа</h1>
+                <p class="lead mb-0">Соревнования, сборная команда и судейство рафтинга в регионах ЦФО</p>
             {% endif %}
         </div>
     </section>
