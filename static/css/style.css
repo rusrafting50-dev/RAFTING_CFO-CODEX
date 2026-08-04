@@ -448,12 +448,17 @@ header.scrolled {
 .news-card {
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .news-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-accent);
+}
+
+.news-card:hover .news-card-title {
+    color: var(--color-accent);
 }
 
 .news-card .card-img-placeholder {
@@ -474,7 +479,7 @@ header.scrolled {
 }
 
 .news-card-title {
-    color: var(--color-accent);
+    color: #000;
     font-weight: 700;
     display: -webkit-box;
     -webkit-line-clamp: 2;
