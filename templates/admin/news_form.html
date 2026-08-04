@@ -1,12 +1,12 @@
 {% extends "admin/base_admin.html" %}
 {% set active = 'news' %}
 
-{% block title %}{{ 'Редактирование новости' if news else 'Новая новость' }} — Панель администратора{% endblock %}
+{% block title %}{{ 'Редактирование новости' if news else 'Добавить новость' }} — Панель администратора{% endblock %}
 
 {% block admin_content %}
-    <h1 class="h4 mb-4">{{ 'Редактирование новости' if news else 'Новая новость' }}</h1>
+    <h1 class="h4 mb-4">{{ 'Редактирование новости' if news else 'Добавить новость' }}</h1>
 
-    <form method="post" class="card p-4">
+    <form method="post" class="card p-4" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="title" class="form-label">Заголовок</label>
             <input type="text" class="form-control" id="title" name="title" required
@@ -15,6 +15,20 @@
         <div class="mb-3">
             <label for="content" class="form-label">Текст новости</label>
             <textarea class="form-control" id="content" name="content" rows="6" required>{{ news.content if news else '' }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="image" class="form-label">Фотография</label>
+            {% if news and news.image_path %}
+                <div class="mb-2">
+                    <img src="{{ url_for('static', filename=news.image_path) }}" alt=""
+                         style="max-width: 240px; max-height: 160px; object-fit: cover;" class="rounded border">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png,.webp">
+            <div class="form-text">
+                Рекомендуемый размер — 1200×675 px (соотношение сторон 16:9), JPG/PNG/WEBP.
+                {% if news and news.image_path %}Оставьте поле пустым, чтобы не менять текущую фотографию.{% endif %}
+            </div>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">

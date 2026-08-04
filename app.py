@@ -5,7 +5,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template
 
-from auth import create_default_admin, ensure_user_table_columns, login_manager
+from auth import create_default_admin, ensure_schema, login_manager
 from models import db
 from routes import register_blueprints
 
@@ -32,7 +32,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
-        ensure_user_table_columns()
+        ensure_schema()
         create_default_admin()
 
     @app.context_processor

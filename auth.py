@@ -15,27 +15,34 @@ def load_user(user_id):
     return db.session.get(User, int(user_id))
 
 
-def ensure_user_table_columns():
-    """Добавляет в существующую таблицу user колонки, которых там ещё нет.
+def _ensure_column(inspector, table, column, ddl_type):
+    """Добавляет колонку в существующую таблицу, если её там ещё нет."""
+    from sqlalchemy import text
 
-    db.create_all() создаёт только отсутствующие таблицы и не меняет
-    уже существующие — на сайте, запущенном до появления поля
-    allowed_sections, старая таблица user иначе не соответствовала бы
-    модели, и сервер падал бы при первом же обращении к пользователям.
-    """
-    from sqlalchemy import inspect, text
-
-    inspector = inspect(db.engine)
-    if 'user' not in inspector.get_table_names():
+    if table not in inspector.get_table_names():
         return
 
-    existing_columns = {col['name'] for col in inspector.get_columns('user')}
-    if 'allowed_sections' not in existing_columns:
+    existing_columns = {col['name'] for col in inspector.get_columns(table)}
+    if column not in existing_columns:
         with db.engine.begin() as conn:
-            conn.execute(text(
-                "ALTER TABLE user ADD COLUMN allowed_sections VARCHAR(255) NOT NULL DEFAULT ''"
-            ))
-        print('[auth] В таблицу user добавлена колонка allowed_sections.')
+            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl_type}"))
+        print(f'[auth] В таблицу {table} добавлена колонка {column}.')
+
+
+def ensure_schema():
+    """Догоняет схему уже существующей базы под текущие модели.
+
+    db.create_all() создаёт только отсутствующие таблицы и не меняет
+    уже существующие — при каждом добавлении нового поля в модель сюда
+    добавляется соответствующая проверка, иначе сервер, запущенный на
+    базе, созданной до этого поля, падал бы при первом же обращении
+    к соответствующей таблице.
+    """
+    from sqlalchemy import inspect
+
+    inspector = inspect(db.engine)
+    _ensure_column(inspector, 'user', 'allowed_sections', "VARCHAR(255) NOT NULL DEFAULT ''")
+    _ensure_column(inspector, 'news', 'image_path', 'VARCHAR(500)')
 
 
 def create_default_admin():

@@ -19,6 +19,7 @@ from models import (
 bp = Blueprint('admin', __name__)
 
 ALLOWED_DOCUMENT_EXTENSIONS = {'pdf', 'docx'}
+ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 SYNC_SOURCES = ['COREZ', 'REGTEAM_RAFTING', 'SPORTS_REFEREE']
 
 BODY_CHOICES = ['исполком', 'коллегия_судей', 'тренерский_совет', 'комитет_представителей']
@@ -83,6 +84,21 @@ def is_last_active_admin(user):
 
 def allowed_document(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_DOCUMENT_EXTENSIONS
+
+
+def allowed_image(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+
+
+def save_upload(file):
+    """Сохраняет файл в UPLOAD_FOLDER под уникальным именем, возвращает путь
+    относительно static/ (как хранится в *.file_path / *.image_path)."""
+    filename = secure_filename(file.filename)
+    unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
+    upload_dir = current_app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_dir, exist_ok=True)
+    file.save(os.path.join(upload_dir, unique_name))
+    return f"uploads/{unique_name}"
 
 
 def latest_sync_by_source():
@@ -162,9 +178,17 @@ def news_new():
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
+        image = request.files.get('image')
 
         if not title or not content:
             flash('Заголовок и текст новости обязательны.', 'error')
+            return render_template(
+                'admin/news_form.html', active='news', news=None,
+                category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
+            )
+
+        if image and image.filename and not allowed_image(image.filename):
+            flash('Допустимые форматы фотографии: JPG, PNG, WEBP.', 'error')
             return render_template(
                 'admin/news_form.html', active='news', news=None,
                 category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
@@ -177,6 +201,7 @@ def news_new():
             level=request.form.get('level') or None,
             is_published=bool(request.form.get('is_published')),
             created_by=current_user.id,
+            image_path=save_upload(image) if image and image.filename else None,
         )
         db.session.add(news_item)
         db.session.commit()
@@ -198,9 +223,17 @@ def news_edit(news_id):
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
+        image = request.files.get('image')
 
         if not title or not content:
             flash('Заголовок и текст новости обязательны.', 'error')
+            return render_template(
+                'admin/news_form.html', active='news', news=news_item,
+                category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
+            )
+
+        if image and image.filename and not allowed_image(image.filename):
+            flash('Допустимые форматы фотографии: JPG, PNG, WEBP.', 'error')
             return render_template(
                 'admin/news_form.html', active='news', news=news_item,
                 category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
@@ -211,6 +244,8 @@ def news_edit(news_id):
         news_item.category = request.form.get('category') or None
         news_item.level = request.form.get('level') or None
         news_item.is_published = bool(request.form.get('is_published'))
+        if image and image.filename:
+            news_item.image_path = save_upload(image)
         db.session.commit()
         flash('Новость обновлена.', 'success')
         return redirect(url_for('admin.news_list'))

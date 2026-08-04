@@ -24,6 +24,7 @@ class News(db.Model):
     published_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_published = db.Column(db.Boolean, default=False, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    image_path = db.Column(db.String(500))
 
     author = db.relationship('User', backref='news_items')
 
