@@ -145,6 +145,14 @@ class FederationMember(db.Model):
     contacts = db.Column(db.String(255))
 
 
+class RegionalFederation(db.Model):
+    """Региональные федерации субъектов ЦФО (страница «Регионы ЦФО»)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    logo_path = db.Column(db.String(500))
+
+
 class SyncLog(db.Model):
     """Журнал синхронизации данных, поступающих от COREZ, REGTEAM_RAFTING, SPORTS_REFEREE."""
 

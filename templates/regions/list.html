@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Региональные федерации — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Региональные федерации, объединения и союзы субъектов ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h4 text-uppercase mb-4">Региональные федерации</h1>
+
+        {% if regional_federations %}
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                {% for rf in regional_federations %}
+                    <div class="col">
+                        <div class="region-card">
+                            <div class="region-card-photo">
+                                <div class="region-card-logo">
+                                    {% if rf.logo_path %}
+                                        <img src="{{ url_for('static', filename=rf.logo_path) }}" alt="{{ rf.name }}">
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="region-card-body">
+                                <h2 class="region-card-name">{{ rf.name }}</h2>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-muted">Региональные федерации пока не добавлены.</p>
+        {% endif %}
+    </div>
+{% endblock %}

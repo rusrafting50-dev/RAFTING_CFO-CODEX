@@ -804,6 +804,65 @@ footer hr {
     }
 }
 
+/* ===== Региональные федерации ===== */
+.region-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.region-card-photo {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        repeating-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.04) 0px,
+            rgba(255, 255, 255, 0.04) 2px,
+            transparent 2px,
+            transparent 26px
+        ),
+        linear-gradient(135deg, var(--color-dark) 0%, #3a3d6e 100%);
+}
+
+.region-card-logo {
+    width: 55%;
+    aspect-ratio: 1 / 1;
+    max-width: 180px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.region-card-logo img {
+    width: 78%;
+    height: 78%;
+    object-fit: contain;
+}
+
+.region-card-body {
+    padding: 20px;
+    text-align: center;
+}
+
+.region-card-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin: 0;
+}
+
 /* ===== Таблицы результатов (чередование строк) ===== */
 table.table-zebra tbody tr:nth-child(odd) {
     background: #fff;

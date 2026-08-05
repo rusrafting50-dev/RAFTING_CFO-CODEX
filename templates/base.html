@@ -39,7 +39,7 @@
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav nav-left">
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('main.news') }}">Новости</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Регионы ЦФО</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.index') }}">Регионы ЦФО</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ url_for('documents.index') }}">Рафтинг ЦФО</a></li>
                 </ul>
                 <ul class="navbar-nav nav-right">
@@ -113,7 +113,7 @@
                 <h2 class="h6 text-uppercase">Рафтинг ЦФО</h2>
                 <ul class="list-unstyled">
                     <li><a href="#">Представители ЦФО в ФРР</a></li>
-                    <li><a href="#">Регионы ЦФО</a></li>
+                    <li><a href="{{ url_for('regions.index') }}">Регионы ЦФО</a></li>
                     <li><a href="{{ url_for('competitions.calendar') }}">Календарный план спортивных соревнований</a></li>
                     <li><a href="#">Положение о соревнованиях</a></li>
                     <li><a href="{{ url_for('competitions.archive') }}">Архив</a></li>

@@ -1,0 +1,51 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'regions' %}
+
+{% block title %}Региональные федерации — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Региональные федерации</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.regions_new') }}">Добавить</a>
+        {% endif %}
+    </div>
+
+    {% if regional_federations %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Логотип</th>
+                        <th>Название</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for region in regional_federations %}
+                        <tr>
+                            <td>
+                                {% if region.logo_path %}
+                                    <img src="{{ url_for('static', filename=region.logo_path) }}" alt=""
+                                         style="width: 48px; height: 48px; object-fit: contain; border-radius: 50%; background: #f5f5f5;">
+                                {% endif %}
+                            </td>
+                            <td>{{ region.name }}</td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.regions_edit', region_id=region.id) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.regions_delete', region_id=region.id) }}"
+                                          onsubmit="return confirm('Удалить региональную федерацию?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Региональные федерации пока не добавлены.</p>
+    {% endif %}
+{% endblock %}

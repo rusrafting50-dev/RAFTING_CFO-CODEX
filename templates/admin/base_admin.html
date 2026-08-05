@@ -23,6 +23,10 @@
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'members' }}"
                            href="{{ url_for('admin.members_list') }}">Члены органов</a>
                     {% endif %}
+                    {% if current_user.can_access('regions') %}
+                        <a class="list-group-item list-group-item-action {{ 'active' if active == 'regions' }}"
+                           href="{{ url_for('admin.regions_list') }}">Регионы ЦФО</a>
+                    {% endif %}
                     {% if current_user.role == 'admin' %}
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'users' }}"
                            href="{{ url_for('admin.users_list') }}">Пользователи</a>
@@ -37,8 +41,8 @@
             <section class="col-md-9 col-lg-10">
                 {% set admin_section_labels = {
                     'dashboard': 'Дашборд', 'news': 'Новости', 'competitions': 'Соревнования',
-                    'documents': 'Документы', 'members': 'Члены органов', 'users': 'Пользователи',
-                    'sync': 'Синхронизация',
+                    'documents': 'Документы', 'members': 'Члены органов', 'regions': 'Регионы ЦФО',
+                    'users': 'Пользователи', 'sync': 'Синхронизация',
                 } %}
                 <nav aria-label="Хлебные крошки" class="mb-3">
                     <ol class="breadcrumb">

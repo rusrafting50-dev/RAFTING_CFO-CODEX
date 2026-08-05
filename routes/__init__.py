@@ -9,6 +9,7 @@ def register_blueprints(app):
     from routes.events import bp as events_bp
     from routes.federation import bp as federation_bp
     from routes.documents import bp as documents_bp
+    from routes.regions import bp as regions_bp
     from routes.admin import bp as admin_bp
     from routes.api import bp as api_bp
 
@@ -19,5 +20,6 @@ def register_blueprints(app):
     app.register_blueprint(events_bp, url_prefix='/events')
     app.register_blueprint(federation_bp, url_prefix='/federation')
     app.register_blueprint(documents_bp, url_prefix='/documents')
+    app.register_blueprint(regions_bp, url_prefix='/regions')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(api_bp, url_prefix='/api')

@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Competition, CompetitionDocument, Document, FederationMember,
-    News, Referee, SyncLog, User, db,
+    News, Referee, RegionalFederation, SyncLog, User, db,
 )
 
 bp = Blueprint('admin', __name__)
@@ -34,6 +34,7 @@ SECTION_CHOICES = [
     ('competitions', 'Соревнования'),
     ('documents', 'Документы'),
     ('members', 'Члены органов'),
+    ('regions', 'Регионы ЦФО'),
     ('sync', 'Синхронизация'),
 ]
 SECTION_KEYS = [key for key, _ in SECTION_CHOICES]
@@ -493,6 +494,82 @@ def members_delete(member_id):
     db.session.commit()
     flash('Запись удалена.', 'success')
     return redirect(url_for('admin.members_list'))
+
+
+# ---------- Региональные федерации ----------
+
+@bp.route('/regions')
+@section_required('regions')
+def regions_list():
+    regional_federations = RegionalFederation.query.order_by(RegionalFederation.name).all()
+    return render_template('admin/regions_list.html', active='regions', regional_federations=regional_federations)
+
+
+@bp.route('/regions/new', methods=['GET', 'POST'])
+@section_required('regions')
+@roles_required('admin', 'editor')
+def regions_new():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        logo = request.files.get('logo')
+
+        if not name:
+            flash('Название федерации обязательно.', 'error')
+            return render_template('admin/region_form.html', active='regions', region=None)
+
+        if logo and logo.filename and not allowed_image(logo.filename):
+            flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/region_form.html', active='regions', region=None)
+
+        region = RegionalFederation(
+            name=name,
+            logo_path=save_upload(logo) if logo and logo.filename else None,
+        )
+        db.session.add(region)
+        db.session.commit()
+        flash('Региональная федерация добавлена.', 'success')
+        return redirect(url_for('admin.regions_list'))
+
+    return render_template('admin/region_form.html', active='regions', region=None)
+
+
+@bp.route('/regions/<int:region_id>/edit', methods=['GET', 'POST'])
+@section_required('regions')
+@roles_required('admin', 'editor')
+def regions_edit(region_id):
+    region = RegionalFederation.query.get_or_404(region_id)
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        logo = request.files.get('logo')
+
+        if not name:
+            flash('Название федерации обязательно.', 'error')
+            return render_template('admin/region_form.html', active='regions', region=region)
+
+        if logo and logo.filename and not allowed_image(logo.filename):
+            flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/region_form.html', active='regions', region=region)
+
+        region.name = name
+        if logo and logo.filename:
+            region.logo_path = save_upload(logo)
+        db.session.commit()
+        flash('Данные обновлены.', 'success')
+        return redirect(url_for('admin.regions_list'))
+
+    return render_template('admin/region_form.html', active='regions', region=region)
+
+
+@bp.route('/regions/<int:region_id>/delete', methods=['POST'])
+@section_required('regions')
+@roles_required('admin', 'editor')
+def regions_delete(region_id):
+    region = RegionalFederation.query.get_or_404(region_id)
+    db.session.delete(region)
+    db.session.commit()
+    flash('Региональная федерация удалена.', 'success')
+    return redirect(url_for('admin.regions_list'))
 
 
 # ---------- Пользователи (только admin) ----------

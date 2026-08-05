@@ -51,6 +51,7 @@ RAFTING_SITE/
 │   ├── events.py           # мероприятия (семинары)
 │   ├── federation.py       # о федерации, структура
 │   ├── documents.py        # нормативные документы
+│   ├── regions.py          # региональные федерации ЦФО
 │   ├── admin.py            # панель управления
 │   └── api.py              # API для приёма данных от COREZ/REGTEAM/SPORTS_REFEREE
 ├── templates/
@@ -74,6 +75,8 @@ RAFTING_SITE/
 │   │   └── structure.html  # структура
 │   ├── documents/
 │   │   └── list.html       # нормативные документы
+│   ├── regions/
+│   │   └── list.html       # региональные федерации
 │   └── admin/
 │       ├── login.html      # вход
 │       └── dashboard.html  # панель управления
@@ -189,6 +192,13 @@ RAFTING_SITE/
 | level | String | цфо / регион |
 | photo_path | String | Фото |
 | contacts | String | Контакты |
+
+### RegionalFederation (региональные федерации ЦФО)
+| Поле | Тип | Описание |
+|---|---|---|
+| id | Integer PK | |
+| name | String | Название региональной федерации |
+| logo_path | String | Логотип (выводится в круге на карточке) |
 
 ---
 
