@@ -76,23 +76,6 @@
         {% endif %}
     {% endwith %}
 
-    {% if breadcrumbs %}
-        <div class="container">
-            <nav aria-label="Хлебные крошки">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Главная</a></li>
-                    {% for crumb in breadcrumbs %}
-                        {% if loop.last %}
-                            <li class="breadcrumb-item active" aria-current="page">{{ crumb.label }}</li>
-                        {% else %}
-                            <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
-                        {% endif %}
-                    {% endfor %}
-                </ol>
-            </nav>
-        </div>
-    {% endif %}
-
     {% block content %}{% endblock %}
 </main>
 

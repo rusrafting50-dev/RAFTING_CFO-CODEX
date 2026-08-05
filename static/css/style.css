@@ -561,11 +561,6 @@ header.scrolled {
     padding: 12px;
 }
 
-/* ===== Хлебные крошки ===== */
-.breadcrumb {
-    padding-top: 1rem;
-}
-
 /* ===== Подвал ===== */
 footer {
     background: var(--color-dark);

@@ -35,5 +35,4 @@ def index():
         territories=territories,
         selected_category=category,
         selected_territory=territory,
-        breadcrumbs=[{'label': 'Судьи'}],
     )

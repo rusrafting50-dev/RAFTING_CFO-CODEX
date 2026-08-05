@@ -93,10 +93,9 @@ def news():
         search_query=search_query,
         has_next=has_next,
         next_page=page + 1 if has_next else None,
-        breadcrumbs=[{'label': 'Новости'}],
     )
 
 
 @bp.route('/contacts')
 def contacts():
-    return render_template('main/contacts.html', breadcrumbs=[{'label': 'Контакты'}])
+    return render_template('main/contacts.html')

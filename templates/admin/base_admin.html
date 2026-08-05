@@ -39,17 +39,6 @@
                 </div>
             </aside>
             <section class="col-md-9 col-lg-10">
-                {% set admin_section_labels = {
-                    'dashboard': 'Дашборд', 'news': 'Новости', 'competitions': 'Соревнования',
-                    'documents': 'Документы', 'members': 'Члены органов', 'regions': 'Регионы ЦФО',
-                    'users': 'Пользователи', 'sync': 'Синхронизация',
-                } %}
-                <nav aria-label="Хлебные крошки" class="mb-3">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Панель администратора</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">{{ admin_section_labels.get(active, active) }}</li>
-                    </ol>
-                </nav>
                 {% block admin_content %}{% endblock %}
             </section>
         </div>
