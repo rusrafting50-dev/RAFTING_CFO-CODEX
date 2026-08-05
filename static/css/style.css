@@ -592,6 +592,218 @@ footer hr {
     border-color: rgba(255, 255, 255, 0.15);
 }
 
+/* ===== Страница "Новости" (список + колонка "Официально") ===== */
+.news-filter-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.news-filter-menu a {
+    color: #777;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+}
+
+.news-filter-menu a:hover {
+    color: var(--color-accent);
+}
+
+.news-filter-menu a.active {
+    color: var(--color-dark);
+}
+
+.news-search-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.news-search-input {
+    flex: 1 1 320px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px 16px;
+}
+
+.news-search-input svg {
+    width: 18px;
+    height: 18px;
+    fill: #999;
+    flex: none;
+}
+
+.news-search-input input {
+    flex: 1 1 auto;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    background: transparent;
+}
+
+.btn-all-time {
+    flex: none;
+    background: #fff;
+    color: var(--color-dark);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 0.03em;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-all-time:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.news-row {
+    display: flex;
+    gap: 20px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.news-row-photo {
+    flex: none;
+    width: 280px;
+    min-height: 180px;
+    background: center/cover no-repeat url('../img/news-placeholder.svg');
+}
+
+.news-row-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 24px 20px 0;
+    min-width: 0;
+}
+
+.news-row-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000;
+    margin: 0 0 8px;
+}
+
+.news-row-excerpt {
+    color: #555;
+    margin: 0 0 12px;
+}
+
+.news-row-date {
+    margin: auto 0 0;
+    color: #888;
+    font-size: 14px;
+}
+
+.btn-load-more {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: #4a4a5a;
+    color: #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 16px;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.btn-load-more:hover {
+    background: var(--color-dark);
+    color: #fff;
+}
+
+.official-panel {
+    background: #eceff1;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.official-panel-title {
+    background: #cfd6db;
+    color: var(--color-dark);
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 0;
+    padding: 14px 20px;
+}
+
+.official-list {
+    /* max-height задаётся в JS — по высоте колонки с фото-новостями
+       слева (пять карточек), overflow:hidden обрезает лишнее, если
+       официальных новостей набралось больше, чем туда помещается. */
+    overflow: hidden;
+    padding: 4px 20px;
+}
+
+.official-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 0;
+    border-bottom: 1px solid #d6dbde;
+}
+
+.official-item:last-child {
+    border-bottom: none;
+}
+
+.official-item-date {
+    color: #777;
+    font-size: 12px;
+}
+
+.official-item-title {
+    color: var(--color-dark);
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.official-empty {
+    padding: 20px;
+    color: #777;
+    margin: 0;
+}
+
+@media (max-width: 767.98px) {
+    .news-row {
+        flex-direction: column;
+    }
+
+    .news-row-photo {
+        width: 100%;
+        height: 180px;
+    }
+
+    .news-row-body {
+        padding: 16px;
+    }
+}
+
 /* ===== Таблицы результатов (чередование строк) ===== */
 table.table-zebra tbody tr:nth-child(odd) {
     background: #fff;

@@ -7,7 +7,16 @@ from models import Competition, Event, News
 
 bp = Blueprint('main', __name__)
 
-NEWS_PER_PAGE = 9
+NEWS_PER_PAGE = 5
+# Пункты меню фильтра на странице новостей: (значение News.category, подпись).
+NEWS_MENU = [
+    ('', 'Все'),
+    ('соревнование', 'Соревнования'),
+    ('регион', 'Регионы'),
+    ('мероприятие', 'Мероприятия'),
+]
+# Категория, из которой берутся новости в колонку "Официально".
+OFFICIAL_NEWS_CATEGORY = 'федерация'
 
 
 @bp.route('/')
@@ -44,27 +53,46 @@ def index():
 @bp.route('/news')
 def news():
     category = request.args.get('category', '')
-    page = request.args.get('page', 1, type=int)
+    search_query = request.args.get('q', '').strip()
+    page = max(request.args.get('page', 1, type=int), 1)
 
     query = News.query.filter_by(is_published=True)
     if category:
         query = query.filter_by(category=category)
 
-    pagination = query.order_by(News.published_at.desc()).paginate(
-        page=page, per_page=NEWS_PER_PAGE, error_out=False
-    )
+    matching = query.order_by(News.published_at.desc()).all()
 
-    categories = [
-        row[0] for row in
-        News.query.with_entities(News.category).filter(News.category.isnot(None)).distinct()
-    ]
+    if search_query:
+        # SQLite LIKE/ilike сворачивает регистр только для ASCII, не для
+        # кириллицы — поиск по подстроке делаем в Python (str.lower()
+        # работает корректно для любого языка), а не через SQL-фильтр.
+        needle = search_query.lower()
+        matching = [
+            item for item in matching
+            if needle in item.title.lower() or needle in (item.content or '').lower()
+        ]
+
+    total = len(matching)
+    start = (page - 1) * NEWS_PER_PAGE
+    news_items = matching[start:start + NEWS_PER_PAGE]
+    has_next = start + NEWS_PER_PAGE < total
+
+    official_news = (
+        News.query.filter_by(is_published=True, category=OFFICIAL_NEWS_CATEGORY)
+        .order_by(News.published_at.desc())
+        .limit(20)
+        .all()
+    )
 
     return render_template(
         'main/news.html',
-        pagination=pagination,
-        news_items=pagination.items,
-        categories=categories,
+        news_items=news_items,
+        official_news=official_news,
+        news_menu=NEWS_MENU,
         selected_category=category,
+        search_query=search_query,
+        has_next=has_next,
+        next_page=page + 1 if has_next else None,
         breadcrumbs=[{'label': 'Новости'}],
     )
 

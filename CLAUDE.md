@@ -95,7 +95,7 @@ RAFTING_SITE/
 | id | Integer PK | |
 | title | String | Заголовок |
 | content | Text | Содержание |
-| category | String | соревнование / мероприятие / федерация |
+| category | String | соревнование / мероприятие / федерация / регион |
 | level | String | цфо / регион / отделение / клуб |
 | published_at | DateTime | Дата публикации |
 | is_published | Boolean | Опубликовано |

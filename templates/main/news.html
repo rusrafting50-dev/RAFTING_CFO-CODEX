@@ -5,61 +5,100 @@
 
 {% block content %}
     <div class="container py-5">
-        <h1 class="h3 mb-4">Новости</h1>
-
-        {% if categories %}
-            <div class="mb-4 d-flex flex-wrap gap-2">
-                <a class="btn btn-sm {{ 'btn-primary' if not selected_category else 'btn-outline-primary' }}"
-                   href="{{ url_for('main.news') }}">Все</a>
-                {% for category in categories %}
-                    <a class="btn btn-sm {{ 'btn-primary' if selected_category == category else 'btn-outline-primary' }}"
-                       href="{{ url_for('main.news', category=category) }}">{{ category }}</a>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <h1 class="h3 mb-0">Новости</h1>
+            <ul class="news-filter-menu">
+                {% for value, label in news_menu %}
+                    <li>
+                        <a class="{{ 'active' if selected_category == value }}"
+                           href="{{ url_for('main.news', category=value or None, q=search_query or None) }}">{{ label }}</a>
+                    </li>
                 {% endfor %}
-            </div>
-        {% endif %}
+            </ul>
+        </div>
+
+        <form method="get" action="{{ url_for('main.news') }}" class="news-search-row mb-5">
+            {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+            <label class="news-search-input">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M13.5 12h-.8l-.3-.3c1-1.1 1.6-2.6 1.6-4.2C14 3.9 11.6 1.5 8.5 1.5S3 3.9 3 7s2.4 5.5 5.5 5.5c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l4.2 4.2 1.3-1.3-4.2-4.2ZM8.5 11C6.6 11 5 9.4 5 7.5S6.6 4 8.5 4 12 5.6 12 7.5 10.4 11 8.5 11Z"/></svg>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="Поиск...">
+            </label>
+            <button type="submit" class="btn-all-time">За все время</button>
+        </form>
 
         {% if news_items %}
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-                {% for item in news_items %}
-                    <div class="col">
-                        <div class="card h-100">
-                            <div class="card-img-placeholder"
-                                 {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
-                            <div class="card-body">
-                                <p class="text-muted small mb-1">
-                                    {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
-                                </p>
-                                <h2 class="h6 card-title">{{ item.title }}</h2>
-                                <p class="card-text small">{{ item.content[:150] }}{% if item.content|length > 150 %}…{% endif %}</p>
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="d-flex flex-column gap-4" id="newsMainList">
+                        {% for item in news_items %}
+                            <div class="news-row">
+                                <div class="news-row-photo"
+                                     {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
+                                <div class="news-row-body">
+                                    <h2 class="news-row-title">{{ item.title }}</h2>
+                                    <p class="news-row-excerpt">{{ item.content[:220] }}{% if item.content|length > 220 %}…{% endif %}</p>
+                                    <p class="news-row-date">
+                                        {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-
-            {% if pagination.pages > 1 %}
-                <nav class="mt-4" aria-label="Страницы новостей">
-                    <ul class="pagination">
-                        <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
-                            <a class="page-link" href="{{ url_for('main.news', page=pagination.prev_num, category=selected_category) }}">Назад</a>
-                        </li>
-                        {% for page_num in pagination.iter_pages() %}
-                            {% if page_num %}
-                                <li class="page-item {{ 'active' if page_num == pagination.page }}">
-                                    <a class="page-link" href="{{ url_for('main.news', page=page_num, category=selected_category) }}">{{ page_num }}</a>
-                                </li>
-                            {% else %}
-                                <li class="page-item disabled"><span class="page-link">…</span></li>
-                            {% endif %}
                         {% endfor %}
-                        <li class="page-item {{ 'disabled' if not pagination.has_next }}">
-                            <a class="page-link" href="{{ url_for('main.news', page=pagination.next_num, category=selected_category) }}">Вперёд</a>
-                        </li>
-                    </ul>
-                </nav>
-            {% endif %}
+                    </div>
+                    {% if has_next %}
+                        <a href="{{ url_for('main.news', page=next_page, category=selected_category or None, q=search_query or None) }}"
+                           class="btn-load-more mt-4">Посмотреть больше новостей</a>
+                    {% endif %}
+                </div>
+                <div class="col-lg-4">
+                    <div class="official-panel" id="officialPanel">
+                        <h2 class="official-panel-title">Официально</h2>
+                        {% if official_news %}
+                            <div class="official-list" id="officialList">
+                                {% for item in official_news %}
+                                    <div class="official-item">
+                                        <span class="official-item-date">
+                                            {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                        </span>
+                                        <span class="official-item-title">{{ item.title }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="official-empty">Пока нет официальных новостей.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         {% else %}
             <p class="text-muted">Новостей пока нет.</p>
         {% endif %}
     </div>
+{% endblock %}
+
+{% block extra_scripts %}
+    <script>
+        // Колонка "Официально" обрезается по высоте основной колонки с
+        // фото-новостями (см. ТЗ: список идёт вниз до конца пятой новости
+        // слева) — считаем это в JS, а не фиксированным числом карточек,
+        // т.к. высота строки с фото зависит от длины заголовка/анонса.
+        (function () {
+            var mainList = document.getElementById('newsMainList');
+            var officialList = document.getElementById('officialList');
+            if (!mainList || !officialList) {
+                return;
+            }
+
+            function syncHeight() {
+                officialList.style.maxHeight = mainList.getBoundingClientRect().height + 'px';
+            }
+
+            syncHeight();
+            window.addEventListener('load', syncHeight);
+            var resizeTimer = null;
+            window.addEventListener('resize', function () {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(syncHeight, 100);
+            });
+        })();
+    </script>
 {% endblock %}
