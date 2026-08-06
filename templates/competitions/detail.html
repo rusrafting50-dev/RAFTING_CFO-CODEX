@@ -5,20 +5,53 @@
 
 {% block content %}
     <div class="container py-5">
-        <h1 class="h3 mb-3">{{ competition.name }}</h1>
+        {% set ct = (competition.comp_type or '')|lower %}
+        {% set badge_class = 'bg-danger' if 'чемпионат' in ct
+            else ('bg-primary' if 'кубок' in ct
+            else ('bg-success' if 'первенство' in ct
+            else ('bg-info' if 'всероссийск' in ct
+            else 'bg-warning'))) %}
 
-        <div class="card mb-4">
-            <div class="card-body">
-                <p class="mb-1"><strong>Даты:</strong>
-                    {{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '—' }}
-                    {% if competition.end_date and competition.end_date != competition.start_date %}
-                        &ndash; {{ competition.end_date.strftime('%d.%m.%Y') }}
+        <div class="card border-0 shadow-sm mb-4" style="max-width: 420px;">
+            <div class="card-header bg-white border-bottom py-2">
+                <div class="fw-bold" style="line-height: 1.3;">{{ competition.name }}</div>
+            </div>
+            <div class="card-body pb-2">
+                {% if competition.comp_type %}
+                    <div class="mb-2">
+                        <span class="badge {{ badge_class }}">{{ competition.comp_type }}</span>
+                    </div>
+                {% endif %}
+                {% if competition.age_group or competition.boat_class %}
+                    <div class="mb-2 d-flex align-items-center gap-2 flex-wrap">
+                        {% if competition.age_group %}
+                            <span class="text-muted small">{{ competition.age_group }}</span>
+                        {% endif %}
+                        {% if competition.boat_class and 'R4' in competition.boat_class %}
+                            <span class="badge bg-info text-dark">R4</span>
+                        {% endif %}
+                        {% if competition.boat_class and 'R6' in competition.boat_class %}
+                            <span class="badge bg-info text-dark">R6</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <ul class="list-unstyled small mb-0">
+                    {% if competition.start_date %}
+                        <li class="mb-1">
+                            <span class="text-muted">📅</span>
+                            {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} &ndash; {{ competition.end_date|ru_date_full }}{% endif %}
+                        </li>
                     {% endif %}
-                </p>
-                <p class="mb-1"><strong>Место проведения:</strong> {{ competition.location or '—' }}</p>
-                <p class="mb-1"><strong>Уровень:</strong> {{ competition.level or '—' }}</p>
-                <p class="mb-1"><strong>Тип:</strong> {{ competition.comp_type or '—' }}</p>
-                <p class="mb-0"><strong>Статус:</strong> {{ competition.status or '—' }}</p>
+                    {% if competition.location %}
+                        <li class="mb-1"><span class="text-muted">📍</span> {{ competition.location }}</li>
+                    {% endif %}
+                    {% if competition.head_judge %}
+                        <li class="mb-1">
+                            <span class="text-muted">⚖️</span>
+                            Гл. судья: {{ competition.head_judge }}
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
 

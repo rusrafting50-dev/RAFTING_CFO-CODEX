@@ -116,6 +116,9 @@ def sync_competitions():
         competition.end_date = end_date
         competition.location = item.get('location')
         competition.status = item.get('status')
+        competition.age_group = item.get('age_group')
+        competition.boat_class = item.get('boat_class')
+        competition.head_judge = item.get('head_judge')
 
     db.session.commit()
     log_sync('competitions', created + updated,

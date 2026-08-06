@@ -46,6 +46,9 @@ def ensure_schema():
     _ensure_column(inspector, 'news', 'description', 'TEXT')
     _ensure_column(inspector, 'news', 'photo_author', 'VARCHAR(255)')
     _ensure_column(inspector, 'news', 'organization', 'VARCHAR(255)')
+    _ensure_column(inspector, 'competition', 'age_group', 'VARCHAR(255)')
+    _ensure_column(inspector, 'competition', 'boat_class', 'VARCHAR(20)')
+    _ensure_column(inspector, 'competition', 'head_judge', 'VARCHAR(255)')
 
 
 def seed_news_taxonomy():

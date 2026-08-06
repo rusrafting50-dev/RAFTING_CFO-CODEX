@@ -79,6 +79,10 @@ class Competition(db.Model):
     location = db.Column(db.String(255))
     status = db.Column(db.String(50))  # анонс / идёт / завершены
     source_id = db.Column(db.Integer)  # ID в базе COREZ
+    # Из карточки соревнования COREZ — для отображения в том же виде на сайте.
+    age_group = db.Column(db.String(255))  # возрастная группа (напр. "Мужчины, женщины")
+    boat_class = db.Column(db.String(20))  # класс судна: R4 / R6 / R4/R6
+    head_judge = db.Column(db.String(255))  # гл. судья соревнований
 
     documents = db.relationship(
         'CompetitionDocument', backref='competition',
