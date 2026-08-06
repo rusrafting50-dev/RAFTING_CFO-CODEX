@@ -5,16 +5,34 @@
 
 {% block content %}
     <div class="container py-5">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
-            <h1 class="h3 mb-0">Новости</h1>
-            <ul class="news-filter-menu">
-                {% for value, label in news_menu %}
-                    <li>
-                        <a class="{{ 'active' if selected_category == value }}"
-                           href="{{ url_for('main.news', category=value or None, q=search_query or None, period=selected_period or None, level=selected_level or None) }}">{{ label }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
+        {% set active_entry = news_menu | selectattr('value', 'equalto', selected_level) | first %}
+        <div class="mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 {{ 'mb-2' if active_entry and active_entry.submenu }}">
+                <h1 class="h3 mb-0">Новости</h1>
+                <ul class="news-filter-menu">
+                    {% for entry in news_menu %}
+                        <li>
+                            <a class="{{ 'active' if selected_level == entry.value }}"
+                               href="{{ url_for('main.news', level=entry.value or None, q=search_query or None, period=selected_period or None) }}">
+                                {{ entry.label }}
+                                {% if entry.submenu %}
+                                    <svg class="news-menu-chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% if active_entry and active_entry.submenu %}
+                <ul class="news-submenu">
+                    {% for cat_value, cat_label in active_entry.submenu %}
+                        <li>
+                            <a class="{{ 'active' if selected_category == cat_value }}"
+                               href="{{ url_for('main.news', level=active_entry.value, category=cat_value, q=search_query or None, period=selected_period or None) }}">{{ cat_label }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
 
         <div class="news-search-row mb-5">

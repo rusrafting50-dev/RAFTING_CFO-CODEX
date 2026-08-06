@@ -47,15 +47,20 @@ def ensure_schema():
 
 
 def seed_news_taxonomy():
-    """Заполняет списки категорий/уровней новостей значениями по
-    умолчанию при первом запуске (таблицы уже созданы db.create_all(),
-    но пустые) — дальше редактируются в админке."""
-    if NewsCategory.query.count() == 0:
-        for name in ('соревнование', 'мероприятие', 'федерация', 'регион'):
+    """Добавляет недостающие значения в списки категорий/уровней новостей
+    (дальше редактируются в админке). Сравнивается поштучно, а не только
+    "таблица пуста" — иначе значения, понадобившиеся коду позже (см.
+    routes/main.py: NEWS_MENU), не попадали бы в уже заполненную базу."""
+    existing_categories = {c.name for c in NewsCategory.query.all()}
+    for name in ('соревнование', 'мероприятие', 'федерация', 'регион', 'люди_и_даты', 'комитеты_и_комиссии'):
+        if name not in existing_categories:
             db.session.add(NewsCategory(name=name))
-    if NewsLevel.query.count() == 0:
-        for name in ('цфо', 'регион', 'отделение', 'клуб'):
+
+    existing_levels = {lvl.name for lvl in NewsLevel.query.all()}
+    for name in ('цфо', 'регион', 'отделение', 'клуб'):
+        if name not in existing_levels:
             db.session.add(NewsLevel(name=name))
+
     db.session.commit()
 
 
