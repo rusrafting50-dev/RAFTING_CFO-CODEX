@@ -2,6 +2,7 @@
 from datetime import date, datetime
 
 from flask import Blueprint, render_template, request
+from sqlalchemy import extract
 
 from models import Competition, Event, News
 
@@ -38,25 +39,15 @@ NEWS_MENU = [
 ]
 # Категория, из которой берутся новости в колонку "Официально".
 OFFICIAL_NEWS_CATEGORY = 'федерация'
-# Быстрые фильтры по периоду публикации над списком новостей.
-NEWS_PERIODS = [
-    ('', 'За все время'),
-    ('day', 'День'),
-    ('month', 'Месяц'),
-    ('year', 'Год'),
+# Выпадающие списки День/Месяц/Год над списком новостей — точные значения
+# (а не относительный период "за сегодня/за месяц"), комбинируются между
+# собой через И (например месяц=5 без года — все новости за май любого года).
+NEWS_MONTHS = [
+    (1, 'Январь'), (2, 'Февраль'), (3, 'Март'), (4, 'Апрель'),
+    (5, 'Май'), (6, 'Июнь'), (7, 'Июль'), (8, 'Август'),
+    (9, 'Сентябрь'), (10, 'Октябрь'), (11, 'Ноябрь'), (12, 'Декабрь'),
 ]
-
-
-def _period_start(period):
-    """Начало текущего периода (день/месяц/год) для фильтра публикаций."""
-    now = datetime.utcnow()
-    if period == 'day':
-        return now.replace(hour=0, minute=0, second=0, microsecond=0)
-    if period == 'month':
-        return now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    if period == 'year':
-        return now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
-    return None
+NEWS_MIN_YEAR = 2023
 
 
 @bp.route('/')
@@ -94,21 +85,31 @@ def index():
 def news():
     category = request.args.get('category', '')
     level = request.args.get('level', '')
-    period = request.args.get('period', '')
+    day = request.args.get('day', type=int)
+    month = request.args.get('month', type=int)
+    year = request.args.get('year', type=int)
     search_query = request.args.get('q', '').strip()
     page = max(request.args.get('page', 1, type=int), 1)
 
-    if period not in dict(NEWS_PERIODS):
-        period = ''
+    current_year = datetime.utcnow().year
+    if day is not None and not (1 <= day <= 31):
+        day = None
+    if month is not None and not (1 <= month <= 12):
+        month = None
+    if year is not None and not (NEWS_MIN_YEAR <= year <= current_year):
+        year = None
 
     query = News.query.filter_by(is_published=True)
     if category:
         query = query.filter_by(category=category)
     if level:
         query = query.filter_by(level=level)
-    period_start = _period_start(period)
-    if period_start:
-        query = query.filter(News.published_at >= period_start)
+    if day:
+        query = query.filter(extract('day', News.published_at) == day)
+    if month:
+        query = query.filter(extract('month', News.published_at) == month)
+    if year:
+        query = query.filter(extract('year', News.published_at) == year)
 
     matching = query.order_by(News.published_at.desc()).all()
 
@@ -141,10 +142,14 @@ def news():
         news_items=news_items,
         official_news=official_news,
         news_menu=NEWS_MENU,
-        news_periods=NEWS_PERIODS,
+        news_months=NEWS_MONTHS,
+        news_years=list(range(current_year, NEWS_MIN_YEAR - 1, -1)),
+        news_days=list(range(1, 32)),
         selected_category=category,
         selected_level=level,
-        selected_period=period,
+        selected_day=day,
+        selected_month=month,
+        selected_year=year,
         search_query=search_query,
         has_next=has_next,
         next_page=page + 1 if has_next else None,
