@@ -115,11 +115,11 @@ def news():
     # этого категория/уровень, введённые в админке с иной заглавной
     # буквой, чем в пункте меню, молча не находили ни одной новости.
     if category:
-        needle = category.lower()
-        matching = [item for item in matching if (item.category or '').lower() == needle]
+        needle = category.strip().lower()
+        matching = [item for item in matching if (item.category or '').strip().lower() == needle]
     if level:
-        needle = level.lower()
-        matching = [item for item in matching if (item.level or '').lower() == needle]
+        needle = level.strip().lower()
+        matching = [item for item in matching if (item.level or '').strip().lower() == needle]
 
     if search_query:
         # SQLite LIKE/ilike сворачивает регистр только для ASCII, не для
