@@ -21,6 +21,7 @@
                     <tr class="table-dark">
                         <th>Заголовок</th>
                         <th>Категория</th>
+                        <th>Уровень</th>
                         <th>Дата</th>
                         <th>Статус</th>
                         {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
@@ -30,7 +31,8 @@
                     {% for item in news_items %}
                         <tr>
                             <td>{{ item.title }}</td>
-                            <td>{{ item.category }}</td>
+                            <td>{{ item.category or '—' }}</td>
+                            <td>{{ item.level or '—' }}</td>
                             <td>{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</td>
                             <td>
                                 {% if item.is_published %}
