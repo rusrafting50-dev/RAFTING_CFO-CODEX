@@ -19,14 +19,37 @@ class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    category = db.Column(db.String(50))  # соревнование / мероприятие / федерация / регион
-    level = db.Column(db.String(50))  # цфо / регион / отделение / клуб
+    # Краткое описание для карточек новостей (title -> description -> дата).
+    # Если не заполнено, шаблоны показывают обрезанный content.
+    description = db.Column(db.Text)
+    category = db.Column(db.String(50))  # см. NewsCategory — список редактируется в админке
+    level = db.Column(db.String(50))  # см. NewsLevel — список редактируется в админке
     published_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_published = db.Column(db.Boolean, default=False, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     image_path = db.Column(db.String(500))
 
     author = db.relationship('User', backref='news_items')
+
+
+class NewsCategory(db.Model):
+    """Список допустимых категорий новостей — редактируется в админке.
+
+    Значения 'федерация', 'соревнование', 'регион', 'мероприятие'
+    используются в коде (routes/main.py: OFFICIAL_NEWS_CATEGORY,
+    NEWS_MENU) — их удаление/переименование не сломает существующие
+    новости, но отвяжет их от колонки "Официально"/меню фильтра.
+    """
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+
+
+class NewsLevel(db.Model):
+    """Список допустимых уровней новостей — редактируется в админке."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
 
 
 class Competition(db.Model):

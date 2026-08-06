@@ -13,6 +13,14 @@
                    value="{{ news.title if news else '' }}">
         </div>
         <div class="mb-3">
+            <label for="description" class="form-label">Описание новости</label>
+            <textarea class="form-control" id="description" name="description" rows="3">{{ news.description if news else '' }}</textarea>
+            <div class="form-text">
+                Краткое описание для карточки новости (выводится после заголовка). Если оставить
+                пустым, на карточке будет показан обрезанный текст новости.
+            </div>
+        </div>
+        <div class="mb-3">
             <label for="content" class="form-label">Текст новости</label>
             <textarea class="form-control" id="content" name="content" rows="6" required>{{ news.content if news else '' }}</textarea>
         </div>

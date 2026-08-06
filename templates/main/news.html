@@ -11,7 +11,7 @@
                 {% for value, label in news_menu %}
                     <li>
                         <a class="{{ 'active' if selected_category == value }}"
-                           href="{{ url_for('main.news', category=value or None, q=search_query or None, period=selected_period or None) }}">{{ label }}</a>
+                           href="{{ url_for('main.news', category=value or None, q=search_query or None, period=selected_period or None, level=selected_level or None) }}">{{ label }}</a>
                     </li>
                 {% endfor %}
             </ul>
@@ -20,6 +20,7 @@
         <div class="news-search-row mb-5">
             <form method="get" action="{{ url_for('main.news') }}" class="news-search-input-form">
                 {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                {% if selected_level %}<input type="hidden" name="level" value="{{ selected_level }}">{% endif %}
                 {% if selected_period %}<input type="hidden" name="period" value="{{ selected_period }}">{% endif %}
                 <label class="news-search-input">
                     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M13.5 12h-.8l-.3-.3c1-1.1 1.6-2.6 1.6-4.2C14 3.9 11.6 1.5 8.5 1.5S3 3.9 3 7s2.4 5.5 5.5 5.5c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l4.2 4.2 1.3-1.3-4.2-4.2ZM8.5 11C6.6 11 5 9.4 5 7.5S6.6 4 8.5 4 12 5.6 12 7.5 10.4 11 8.5 11Z"/></svg>
@@ -30,7 +31,7 @@
                 {% for value, label in news_periods %}
                     {% if value %}
                         <a class="news-period-link {{ 'active' if selected_period == value }}"
-                           href="{{ url_for('main.news', category=selected_category or None, q=search_query or None, period=value) }}">
+                           href="{{ url_for('main.news', category=selected_category or None, q=search_query or None, period=value, level=selected_level or None) }}">
                             {{ label }}
                             <svg class="news-period-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 5 5 1l4 4"/></svg>
                         </a>
@@ -38,7 +39,7 @@
                 {% endfor %}
             </div>
             <a class="btn-all-time {{ 'active' if not selected_period }}"
-               href="{{ url_for('main.news', category=selected_category or None, q=search_query or None) }}">За все время</a>
+               href="{{ url_for('main.news', category=selected_category or None, q=search_query or None, level=selected_level or None) }}">За все время</a>
         </div>
 
         {% if news_items %}
@@ -51,7 +52,20 @@
                                      {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
                                 <div class="news-row-body">
                                     <h2 class="news-row-title">{{ item.title }}</h2>
-                                    <p class="news-row-excerpt">{{ item.content[:220] }}{% if item.content|length > 220 %}…{% endif %}</p>
+                                    {% set excerpt = item.description or item.content %}
+                                    <p class="news-row-excerpt">{{ excerpt[:220] }}{% if excerpt|length > 220 %}…{% endif %}</p>
+                                    {% if item.category or item.level %}
+                                        <div class="news-row-tags">
+                                            {% if item.category %}
+                                                <a class="news-row-tag"
+                                                   href="{{ url_for('main.news', category=item.category) }}">{{ item.category }}</a>
+                                            {% endif %}
+                                            {% if item.level %}
+                                                <a class="news-row-tag"
+                                                   href="{{ url_for('main.news', level=item.level) }}">{{ item.level }}</a>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
                                     <p class="news-row-date">
                                         {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
                                     </p>
@@ -60,7 +74,7 @@
                         {% endfor %}
                     </div>
                     {% if has_next %}
-                        <a href="{{ url_for('main.news', page=next_page, category=selected_category or None, q=search_query or None, period=selected_period or None) }}"
+                        <a href="{{ url_for('main.news', page=next_page, category=selected_category or None, q=search_query or None, period=selected_period or None, level=selected_level or None) }}"
                            class="btn-load-more mt-4">Посмотреть больше новостей</a>
                     {% endif %}
                 </div>

@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Competition, CompetitionDocument, Document, FederationMember,
-    News, Referee, RegionalFederation, SyncLog, User, db,
+    News, NewsCategory, NewsLevel, Referee, RegionalFederation, SyncLog, User, db,
 )
 
 bp = Blueprint('admin', __name__)
@@ -24,9 +24,15 @@ SYNC_SOURCES = ['COREZ', 'REGTEAM_RAFTING', 'SPORTS_REFEREE']
 
 BODY_CHOICES = ['исполком', 'коллегия_судей', 'тренерский_совет', 'комитет_представителей']
 DOC_CATEGORY_CHOICES = ['федеральный', 'региональный', 'wrf', 'фрр', 'федерация']
-NEWS_CATEGORY_CHOICES = ['соревнование', 'мероприятие', 'федерация', 'регион']
-NEWS_LEVEL_CHOICES = ['цфо', 'регион', 'отделение', 'клуб']
 ROLE_CHOICES = ['admin', 'editor', 'viewer']
+
+
+def news_category_choices():
+    return [c.name for c in NewsCategory.query.order_by(NewsCategory.name).all()]
+
+
+def news_level_choices():
+    return [lvl.name for lvl in NewsLevel.query.order_by(NewsLevel.name).all()]
 # Разделы панели, доступ к которым назначается сотруднику индивидуально
 # (роль admin получает их все автоматически, см. User.can_access).
 SECTION_CHOICES = [
@@ -179,25 +185,27 @@ def news_new():
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
+        description = request.form.get('description', '').strip()
         image = request.files.get('image')
 
         if not title or not content:
             flash('Заголовок и текст новости обязательны.', 'error')
             return render_template(
                 'admin/news_form.html', active='news', news=None,
-                category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
+                category_choices=news_category_choices(), level_choices=news_level_choices(),
             )
 
         if image and image.filename and not allowed_image(image.filename):
             flash('Допустимые форматы фотографии: JPG, PNG, WEBP.', 'error')
             return render_template(
                 'admin/news_form.html', active='news', news=None,
-                category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
+                category_choices=news_category_choices(), level_choices=news_level_choices(),
             )
 
         news_item = News(
             title=title,
             content=content,
+            description=description or None,
             category=request.form.get('category') or None,
             level=request.form.get('level') or None,
             is_published=bool(request.form.get('is_published')),
@@ -211,7 +219,7 @@ def news_new():
 
     return render_template(
         'admin/news_form.html', active='news', news=None,
-        category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
+        category_choices=news_category_choices(), level_choices=news_level_choices(),
     )
 
 
@@ -224,24 +232,26 @@ def news_edit(news_id):
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         content = request.form.get('content', '').strip()
+        description = request.form.get('description', '').strip()
         image = request.files.get('image')
 
         if not title or not content:
             flash('Заголовок и текст новости обязательны.', 'error')
             return render_template(
                 'admin/news_form.html', active='news', news=news_item,
-                category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
+                category_choices=news_category_choices(), level_choices=news_level_choices(),
             )
 
         if image and image.filename and not allowed_image(image.filename):
             flash('Допустимые форматы фотографии: JPG, PNG, WEBP.', 'error')
             return render_template(
                 'admin/news_form.html', active='news', news=news_item,
-                category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
+                category_choices=news_category_choices(), level_choices=news_level_choices(),
             )
 
         news_item.title = title
         news_item.content = content
+        news_item.description = description or None
         news_item.category = request.form.get('category') or None
         news_item.level = request.form.get('level') or None
         news_item.is_published = bool(request.form.get('is_published'))
@@ -253,7 +263,7 @@ def news_edit(news_id):
 
     return render_template(
         'admin/news_form.html', active='news', news=news_item,
-        category_choices=NEWS_CATEGORY_CHOICES, level_choices=NEWS_LEVEL_CHOICES,
+        category_choices=news_category_choices(), level_choices=news_level_choices(),
     )
 
 
@@ -277,6 +287,72 @@ def news_toggle_publish(news_id):
     db.session.commit()
     flash('Публикация новости обновлена.', 'success')
     return redirect(url_for('admin.news_list'))
+
+
+# ---------- Категории и уровни новостей ----------
+
+@bp.route('/news/taxonomy')
+@section_required('news')
+def news_taxonomy():
+    categories = NewsCategory.query.order_by(NewsCategory.name).all()
+    levels = NewsLevel.query.order_by(NewsLevel.name).all()
+    return render_template(
+        'admin/news_taxonomy.html', active='news', categories=categories, levels=levels,
+    )
+
+
+@bp.route('/news/taxonomy/categories/new', methods=['POST'])
+@section_required('news')
+@roles_required('admin', 'editor')
+def news_category_new():
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название категории обязательно.', 'error')
+    elif NewsCategory.query.filter_by(name=name).first():
+        flash('Такая категория уже есть.', 'error')
+    else:
+        db.session.add(NewsCategory(name=name))
+        db.session.commit()
+        flash('Категория добавлена.', 'success')
+    return redirect(url_for('admin.news_taxonomy'))
+
+
+@bp.route('/news/taxonomy/categories/<int:category_id>/delete', methods=['POST'])
+@section_required('news')
+@roles_required('admin', 'editor')
+def news_category_delete(category_id):
+    category = NewsCategory.query.get_or_404(category_id)
+    db.session.delete(category)
+    db.session.commit()
+    flash('Категория удалена. Уже опубликованные новости с этим значением не изменятся.', 'success')
+    return redirect(url_for('admin.news_taxonomy'))
+
+
+@bp.route('/news/taxonomy/levels/new', methods=['POST'])
+@section_required('news')
+@roles_required('admin', 'editor')
+def news_level_new():
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название уровня обязательно.', 'error')
+    elif NewsLevel.query.filter_by(name=name).first():
+        flash('Такой уровень уже есть.', 'error')
+    else:
+        db.session.add(NewsLevel(name=name))
+        db.session.commit()
+        flash('Уровень добавлен.', 'success')
+    return redirect(url_for('admin.news_taxonomy'))
+
+
+@bp.route('/news/taxonomy/levels/<int:level_id>/delete', methods=['POST'])
+@section_required('news')
+@roles_required('admin', 'editor')
+def news_level_delete(level_id):
+    level = NewsLevel.query.get_or_404(level_id)
+    db.session.delete(level)
+    db.session.commit()
+    flash('Уровень удалён. Уже опубликованные новости с этим значением не изменятся.', 'success')
+    return redirect(url_for('admin.news_taxonomy'))
 
 
 # ---------- Документы ----------

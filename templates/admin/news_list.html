@@ -6,9 +6,12 @@
 {% block admin_content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h4 mb-0">Новости</h1>
-        {% if current_user.role in ('admin', 'editor') %}
-            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.news_new') }}">Добавить новость</a>
-        {% endif %}
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('admin.news_taxonomy') }}">Категории и уровни</a>
+            {% if current_user.role in ('admin', 'editor') %}
+                <a class="btn btn-primary btn-sm" href="{{ url_for('admin.news_new') }}">Добавить новость</a>
+            {% endif %}
+        </div>
     </div>
 
     {% if news_items %}

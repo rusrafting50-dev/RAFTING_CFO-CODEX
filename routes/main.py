@@ -72,6 +72,7 @@ def index():
 @bp.route('/news')
 def news():
     category = request.args.get('category', '')
+    level = request.args.get('level', '')
     period = request.args.get('period', '')
     search_query = request.args.get('q', '').strip()
     page = max(request.args.get('page', 1, type=int), 1)
@@ -82,6 +83,8 @@ def news():
     query = News.query.filter_by(is_published=True)
     if category:
         query = query.filter_by(category=category)
+    if level:
+        query = query.filter_by(level=level)
     period_start = _period_start(period)
     if period_start:
         query = query.filter(News.published_at >= period_start)
@@ -95,7 +98,9 @@ def news():
         needle = search_query.lower()
         matching = [
             item for item in matching
-            if needle in item.title.lower() or needle in (item.content or '').lower()
+            if needle in item.title.lower()
+            or needle in (item.content or '').lower()
+            or needle in (item.description or '').lower()
         ]
 
     total = len(matching)
@@ -117,6 +122,7 @@ def news():
         news_menu=NEWS_MENU,
         news_periods=NEWS_PERIODS,
         selected_category=category,
+        selected_level=level,
         selected_period=period,
         search_query=search_query,
         has_next=has_next,

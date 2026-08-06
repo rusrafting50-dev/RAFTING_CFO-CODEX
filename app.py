@@ -5,7 +5,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template
 
-from auth import create_default_admin, ensure_schema, login_manager
+from auth import create_default_admin, ensure_schema, login_manager, seed_news_taxonomy
 from models import db
 from routes import register_blueprints
 
@@ -34,6 +34,7 @@ def create_app():
         db.create_all()
         ensure_schema()
         create_default_admin()
+        seed_news_taxonomy()
 
     @app.context_processor
     def inject_now():

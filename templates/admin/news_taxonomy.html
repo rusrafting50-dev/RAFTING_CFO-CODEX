@@ -1,0 +1,76 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'news' %}
+
+{% block title %}Категории и уровни новостей — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">Категории и уровни новостей</h1>
+    <p class="text-muted">
+        Значения «федерация», «соревнование», «регион», «мероприятие» используются в меню фильтра
+        новостей и в колонке «Официально» на сайте — их удаление или переименование отвяжет эти
+        разделы от новостей с таким значением.
+    </p>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h2 class="h6 mb-3">Категории</h2>
+                {% if categories %}
+                    <ul class="list-group mb-3">
+                        {% for category in categories %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ category.name }}
+                                {% if current_user.role in ('admin', 'editor') %}
+                                    <form method="post"
+                                          action="{{ url_for('admin.news_category_delete', category_id=category.id) }}"
+                                          onsubmit="return confirm('Удалить категорию?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Категорий пока нет.</p>
+                {% endif %}
+                {% if current_user.role in ('admin', 'editor') %}
+                    <form method="post" action="{{ url_for('admin.news_category_new') }}" class="d-flex gap-2">
+                        <input type="text" name="name" class="form-control" placeholder="Новая категория" required>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4">
+                <h2 class="h6 mb-3">Уровни</h2>
+                {% if levels %}
+                    <ul class="list-group mb-3">
+                        {% for level in levels %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ level.name }}
+                                {% if current_user.role in ('admin', 'editor') %}
+                                    <form method="post"
+                                          action="{{ url_for('admin.news_level_delete', level_id=level.id) }}"
+                                          onsubmit="return confirm('Удалить уровень?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Уровней пока нет.</p>
+                {% endif %}
+                {% if current_user.role in ('admin', 'editor') %}
+                    <form method="post" action="{{ url_for('admin.news_level_new') }}" class="d-flex gap-2">
+                        <input type="text" name="name" class="form-control" placeholder="Новый уровень" required>
+                        <button type="submit" class="btn btn-primary">Добавить</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <a class="btn btn-outline-secondary mt-4" href="{{ url_for('admin.news_list') }}">К списку новостей</a>
+{% endblock %}

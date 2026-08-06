@@ -2,7 +2,7 @@
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager
 
-from models import db, User
+from models import NewsCategory, NewsLevel, db, User
 
 login_manager = LoginManager()
 login_manager.login_view = 'admin.login'
@@ -43,6 +43,20 @@ def ensure_schema():
     inspector = inspect(db.engine)
     _ensure_column(inspector, 'user', 'allowed_sections', "VARCHAR(255) NOT NULL DEFAULT ''")
     _ensure_column(inspector, 'news', 'image_path', 'VARCHAR(500)')
+    _ensure_column(inspector, 'news', 'description', 'TEXT')
+
+
+def seed_news_taxonomy():
+    """Заполняет списки категорий/уровней новостей значениями по
+    умолчанию при первом запуске (таблицы уже созданы db.create_all(),
+    но пустые) — дальше редактируются в админке."""
+    if NewsCategory.query.count() == 0:
+        for name in ('соревнование', 'мероприятие', 'федерация', 'регион'):
+            db.session.add(NewsCategory(name=name))
+    if NewsLevel.query.count() == 0:
+        for name in ('цфо', 'регион', 'отделение', 'клуб'):
+            db.session.add(NewsLevel(name=name))
+    db.session.commit()
 
 
 def create_default_admin():

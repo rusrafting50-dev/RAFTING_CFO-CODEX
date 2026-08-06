@@ -600,7 +600,7 @@ footer hr {
 .news-filter-menu a {
     color: #777;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 16px;
     text-transform: uppercase;
     text-decoration: none;
     letter-spacing: 0.02em;
@@ -701,28 +701,28 @@ footer hr {
     flex: none;
     display: inline-block;
     background: #fff;
-    color: var(--color-dark);
-    font-weight: 700;
+    color: #888;
+    font-weight: 400;
     text-transform: uppercase;
     font-size: 13px;
     letter-spacing: 0.03em;
     padding: 10px 20px;
-    border: 1px solid #ccc;
+    border: 1px solid #999;
     border-radius: 4px;
     text-decoration: none;
     white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease;
 }
 
-.btn-all-time:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-}
-
-.btn-all-time.active {
-    /* Остаётся белой (не заливается тёмным) — активное состояние
-       показываем цветом акцента, как у пунктов День/Месяц/Год. */
-    border-color: var(--color-accent);
-    color: var(--color-accent);
+.btn-all-time:hover,
+.btn-all-time:active {
+    /* "При нажатии" — заливается серым, надпись становится белой.
+       Не завязано на .active (текущий фильтр "за все время") — сама
+       кнопка на референсе остаётся белой даже когда активна, заливка
+       только по реальному наведению/нажатию. */
+    background: #999;
+    color: #fff;
+    border-color: #999;
 }
 
 .news-row {
@@ -761,6 +761,31 @@ footer hr {
 .news-row-excerpt {
     color: #555;
     margin: 0 0 12px;
+}
+
+.news-row-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.news-row-tag {
+    display: inline-block;
+    background: #eef4fb;
+    color: var(--color-accent);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+.news-row-tag:hover {
+    background: var(--color-accent);
+    color: #fff;
 }
 
 .news-row-date {
@@ -817,15 +842,19 @@ footer hr {
 }
 
 .official-item {
+    /* Белое поле карточки новости на сером фоне панели, вместо просто
+       строки с нижней линией-разделителем. */
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 14px 0;
-    border-bottom: 1px solid #d6dbde;
+    background: #fff;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 8px;
 }
 
 .official-item:last-child {
-    border-bottom: none;
+    margin-bottom: 0;
 }
 
 .official-item-date {
@@ -834,8 +863,10 @@ footer hr {
 }
 
 .official-item-title {
+    /* Простой нежирный шрифт — не выделяется, в отличие от заголовков
+       в основной колонке новостей. */
     color: var(--color-dark);
-    font-weight: 700;
+    font-weight: 400;
     font-size: 14px;
     line-height: 1.35;
 }

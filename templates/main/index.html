@@ -10,9 +10,10 @@
               {% endif %}>
         <div class="container text-center">
             {% if hero_news %}
+                {% set hero_excerpt = hero_news.description or hero_news.content %}
                 <h1>{{ hero_news.title }}</h1>
                 <p class="lead mb-0">
-                    {{ hero_news.content[:140] }}{% if hero_news.content|length > 140 %}…{% endif %}
+                    {{ hero_excerpt[:140] }}{% if hero_excerpt|length > 140 %}…{% endif %}
                 </p>
             {% else %}
                 <h1>Федерация рафтинга Центрального федерального округа</h1>
@@ -107,7 +108,8 @@
                                                      {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
                                                 <div class="card-body">
                                                     <h3 class="h6 news-card-title">{{ item.title }}</h3>
-                                                    <p class="news-card-excerpt">{{ item.content[:120] }}{% if item.content|length > 120 %}…{% endif %}</p>
+                                                    {% set item_excerpt = item.description or item.content %}
+                                                    <p class="news-card-excerpt">{{ item_excerpt[:120] }}{% if item_excerpt|length > 120 %}…{% endif %}</p>
                                                     <p class="news-card-date">
                                                         {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
                                                     </p>
