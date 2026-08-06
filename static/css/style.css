@@ -531,8 +531,7 @@ header.scrolled {
     color: #fff;
     font-weight: 700;
     text-transform: uppercase;
-    /* Тот же размер, что у заголовка "Новости" (.h4, 24px). */
-    font-size: 24px;
+    font-size: 16px;
     letter-spacing: 0.03em;
     padding: 12px 24px;
     border-radius: 4px;
