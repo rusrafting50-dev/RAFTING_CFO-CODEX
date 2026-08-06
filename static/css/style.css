@@ -617,18 +617,25 @@ footer hr {
 .news-search-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    align-items: center;
+    gap: 20px;
+}
+
+.news-search-input-form {
+    flex: 1 1 320px;
+    min-width: 0;
 }
 
 .news-search-input {
-    flex: 1 1 320px;
+    /* "Круглое поле" — почти полностью скруглённые края (радиус больше
+       половины высоты поля), а не просто скруглённые углы прямоугольника. */
     display: flex;
     align-items: center;
     gap: 8px;
     background: #fff;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 10px 16px;
+    border-radius: 24px;
+    padding: 10px 20px;
 }
 
 .news-search-input svg {
@@ -644,10 +651,48 @@ footer hr {
     outline: none;
     font-size: 15px;
     background: transparent;
+    min-width: 0;
+}
+
+.news-period-filters {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex: none;
+}
+
+.news-period-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--color-accent);
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.news-period-link:hover {
+    text-decoration: underline;
+}
+
+.news-period-link.active {
+    color: var(--color-dark);
+    font-weight: 700;
+}
+
+.news-period-caret {
+    width: 9px;
+    height: 6px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .btn-all-time {
     flex: none;
+    display: inline-block;
     background: #fff;
     color: var(--color-dark);
     font-weight: 700;
@@ -657,12 +702,19 @@ footer hr {
     padding: 10px 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .btn-all-time:hover {
     border-color: var(--color-accent);
     color: var(--color-accent);
+}
+
+.btn-all-time.active {
+    background: var(--color-dark);
+    color: #fff;
+    border-color: var(--color-dark);
 }
 
 .news-row {
@@ -675,14 +727,16 @@ footer hr {
 }
 
 .news-row-photo {
-    flex: none;
-    width: 280px;
-    min-height: 180px;
+    /* Фото и текст делят карточку примерно поровну (~48/48 плюс отступ),
+       как на образце — раньше фото было фиксировано в 280px и на широких
+       экранах текст получал непропорционально много места. */
+    flex: 1 1 0;
+    aspect-ratio: 16 / 9;
     background: center/cover no-repeat url('../img/news-placeholder.svg');
 }
 
 .news-row-body {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     display: flex;
     flex-direction: column;
     padding: 20px 24px 20px 0;

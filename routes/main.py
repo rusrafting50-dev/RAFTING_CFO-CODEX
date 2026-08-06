@@ -1,5 +1,5 @@
 """Главная страница, новости, контакты."""
-from datetime import date
+from datetime import date, datetime
 
 from flask import Blueprint, render_template, request
 
@@ -17,6 +17,25 @@ NEWS_MENU = [
 ]
 # Категория, из которой берутся новости в колонку "Официально".
 OFFICIAL_NEWS_CATEGORY = 'федерация'
+# Быстрые фильтры по периоду публикации над списком новостей.
+NEWS_PERIODS = [
+    ('', 'За все время'),
+    ('day', 'День'),
+    ('month', 'Месяц'),
+    ('year', 'Год'),
+]
+
+
+def _period_start(period):
+    """Начало текущего периода (день/месяц/год) для фильтра публикаций."""
+    now = datetime.utcnow()
+    if period == 'day':
+        return now.replace(hour=0, minute=0, second=0, microsecond=0)
+    if period == 'month':
+        return now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    if period == 'year':
+        return now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+    return None
 
 
 @bp.route('/')
@@ -53,12 +72,19 @@ def index():
 @bp.route('/news')
 def news():
     category = request.args.get('category', '')
+    period = request.args.get('period', '')
     search_query = request.args.get('q', '').strip()
     page = max(request.args.get('page', 1, type=int), 1)
+
+    if period not in dict(NEWS_PERIODS):
+        period = ''
 
     query = News.query.filter_by(is_published=True)
     if category:
         query = query.filter_by(category=category)
+    period_start = _period_start(period)
+    if period_start:
+        query = query.filter(News.published_at >= period_start)
 
     matching = query.order_by(News.published_at.desc()).all()
 
@@ -89,7 +115,9 @@ def news():
         news_items=news_items,
         official_news=official_news,
         news_menu=NEWS_MENU,
+        news_periods=NEWS_PERIODS,
         selected_category=category,
+        selected_period=period,
         search_query=search_query,
         has_next=has_next,
         next_page=page + 1 if has_next else None,
