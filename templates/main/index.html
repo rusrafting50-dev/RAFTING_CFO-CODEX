@@ -49,26 +49,45 @@
                                 <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
                                 <div class="home-carousel-track">
                                     {% for competition in upcoming_competitions %}
-                                        {% set status_lower = (competition.status or '')|lower %}
+                                        {% set ct = (competition.comp_type or '')|lower %}
+                                        {% set badge_class = 'bg-danger' if 'чемпионат' in ct
+                                            else ('bg-primary' if 'кубок' in ct
+                                            else ('bg-success' if 'первенство' in ct
+                                            else ('bg-info' if 'всероссийск' in ct
+                                            else 'bg-warning'))) %}
                                         <a href="{{ url_for('competitions.detail', competition_id=competition.id) }}"
                                            class="home-carousel-card">
-                                            <div class="home-carousel-card-top">
-                                                <span class="home-carousel-badge">{{ competition.comp_type or 'Соревнование' }}</span>
-                                                {% if competition.start_date %}
-                                                    <span class="home-carousel-card-dates">
-                                                        {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} – {{ competition.end_date|ru_date_full }}{% endif %}
-                                                    </span>
-                                                {% endif %}
-                                            </div>
-                                            <div class="home-carousel-card-body">
-                                                <span class="home-carousel-card-logo">{{ competition.name[:1] }}</span>
-                                                <span class="home-carousel-card-title">{{ competition.name }}</span>
-                                            </div>
-                                            {% if competition.status %}
-                                                <span class="home-carousel-status {{ 'home-carousel-status-done' if 'заверш' in status_lower else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
-                                                    {{ competition.status|capitalize }}
-                                                </span>
+                                            <span class="home-carousel-card-title">{{ competition.name }}</span>
+                                            {% if competition.comp_type %}
+                                                <span class="badge {{ badge_class }} align-self-start">{{ competition.comp_type }}</span>
                                             {% endif %}
+                                            {% if competition.age_group or competition.boat_class %}
+                                                <div class="home-carousel-card-classes">
+                                                    {% if competition.age_group %}
+                                                        <span class="text-muted small">{{ competition.age_group }}</span>
+                                                    {% endif %}
+                                                    {% if competition.boat_class and 'R4' in competition.boat_class %}
+                                                        <span class="badge bg-info text-dark">R4</span>
+                                                    {% endif %}
+                                                    {% if competition.boat_class and 'R6' in competition.boat_class %}
+                                                        <span class="badge bg-info text-dark">R6</span>
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                            <ul class="home-carousel-card-meta-list">
+                                                {% if competition.start_date %}
+                                                    <li>
+                                                        📅
+                                                        {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} – {{ competition.end_date|ru_date_full }}{% endif %}
+                                                    </li>
+                                                {% endif %}
+                                                {% if competition.location %}
+                                                    <li>📍 {{ competition.location }}</li>
+                                                {% endif %}
+                                                {% if competition.head_judge %}
+                                                    <li>⚖️ Гл. судья: {{ competition.head_judge }}</li>
+                                                {% endif %}
+                                            </ul>
                                         </a>
                                     {% endfor %}
                                 </div>
