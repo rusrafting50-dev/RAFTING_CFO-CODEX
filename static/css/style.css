@@ -365,9 +365,16 @@ header.scrolled {
 
 .home-carousel-card {
     /* Белая карточка с рамкой (как на rfs.ru), а не тёмная плашка —
-       категория+даты сверху, лого+заголовок в центре, статус снизу. */
+       категория+даты сверху, лого+заголовок в центре, статус снизу.
+       flex:1 растягивает карточки поровну на всю ширину трека, когда
+       карточек мало — с min-width как нижней границей, ниже которой
+       вместо сжатия начинается горизонтальная прокрутка (много карточек).
+       Отступы между блоками — явными margin-bottom ниже, а не через
+       gap, чтобы расстояние между заголовком и бейджем статуса было
+       минимальным, а не таким же, как между остальными блоками. */
     scroll-snap-align: start;
-    flex: 0 0 280px;
+    flex: 1 1 0;
+    min-width: 240px;
     background: #fff;
     color: var(--color-dark);
     border: 1px solid #e0e0e0;
@@ -376,7 +383,6 @@ header.scrolled {
     text-decoration: none;
     display: flex;
     flex-direction: column;
-    gap: 12px;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -431,15 +437,18 @@ header.scrolled {
 }
 
 .home-carousel-card-title {
-    flex: 1 1 auto;
     font-weight: 700;
     font-size: 15px;
     line-height: 1.3;
-    padding-top: 4px;
+    margin: 0 0 2px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+.home-carousel-card-badge {
+    margin: 0 0 10px;
 }
 
 .home-carousel-status {
@@ -468,6 +477,7 @@ header.scrolled {
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+    margin: 0 0 10px;
 }
 
 .home-carousel-card-meta-list {

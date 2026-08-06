@@ -59,7 +59,7 @@
                                            class="home-carousel-card">
                                             <span class="home-carousel-card-title">{{ competition.name }}</span>
                                             {% if competition.comp_type %}
-                                                <span class="badge {{ badge_class }} align-self-start">{{ competition.comp_type }}</span>
+                                                <span class="badge {{ badge_class }} align-self-start home-carousel-card-badge">{{ competition.comp_type }}</span>
                                             {% endif %}
                                             {% if competition.age_group or competition.boat_class %}
                                                 <div class="home-carousel-card-classes">
