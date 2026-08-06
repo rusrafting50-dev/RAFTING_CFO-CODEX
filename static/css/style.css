@@ -1106,6 +1106,11 @@ footer hr {
 }
 
 .news-gallery-track {
+    /* flex:1 обязателен — иначе трек считает свою ширину по содержимому,
+       а слайды внутри как раз считают свою ширину в % от ширины трека:
+       круговая зависимость, из-за которой все схлопывалось в точку. */
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
     gap: 12px;
     overflow-x: auto;
@@ -1118,11 +1123,20 @@ footer hr {
 }
 
 .news-gallery-slide {
-    flex: 0 0 auto;
-    width: 220px;
+    /* Ровно 3 фото видно одновременно: ширина слайда = треть трека
+       за вычетом двух отступов между тремя слайдами. */
+    flex: 0 0 calc((100% - 24px) / 3);
     aspect-ratio: 4 / 3;
     border-radius: 8px;
     background: center/cover no-repeat #eee;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.news-gallery-slide:hover {
+    opacity: 0.85;
 }
 
 .news-gallery-btn {
@@ -1136,6 +1150,75 @@ footer hr {
     font-size: 20px;
     line-height: 1;
     cursor: pointer;
+}
+
+.news-gallery-btn:hover {
+    background: var(--color-accent);
+}
+
+.news-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 24px;
+}
+
+.news-lightbox.open {
+    display: flex;
+}
+
+.news-lightbox-img {
+    max-width: 85vw;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.news-lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.news-lightbox-close:hover {
+    background: var(--color-accent);
+}
+
+.news-lightbox-btn {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.news-lightbox-btn:hover {
+    background: var(--color-accent);
+}
+
+@media (max-width: 767.98px) {
+    .news-gallery-slide {
+        flex-basis: calc((100% - 16px) / 2);
+    }
 }
 
 .news-gallery-btn:hover {

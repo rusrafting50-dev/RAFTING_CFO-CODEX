@@ -34,11 +34,19 @@
                             <button class="news-gallery-btn news-gallery-prev" type="button" aria-label="Назад">&lsaquo;</button>
                             <div class="news-gallery-track">
                                 {% for image in item.gallery_images %}
-                                    <div class="news-gallery-slide"
-                                         style="background-image: url('{{ url_for('static', filename=image.file_path) }}')"></div>
+                                    <button type="button" class="news-gallery-slide"
+                                            style="background-image: url('{{ url_for('static', filename=image.file_path) }}')"
+                                            data-full-src="{{ url_for('static', filename=image.file_path) }}"
+                                            aria-label="Открыть фото {{ loop.index }} из {{ loop.length }}"></button>
                                 {% endfor %}
                             </div>
                             <button class="news-gallery-btn news-gallery-next" type="button" aria-label="Вперёд">&rsaquo;</button>
+                        </div>
+                        <div class="news-lightbox" aria-hidden="true">
+                            <button class="news-lightbox-close" type="button" aria-label="Закрыть">&times;</button>
+                            <button class="news-lightbox-btn news-lightbox-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                            <img class="news-lightbox-img" src="" alt="">
+                            <button class="news-lightbox-btn news-lightbox-next" type="button" aria-label="Вперёд">&rsaquo;</button>
                         </div>
                     {% endif %}
 

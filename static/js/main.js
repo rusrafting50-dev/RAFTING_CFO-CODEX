@@ -176,6 +176,69 @@
     });
 })();
 
+// Лайтбокс слайдера доп. фото на странице новости: клик по миниатюре
+// открывает увеличенное фото на весь экран (в естественных пропорциях,
+// без обрезки) с той же навигацией вперёд/назад.
+(function () {
+    document.querySelectorAll('.news-gallery').forEach(function (gallery) {
+        var slides = Array.prototype.slice.call(gallery.querySelectorAll('.news-gallery-slide'));
+        var lightbox = gallery.nextElementSibling;
+        if (!lightbox || !lightbox.classList.contains('news-lightbox')) {
+            return;
+        }
+
+        var img = lightbox.querySelector('.news-lightbox-img');
+        var closeBtn = lightbox.querySelector('.news-lightbox-close');
+        var prevBtn = lightbox.querySelector('.news-lightbox-prev');
+        var nextBtn = lightbox.querySelector('.news-lightbox-next');
+        var currentIndex = 0;
+
+        function show(index) {
+            currentIndex = (index + slides.length) % slides.length;
+            img.src = slides[currentIndex].getAttribute('data-full-src');
+        }
+
+        function open(index) {
+            show(index);
+            lightbox.classList.add('open');
+            lightbox.setAttribute('aria-hidden', 'false');
+        }
+
+        function close() {
+            lightbox.classList.remove('open');
+            lightbox.setAttribute('aria-hidden', 'true');
+            img.src = '';
+        }
+
+        slides.forEach(function (slide, index) {
+            slide.addEventListener('click', function () { open(index); });
+        });
+
+        closeBtn.addEventListener('click', close);
+        prevBtn.addEventListener('click', function () { show(currentIndex - 1); });
+        nextBtn.addEventListener('click', function () { show(currentIndex + 1); });
+
+        lightbox.addEventListener('click', function (event) {
+            if (event.target === lightbox) {
+                close();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (!lightbox.classList.contains('open')) {
+                return;
+            }
+            if (event.key === 'Escape') {
+                close();
+            } else if (event.key === 'ArrowLeft') {
+                show(currentIndex - 1);
+            } else if (event.key === 'ArrowRight') {
+                show(currentIndex + 1);
+            }
+        });
+    });
+})();
+
 // Выпадающие списки День/Месяц/Год над списком новостей: сама раскладка
 // списка (открыт/закрыт) — чисто клиентское состояние, а выбор значения
 // внутри — обычная ссылка с перезагрузкой страницы. Общий для страницы
