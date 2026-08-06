@@ -99,12 +99,20 @@ def index():
     # и той же выборки, отдельного признака "уже показана" не нужно.
     hero_news = published_news.first()
     latest_news = published_news.offset(1).limit(4).all() if hero_news else []
-    upcoming_competitions = (
+    # Сначала ближайшие будущие (раньше — раньше в слайдере), а если их
+    # меньше восьми — довобавляем прошедшие (сначала самые недавние),
+    # чтобы слайдер не пустовал и показывал соревнования "задним числом".
+    future_competitions = (
         Competition.query.filter(Competition.start_date >= date.today())
         .order_by(Competition.start_date.asc())
-        .limit(8)
         .all()
     )
+    past_competitions = (
+        Competition.query.filter(Competition.start_date < date.today())
+        .order_by(Competition.start_date.desc())
+        .all()
+    )
+    upcoming_competitions = (future_competitions + past_competitions)[:8]
     upcoming_events = (
         Event.query.filter(Event.start_date >= date.today())
         .order_by(Event.start_date.asc())
