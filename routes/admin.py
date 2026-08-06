@@ -306,9 +306,12 @@ def news_taxonomy():
 @roles_required('admin', 'editor')
 def news_category_new():
     name = request.form.get('name', '').strip()
+    # Сравнение регистронезависимо и в Python: SQLite lower() не умеет
+    # сворачивать регистр кириллицы, поэтому SQL-фильтр по func.lower()
+    # пропустил бы дубликат вида "регион"/"Регион".
     if not name:
         flash('Название категории обязательно.', 'error')
-    elif NewsCategory.query.filter_by(name=name).first():
+    elif any(c.name.lower() == name.lower() for c in NewsCategory.query.all()):
         flash('Такая категория уже есть.', 'error')
     else:
         db.session.add(NewsCategory(name=name))
@@ -335,7 +338,7 @@ def news_level_new():
     name = request.form.get('name', '').strip()
     if not name:
         flash('Название уровня обязательно.', 'error')
-    elif NewsLevel.query.filter_by(name=name).first():
+    elif any(lvl.name.lower() == name.lower() for lvl in NewsLevel.query.all()):
         flash('Такой уровень уже есть.', 'error')
     else:
         db.session.add(NewsLevel(name=name))

@@ -100,10 +100,6 @@ def news():
         year = None
 
     query = News.query.filter_by(is_published=True)
-    if category:
-        query = query.filter_by(category=category)
-    if level:
-        query = query.filter_by(level=level)
     if day:
         query = query.filter(extract('day', News.published_at) == day)
     if month:
@@ -112,6 +108,18 @@ def news():
         query = query.filter(extract('year', News.published_at) == year)
 
     matching = query.order_by(News.published_at.desc()).all()
+
+    # Регистронезависимо и в Python, а не через SQL func.lower(): SQLite
+    # умеет сворачивать регистр только для ASCII, для кириллицы — нет
+    # (та же причина, по которой поиск ниже тоже сделан в Python). Без
+    # этого категория/уровень, введённые в админке с иной заглавной
+    # буквой, чем в пункте меню, молча не находили ни одной новости.
+    if category:
+        needle = category.lower()
+        matching = [item for item in matching if (item.category or '').lower() == needle]
+    if level:
+        needle = level.lower()
+        matching = [item for item in matching if (item.level or '').lower() == needle]
 
     if search_query:
         # SQLite LIKE/ilike сворачивает регистр только для ASCII, не для
@@ -130,12 +138,12 @@ def news():
     news_items = matching[start:start + NEWS_PER_PAGE]
     has_next = start + NEWS_PER_PAGE < total
 
-    official_news = (
-        News.query.filter_by(is_published=True, category=OFFICIAL_NEWS_CATEGORY)
+    official_news = [
+        item for item in News.query.filter_by(is_published=True)
         .order_by(News.published_at.desc())
-        .limit(20)
         .all()
-    )
+        if (item.category or '').lower() == OFFICIAL_NEWS_CATEGORY
+    ][:20]
 
     return render_template(
         'main/news.html',
