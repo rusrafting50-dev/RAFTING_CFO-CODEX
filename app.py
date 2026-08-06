@@ -30,6 +30,15 @@ def format_ru_date(value):
     return f'{value.day} {month} {value.year}'
 
 
+def format_ru_date_full(value):
+    """День цифрой + месяц прописью + год всегда ("6 августа 2026") —
+    для диапазонов дат (карточки соревнований), где год важен всегда,
+    а не только когда он отличается от текущего."""
+    if not value:
+        return ''
+    return f'{value.day} {RU_MONTHS_GENITIVE[value.month]} {value.year}'
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -44,6 +53,7 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
     app.jinja_env.filters['ru_date'] = format_ru_date
+    app.jinja_env.filters['ru_date_full'] = format_ru_date_full
 
     register_blueprints(app)
 

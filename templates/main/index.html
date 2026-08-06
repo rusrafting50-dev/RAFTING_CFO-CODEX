@@ -49,14 +49,26 @@
                                 <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
                                 <div class="home-carousel-track">
                                     {% for competition in upcoming_competitions %}
+                                        {% set status_lower = (competition.status or '')|lower %}
                                         <a href="{{ url_for('competitions.detail', competition_id=competition.id) }}"
                                            class="home-carousel-card">
-                                            <span class="home-carousel-badge">{{ competition.comp_type or 'Соревнование' }}</span>
-                                            <span class="home-carousel-card-title">{{ competition.name }}</span>
-                                            <span class="home-carousel-card-meta">
-                                                <span>{{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}</span>
-                                                {% if competition.location %}<span>{{ competition.location }}</span>{% endif %}
-                                            </span>
+                                            <div class="home-carousel-card-top">
+                                                <span class="home-carousel-badge">{{ competition.comp_type or 'Соревнование' }}</span>
+                                                {% if competition.start_date %}
+                                                    <span class="home-carousel-card-dates">
+                                                        {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} – {{ competition.end_date|ru_date_full }}{% endif %}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="home-carousel-card-body">
+                                                <span class="home-carousel-card-logo">{{ competition.name[:1] }}</span>
+                                                <span class="home-carousel-card-title">{{ competition.name }}</span>
+                                            </div>
+                                            {% if competition.status %}
+                                                <span class="home-carousel-status {{ 'home-carousel-status-done' if 'заверш' in status_lower else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
+                                                    {{ competition.status|capitalize }}
+                                                </span>
+                                            {% endif %}
                                         </a>
                                     {% endfor %}
                                 </div>
@@ -72,14 +84,26 @@
                                 <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
                                 <div class="home-carousel-track">
                                     {% for event in upcoming_events %}
+                                        {% set status_lower = (event.status or '')|lower %}
                                         <a href="{{ url_for('events.detail', event_id=event.id) }}"
                                            class="home-carousel-card">
-                                            <span class="home-carousel-badge">{{ (event.event_type or 'Мероприятие').replace('_', ' ') }}</span>
-                                            <span class="home-carousel-card-title">{{ event.name }}</span>
-                                            <span class="home-carousel-card-meta">
-                                                <span>{{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '' }}</span>
-                                                {% if event.location %}<span>{{ event.location }}</span>{% endif %}
-                                            </span>
+                                            <div class="home-carousel-card-top">
+                                                <span class="home-carousel-badge">{{ (event.event_type or 'Мероприятие').replace('_', ' ') }}</span>
+                                                {% if event.start_date %}
+                                                    <span class="home-carousel-card-dates">
+                                                        {{ event.start_date|ru_date_full }}{% if event.end_date and event.end_date != event.start_date %} – {{ event.end_date|ru_date_full }}{% endif %}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="home-carousel-card-body">
+                                                <span class="home-carousel-card-logo">{{ event.name[:1] }}</span>
+                                                <span class="home-carousel-card-title">{{ event.name }}</span>
+                                            </div>
+                                            {% if event.status %}
+                                                <span class="home-carousel-status {{ 'home-carousel-status-done' if 'заверш' in status_lower else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
+                                                    {{ event.status|capitalize }}
+                                                </span>
+                                            {% endif %}
                                         </a>
                                     {% endfor %}
                                 </div>
