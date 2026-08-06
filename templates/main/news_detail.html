@@ -5,40 +5,49 @@
 
 {% block content %}
     <div class="container py-5">
-        <div class="news-detail">
-            <div class="news-detail-photo"
-                 {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
+        {% include "main/_news_filter.html" %}
 
-            {% if item.published_at or item.photo_author or item.organization %}
-                <div class="news-detail-meta">
-                    <span class="news-detail-meta-date">
-                        {% if item.published_at %}{{ item.published_at.strftime('%H:%M, %d.%m.%Y') }}{% endif %}
-                    </span>
-                    {% if item.photo_author or item.organization %}
-                        <span class="news-detail-meta-author">
-                            Автор фото: {{ [item.photo_author, item.organization] | select | join(', ') }}
-                        </span>
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <div class="news-detail">
+                    <div class="news-detail-photo"
+                         {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
+
+                    {% if item.published_at or item.photo_author or item.organization %}
+                        <div class="news-detail-meta">
+                            <span class="news-detail-meta-date">
+                                {% if item.published_at %}{{ item.published_at.strftime('%H:%M, %d.%m.%Y') }}{% endif %}
+                            </span>
+                            {% if item.photo_author or item.organization %}
+                                <span class="news-detail-meta-author">
+                                    Автор фото: {{ [item.photo_author, item.organization] | select | join(', ') }}
+                                </span>
+                            {% endif %}
+                        </div>
                     {% endif %}
+
+                    <h1 class="news-detail-title">{{ item.title }}</h1>
+                    <div class="news-detail-content">{{ item.content }}</div>
+
+                    {% if item.gallery_images %}
+                        <div class="news-gallery">
+                            <button class="news-gallery-btn news-gallery-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                            <div class="news-gallery-track">
+                                {% for image in item.gallery_images %}
+                                    <div class="news-gallery-slide"
+                                         style="background-image: url('{{ url_for('static', filename=image.file_path) }}')"></div>
+                                {% endfor %}
+                            </div>
+                            <button class="news-gallery-btn news-gallery-next" type="button" aria-label="Вперёд">&rsaquo;</button>
+                        </div>
+                    {% endif %}
+
+                    <a class="news-detail-back" href="{{ url_for('main.news') }}">&larr; Ко всем новостям</a>
                 </div>
-            {% endif %}
-
-            <h1 class="news-detail-title">{{ item.title }}</h1>
-            <div class="news-detail-content">{{ item.content }}</div>
-
-            {% if item.gallery_images %}
-                <div class="news-gallery">
-                    <button class="news-gallery-btn news-gallery-prev" type="button" aria-label="Назад">&lsaquo;</button>
-                    <div class="news-gallery-track">
-                        {% for image in item.gallery_images %}
-                            <div class="news-gallery-slide"
-                                 style="background-image: url('{{ url_for('static', filename=image.file_path) }}')"></div>
-                        {% endfor %}
-                    </div>
-                    <button class="news-gallery-btn news-gallery-next" type="button" aria-label="Вперёд">&rsaquo;</button>
-                </div>
-            {% endif %}
-
-            <a class="news-detail-back" href="{{ url_for('main.news') }}">&larr; Ко всем новостям</a>
+            </div>
+            <div class="col-lg-3">
+                {% include "main/_official_panel.html" %}
+            </div>
         </div>
     </div>
 {% endblock %}

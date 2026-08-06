@@ -1,0 +1,21 @@
+{# Колонка "Официально" — общая для списка новостей и страницы отдельной
+   новости. sync_height=True включает JS, подгоняющий высоту списка под
+   высоту колонки с фото-новостями слева (см. #newsMainList) — актуально
+   только на странице списка. #}
+<div class="official-panel" id="officialPanel">
+    <h2 class="official-panel-title">Официально</h2>
+    {% if official_news %}
+        <div class="official-list" id="officialList">
+            {% for item in official_news %}
+                <div class="official-item">
+                    <span class="official-item-date">
+                        {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                    </span>
+                    <span class="official-item-title">{{ item.title }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="official-empty">Пока нет официальных новостей.</p>
+    {% endif %}
+</div>

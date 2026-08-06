@@ -175,3 +175,37 @@
         nextBtn.addEventListener('click', function () { scrollBySlide(1); });
     });
 })();
+
+// Выпадающие списки День/Месяц/Год над списком новостей: сама раскладка
+// списка (открыт/закрыт) — чисто клиентское состояние, а выбор значения
+// внутри — обычная ссылка с перезагрузкой страницы. Общий для страницы
+// списка новостей и страницы отдельной новости (шапка с фильтром у них
+// одна и та же, см. templates/main/_news_filter.html).
+(function () {
+    var dropdowns = document.querySelectorAll('[data-news-dropdown]');
+
+    function closeAll(except) {
+        dropdowns.forEach(function (dd) {
+            if (dd !== except) {
+                dd.classList.remove('open');
+            }
+        });
+    }
+
+    dropdowns.forEach(function (dropdown) {
+        var toggle = dropdown.querySelector('.news-date-toggle');
+        if (!toggle) {
+            return;
+        }
+        toggle.addEventListener('click', function (event) {
+            event.stopPropagation();
+            var isOpen = dropdown.classList.contains('open');
+            closeAll(dropdown);
+            dropdown.classList.toggle('open', !isOpen);
+        });
+    });
+
+    document.addEventListener('click', function () {
+        closeAll(null);
+    });
+})();

@@ -55,6 +55,15 @@ NEWS_MONTHS = [
 NEWS_MIN_YEAR = 2023
 
 
+def official_news_list():
+    return [
+        item for item in News.query.filter_by(is_published=True)
+        .order_by(News.published_at.desc())
+        .all()
+        if (item.category or '').lower() == OFFICIAL_NEWS_CATEGORY
+    ][:20]
+
+
 @bp.route('/')
 def index():
     published_news = News.query.filter_by(is_published=True).order_by(News.published_at.desc())
@@ -143,12 +152,7 @@ def news():
     news_items = matching[start:start + NEWS_PER_PAGE]
     has_next = start + NEWS_PER_PAGE < total
 
-    official_news = [
-        item for item in News.query.filter_by(is_published=True)
-        .order_by(News.published_at.desc())
-        .all()
-        if (item.category or '').lower() == OFFICIAL_NEWS_CATEGORY
-    ][:20]
+    official_news = official_news_list()
 
     return render_template(
         'main/news.html',
@@ -172,7 +176,24 @@ def news():
 @bp.route('/news/<int:news_id>')
 def news_detail(news_id):
     item = News.query.filter_by(id=news_id, is_published=True).first_or_404()
-    return render_template('main/news_detail.html', item=item)
+
+    current_year = datetime.utcnow().year
+    return render_template(
+        'main/news_detail.html',
+        item=item,
+        official_news=official_news_list(),
+        news_menu=NEWS_MENU,
+        news_months=NEWS_MONTHS,
+        news_years=list(range(current_year, NEWS_MIN_YEAR - 1, -1)),
+        news_days=list(range(1, 32)),
+        selected_category='',
+        selected_level='',
+        selected_day=None,
+        selected_month=None,
+        selected_year=None,
+        search_query='',
+        hide_search=True,
+    )
 
 
 @bp.route('/contacts')
