@@ -28,8 +28,23 @@ class News(db.Model):
     is_published = db.Column(db.Boolean, default=False, nullable=False)
     created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
     image_path = db.Column(db.String(500))
+    # Подпись под фото на странице новости ("Автор фото: X, Организация").
+    photo_author = db.Column(db.String(255))
+    organization = db.Column(db.String(255))
 
     author = db.relationship('User', backref='news_items')
+
+
+class NewsImage(db.Model):
+    """Дополнительные фото новости — слайдер внизу страницы новости
+    (помимо основного фото News.image_path, которое идёт в шапку страницы
+    и на карточки в списке)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    news_id = db.Column(db.Integer, db.ForeignKey('news.id'), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)
+
+    news = db.relationship('News', backref=db.backref('gallery_images', cascade='all, delete-orphan'))
 
 
 class NewsCategory(db.Model):

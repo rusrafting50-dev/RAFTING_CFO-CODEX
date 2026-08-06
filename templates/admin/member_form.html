@@ -15,7 +15,7 @@
         <div class="mb-3">
             <label for="position" class="form-label">Должность</label>
             <input type="text" class="form-control" id="position" name="position"
-                   value="{{ member.position if member else '' }}">
+                   value="{{ (member.position or '') if member else '' }}">
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
@@ -39,7 +39,7 @@
         <div class="mb-3">
             <label for="contacts" class="form-label">Контакты</label>
             <input type="text" class="form-control" id="contacts" name="contacts"
-                   value="{{ member.contacts if member else '' }}">
+                   value="{{ (member.contacts or '') if member else '' }}">
         </div>
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Сохранить</button>

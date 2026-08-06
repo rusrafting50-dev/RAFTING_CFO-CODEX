@@ -151,3 +151,27 @@
         nextBtn.addEventListener('click', function () { scrollByCard(1); });
     });
 })();
+
+// Слайдер доп. фото на странице новости — та же логика прокрутки на
+// ширину одного слайда, что и у карусели на главной.
+(function () {
+    var SLIDE_GAP = 12;
+
+    document.querySelectorAll('.news-gallery').forEach(function (gallery) {
+        var track = gallery.querySelector('.news-gallery-track');
+        var prevBtn = gallery.querySelector('.news-gallery-prev');
+        var nextBtn = gallery.querySelector('.news-gallery-next');
+        if (!track || !prevBtn || !nextBtn) {
+            return;
+        }
+
+        function scrollBySlide(direction) {
+            var slide = track.querySelector('.news-gallery-slide');
+            var step = slide ? slide.getBoundingClientRect().width + SLIDE_GAP : track.clientWidth;
+            track.scrollBy({ left: direction * step, behavior: 'smooth' });
+        }
+
+        prevBtn.addEventListener('click', function () { scrollBySlide(-1); });
+        nextBtn.addEventListener('click', function () { scrollBySlide(1); });
+    });
+})();

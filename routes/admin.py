@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Competition, CompetitionDocument, Document, FederationMember,
-    News, NewsCategory, NewsLevel, Referee, RegionalFederation, SyncLog, User, db,
+    News, NewsCategory, NewsImage, NewsLevel, Referee, RegionalFederation, SyncLog, User, db,
 )
 
 bp = Blueprint('admin', __name__)
@@ -187,6 +187,7 @@ def news_new():
         content = request.form.get('content', '').strip()
         description = request.form.get('description', '').strip()
         image = request.files.get('image')
+        gallery_files = [f for f in request.files.getlist('gallery_images') if f and f.filename]
 
         if not title or not content:
             flash('Заголовок и текст новости обязательны.', 'error')
@@ -195,7 +196,8 @@ def news_new():
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
             )
 
-        if image and image.filename and not allowed_image(image.filename):
+        bad_images = [f for f in [image, *gallery_files] if f and f.filename and not allowed_image(f.filename)]
+        if bad_images:
             flash('Допустимые форматы фотографии: JPG, PNG, WEBP.', 'error')
             return render_template(
                 'admin/news_form.html', active='news', news=None,
@@ -208,11 +210,15 @@ def news_new():
             description=description or None,
             category=request.form.get('category') or None,
             level=request.form.get('level') or None,
+            photo_author=request.form.get('photo_author', '').strip() or None,
+            organization=request.form.get('organization', '').strip() or None,
             is_published=bool(request.form.get('is_published')),
             created_by=current_user.id,
             image_path=save_upload(image) if image and image.filename else None,
         )
         db.session.add(news_item)
+        for gallery_file in gallery_files:
+            db.session.add(NewsImage(news=news_item, file_path=save_upload(gallery_file)))
         db.session.commit()
         flash('Новость создана.', 'success')
         return redirect(url_for('admin.news_list'))
@@ -234,6 +240,7 @@ def news_edit(news_id):
         content = request.form.get('content', '').strip()
         description = request.form.get('description', '').strip()
         image = request.files.get('image')
+        gallery_files = [f for f in request.files.getlist('gallery_images') if f and f.filename]
 
         if not title or not content:
             flash('Заголовок и текст новости обязательны.', 'error')
@@ -242,7 +249,8 @@ def news_edit(news_id):
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
             )
 
-        if image and image.filename and not allowed_image(image.filename):
+        bad_images = [f for f in [image, *gallery_files] if f and f.filename and not allowed_image(f.filename)]
+        if bad_images:
             flash('Допустимые форматы фотографии: JPG, PNG, WEBP.', 'error')
             return render_template(
                 'admin/news_form.html', active='news', news=news_item,
@@ -254,9 +262,13 @@ def news_edit(news_id):
         news_item.description = description or None
         news_item.category = request.form.get('category') or None
         news_item.level = request.form.get('level') or None
+        news_item.photo_author = request.form.get('photo_author', '').strip() or None
+        news_item.organization = request.form.get('organization', '').strip() or None
         news_item.is_published = bool(request.form.get('is_published'))
         if image and image.filename:
             news_item.image_path = save_upload(image)
+        for gallery_file in gallery_files:
+            db.session.add(NewsImage(news=news_item, file_path=save_upload(gallery_file)))
         db.session.commit()
         flash('Новость обновлена.', 'success')
         return redirect(url_for('admin.news_list'))
@@ -276,6 +288,17 @@ def news_delete(news_id):
     db.session.commit()
     flash('Новость удалена.', 'success')
     return redirect(url_for('admin.news_list'))
+
+
+@bp.route('/news/<int:news_id>/images/<int:image_id>/delete', methods=['POST'])
+@section_required('news')
+@roles_required('admin', 'editor')
+def news_image_delete(news_id, image_id):
+    image = NewsImage.query.filter_by(id=image_id, news_id=news_id).first_or_404()
+    db.session.delete(image)
+    db.session.commit()
+    flash('Фото удалено.', 'success')
+    return redirect(url_for('admin.news_edit', news_id=news_id))
 
 
 @bp.route('/news/<int:news_id>/toggle-publish', methods=['POST'])

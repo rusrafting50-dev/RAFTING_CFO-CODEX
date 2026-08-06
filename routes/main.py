@@ -169,6 +169,12 @@ def news():
     )
 
 
+@bp.route('/news/<int:news_id>')
+def news_detail(news_id):
+    item = News.query.filter_by(id=news_id, is_published=True).first_or_404()
+    return render_template('main/news_detail.html', item=item)
+
+
 @bp.route('/contacts')
 def contacts():
     return render_template('main/contacts.html')

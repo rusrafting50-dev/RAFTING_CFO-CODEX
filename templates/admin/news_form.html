@@ -14,7 +14,7 @@
         </div>
         <div class="mb-3">
             <label for="description" class="form-label">Описание новости</label>
-            <textarea class="form-control" id="description" name="description" rows="3">{{ news.description if news else '' }}</textarea>
+            <textarea class="form-control" id="description" name="description" rows="3">{{ (news.description or '') if news else '' }}</textarea>
             <div class="form-text">
                 Краткое описание для карточки новости (выводится после заголовка). Если оставить
                 пустым, на карточке будет показан обрезанный текст новости.
@@ -36,6 +36,46 @@
             <div class="form-text">
                 Рекомендуемый размер — 1200×675 px (соотношение сторон 16:9), JPG/PNG/WEBP.
                 {% if news and news.image_path %}Оставьте поле пустым, чтобы не менять текущую фотографию.{% endif %}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="photo_author" class="form-label">Автор фото</label>
+                <input type="text" class="form-control" id="photo_author" name="photo_author"
+                       value="{{ (news.photo_author or '') if news else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label for="organization" class="form-label">Организация</label>
+                <input type="text" class="form-control" id="organization" name="organization"
+                       value="{{ (news.organization or '') if news else '' }}">
+            </div>
+            <div class="form-text">
+                Показывается под фото на странице новости: «Автор фото: Имя, Организация». Оба поля необязательны.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="gallery_images" class="form-label">Фото для слайдера</label>
+            {% if news and news.gallery_images %}
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    {% for image in news.gallery_images %}
+                        <div class="position-relative">
+                            <img src="{{ url_for('static', filename=image.file_path) }}" alt=""
+                                 style="width: 120px; height: 90px; object-fit: cover;" class="rounded border">
+                            <form method="post"
+                                  action="{{ url_for('admin.news_image_delete', news_id=news.id, image_id=image.id) }}"
+                                  onsubmit="return confirm('Удалить это фото?');"
+                                  class="position-absolute top-0 end-0 m-1">
+                                <button type="submit" class="btn btn-sm btn-danger py-0 px-1">&times;</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="gallery_images" name="gallery_images"
+                   accept=".jpg,.jpeg,.png,.webp" multiple>
+            <div class="form-text">
+                Показываются слайдером внизу страницы новости, если фото больше одного. Можно выбрать
+                сразу несколько файлов — они добавятся к уже загруженным.
             </div>
         </div>
         <div class="row mb-3">

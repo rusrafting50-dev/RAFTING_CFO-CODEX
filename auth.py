@@ -44,6 +44,8 @@ def ensure_schema():
     _ensure_column(inspector, 'user', 'allowed_sections', "VARCHAR(255) NOT NULL DEFAULT ''")
     _ensure_column(inspector, 'news', 'image_path', 'VARCHAR(500)')
     _ensure_column(inspector, 'news', 'description', 'TEXT')
+    _ensure_column(inspector, 'news', 'photo_author', 'VARCHAR(255)')
+    _ensure_column(inspector, 'news', 'organization', 'VARCHAR(255)')
 
 
 def seed_news_taxonomy():
