@@ -109,13 +109,13 @@
                                     {% set excerpt = item.description or item.content %}
                                     <p class="news-row-excerpt">{{ excerpt[:220] }}{% if excerpt|length > 220 %}…{% endif %}</p>
                                     <div class="news-row-tags">
-                                        {% if item.category %}
-                                            <a class="news-row-tag"
-                                               href="{{ url_for('main.news', category=item.category) }}">{{ item.category }}</a>
-                                        {% endif %}
                                         {% if item.level %}
                                             <a class="news-row-tag"
                                                href="{{ url_for('main.news', level=item.level) }}">{{ item.level }}</a>
+                                        {% endif %}
+                                        {% if item.category %}
+                                            <a class="news-row-tag"
+                                               href="{{ url_for('main.news', category=item.category) }}">{{ item.category }}</a>
                                         {% endif %}
                                     </div>
                                 </div>
