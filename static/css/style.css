@@ -10,6 +10,11 @@ body {
     font-family: 'Roboto', Arial, Helvetica, sans-serif;
     background: var(--color-bg);
     margin: 0;
+    /* Выравнивание по ширине для всех текстов сайта — наследуется всеми
+       элементами; там, где нужно другое выравнивание (заголовки, кнопки,
+       центрированные блоки), это уже задано явно отдельными правилами
+       и имеет приоритет над унаследованным значением. */
+    text-align: justify;
 }
 
 /* ===== Шапка =====
@@ -1085,15 +1090,27 @@ footer hr {
     white-space: pre-line;
 }
 
-.news-detail-back {
-    display: inline-block;
+.news-detail-top-row {
+    display: flex;
+    justify-content: flex-end;
     margin-top: 32px;
-    color: var(--color-accent);
-    font-weight: 700;
-    text-decoration: none;
 }
 
-.news-detail-back:hover {
+.scroll-top-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--color-accent);
+    font-weight: 700;
+    font-family: inherit;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0;
+}
+
+.scroll-top-btn:hover {
     text-decoration: underline;
 }
 
