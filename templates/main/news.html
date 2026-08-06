@@ -51,6 +51,7 @@
                                 <div class="news-row-photo"
                                      {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
                                 <div class="news-row-body">
+                                    <p class="news-row-date">{{ item.published_at|ru_date }}</p>
                                     <h2 class="news-row-title">{{ item.title }}</h2>
                                     {% set excerpt = item.description or item.content %}
                                     <p class="news-row-excerpt">{{ excerpt[:220] }}{% if excerpt|length > 220 %}…{% endif %}</p>
@@ -64,9 +65,6 @@
                                                href="{{ url_for('main.news', level=item.level) }}">{{ item.level }}</a>
                                         {% endif %}
                                     </div>
-                                    <p class="news-row-date">
-                                        {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
-                                    </p>
                                 </div>
                             </div>
                         {% endfor %}

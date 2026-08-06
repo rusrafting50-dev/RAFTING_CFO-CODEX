@@ -813,7 +813,9 @@ footer hr {
 }
 
 .news-row-date {
-    margin: auto 0 0;
+    /* Теперь первая строка карточки (над заголовком), а не последняя —
+       обычный порядок сверху вниз, без margin-top:auto. */
+    margin: 0 0 6px;
     color: #888;
     font-size: 14px;
 }
@@ -838,7 +840,9 @@ footer hr {
 }
 
 .official-panel {
-    background: #eceff1;
+    /* Полностью белая (сама заголовочная плашка "Официально" — своим
+       цветом, см. .official-panel-title) — не серая, как раньше. */
+    background: #fff;
     border-radius: 8px;
     overflow: hidden;
     height: 100%;
@@ -866,19 +870,17 @@ footer hr {
 }
 
 .official-item {
-    /* Белое поле карточки новости на сером фоне панели, вместо просто
-       строки с нижней линией-разделителем. */
+    /* Разделены чертой (нижняя граница), а не отдельными полями —
+       весь блок под "Официально" одного, белого, цвета. */
     display: flex;
     flex-direction: column;
     gap: 4px;
-    background: #fff;
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 8px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e2e5e8;
 }
 
 .official-item:last-child {
-    margin-bottom: 0;
+    border-bottom: none;
 }
 
 .official-item-date {

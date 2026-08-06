@@ -13,6 +13,22 @@ load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+RU_MONTHS_GENITIVE = {
+    1: 'января', 2: 'февраля', 3: 'марта', 4: 'апреля', 5: 'мая', 6: 'июня',
+    7: 'июля', 8: 'августа', 9: 'сентября', 10: 'октября', 11: 'ноября', 12: 'декабря',
+}
+
+
+def format_ru_date(value):
+    """День цифрой + месяц прописью ("6 августа"); год добавляется
+    цифрой только если это не текущий год ("6 августа 2025")."""
+    if not value:
+        return ''
+    month = RU_MONTHS_GENITIVE[value.month]
+    if value.year == datetime.utcnow().year:
+        return f'{value.day} {month}'
+    return f'{value.day} {month} {value.year}'
+
 
 def create_app():
     app = Flask(__name__)
@@ -27,6 +43,7 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
+    app.jinja_env.filters['ru_date'] = format_ru_date
 
     register_blueprints(app)
 
