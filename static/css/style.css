@@ -615,10 +615,16 @@ footer hr {
 }
 
 .news-search-row {
+    /* Вся строка (поле поиска + День/Месяц/Год + "За все время") лежит
+       на белой подложке, отдельной от серого фона страницы — как на
+       образце. */
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 20px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 16px 20px;
 }
 
 .news-search-input-form {
@@ -628,12 +634,13 @@ footer hr {
 
 .news-search-input {
     /* "Круглое поле" — почти полностью скруглённые края (радиус больше
-       половины высоты поля), а не просто скруглённые углы прямоугольника. */
+       половины высоты поля), а не просто скруглённые углы прямоугольника.
+       Серый фон отличает поле от белой подложки всей строки поиска. */
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #fff;
-    border: 1px solid #ddd;
+    background: #eef0f2;
+    border: 1px solid #eef0f2;
     border-radius: 24px;
     padding: 10px 20px;
 }
@@ -712,9 +719,10 @@ footer hr {
 }
 
 .btn-all-time.active {
-    background: var(--color-dark);
-    color: #fff;
-    border-color: var(--color-dark);
+    /* Остаётся белой (не заливается тёмным) — активное состояние
+       показываем цветом акцента, как у пунктов День/Месяц/Год. */
+    border-color: var(--color-accent);
+    color: var(--color-accent);
 }
 
 .news-row {
