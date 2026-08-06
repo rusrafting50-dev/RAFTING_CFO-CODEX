@@ -10,11 +10,6 @@ body {
     font-family: 'Roboto', Arial, Helvetica, sans-serif;
     background: var(--color-bg);
     margin: 0;
-    /* Выравнивание по ширине для всех текстов сайта — наследуется всеми
-       элементами; там, где нужно другое выравнивание (заголовки, кнопки,
-       центрированные блоки), это уже задано явно отдельными правилами
-       и имеет приоритет над унаследованным значением. */
-    text-align: justify;
 }
 
 /* ===== Шапка =====
@@ -1088,6 +1083,7 @@ footer hr {
     font-size: 16px;
     line-height: 1.7;
     white-space: pre-line;
+    text-align: justify;
 }
 
 .news-detail-top-row {
