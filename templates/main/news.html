@@ -54,18 +54,16 @@
                                     <h2 class="news-row-title">{{ item.title }}</h2>
                                     {% set excerpt = item.description or item.content %}
                                     <p class="news-row-excerpt">{{ excerpt[:220] }}{% if excerpt|length > 220 %}…{% endif %}</p>
-                                    {% if item.category or item.level %}
-                                        <div class="news-row-tags">
-                                            {% if item.category %}
-                                                <a class="news-row-tag"
-                                                   href="{{ url_for('main.news', category=item.category) }}">{{ item.category }}</a>
-                                            {% endif %}
-                                            {% if item.level %}
-                                                <a class="news-row-tag"
-                                                   href="{{ url_for('main.news', level=item.level) }}">{{ item.level }}</a>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
+                                    <div class="news-row-tags">
+                                        {% if item.category %}
+                                            <a class="news-row-tag"
+                                               href="{{ url_for('main.news', category=item.category) }}">{{ item.category }}</a>
+                                        {% endif %}
+                                        {% if item.level %}
+                                            <a class="news-row-tag"
+                                               href="{{ url_for('main.news', level=item.level) }}">{{ item.level }}</a>
+                                        {% endif %}
+                                    </div>
                                     <p class="news-row-date">
                                         {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
                                     </p>

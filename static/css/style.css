@@ -633,15 +633,15 @@ footer hr {
 }
 
 .news-search-input {
-    /* "Круглое поле" — почти полностью скруглённые края (радиус больше
-       половины высоты поля), а не просто скруглённые углы прямоугольника.
-       Серый фон отличает поле от белой подложки всей строки поиска. */
+    /* Обводка — та же форма (прямоугольная) и тот же серый цвет
+       (#999), что и у кнопки "За все время" (.btn-all-time). Серый
+       фон поля отличает его от белой подложки всей строки поиска. */
     display: flex;
     align-items: center;
     gap: 8px;
     background: #eef0f2;
-    border: 1px solid #eef0f2;
-    border-radius: 24px;
+    border: 1px solid #999;
+    border-radius: 4px;
     padding: 10px 20px;
 }
 
@@ -752,22 +752,46 @@ footer hr {
 }
 
 .news-row-title {
+    /* Ограничено 2 строками (max) + min-height на те же 2 строки —
+       иначе короткий заголовок в одну строку "сжимал" бы карточку,
+       и высота всё равно гуляла бы между карточками (line-clamp сам
+       по себе задаёт только потолок, не резервирует место под него). */
     font-size: 20px;
     font-weight: 700;
+    line-height: 24px;
     color: #000;
     margin: 0 0 8px;
+    min-height: 48px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .news-row-excerpt {
+    /* Не более 3 строк + min-height на те же 3 строки — вместе с
+       заголовком и строкой тегов даёт одинаковую высоту текстового
+       блока у всех карточек независимо от длины текста. */
     color: #555;
+    line-height: 24px;
     margin: 0 0 12px;
+    min-height: 72px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .news-row-tags {
+    /* min-height резервирует место под строку тегов, даже если у
+       новости не задана ни категория, ни уровень — иначе такая
+       карточка оказалась бы ниже остальных. */
     display: flex;
     flex-wrap: wrap;
+    align-items: flex-start;
     gap: 8px;
     margin: 0 0 12px;
+    min-height: 26px;
 }
 
 .news-row-tag {
