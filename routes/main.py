@@ -55,6 +55,31 @@ NEWS_MONTHS = [
 NEWS_MIN_YEAR = 2023
 
 
+def news_menu_selection(item):
+    """Подбирает под тегами конкретной новости пункт первой и второй
+    строки меню — регистронезависимо, той же логикой, что и сам фильтр
+    в news(), чтобы совпадало независимо от регистра значения в админке."""
+    level_text = (item.level or '').strip().lower()
+    active_entry = None
+    for entry in NEWS_MENU:
+        if entry['value'] and entry['value'].lower() == level_text:
+            active_entry = entry
+            break
+
+    if not active_entry:
+        return '', ''
+
+    selected_category = ''
+    if active_entry['submenu']:
+        category_text = (item.category or '').strip().lower()
+        for cat_value, _ in active_entry['submenu']:
+            if cat_value.lower() == category_text:
+                selected_category = cat_value
+                break
+
+    return active_entry['value'], selected_category
+
+
 def official_news_list():
     return [
         item for item in News.query.filter_by(is_published=True)
@@ -176,23 +201,20 @@ def news():
 @bp.route('/news/<int:news_id>')
 def news_detail(news_id):
     item = News.query.filter_by(id=news_id, is_published=True).first_or_404()
+    selected_level, selected_category = news_menu_selection(item)
 
-    current_year = datetime.utcnow().year
     return render_template(
         'main/news_detail.html',
         item=item,
         official_news=official_news_list(),
         news_menu=NEWS_MENU,
-        news_months=NEWS_MONTHS,
-        news_years=list(range(current_year, NEWS_MIN_YEAR - 1, -1)),
-        news_days=list(range(1, 32)),
-        selected_category='',
-        selected_level='',
+        selected_category=selected_category,
+        selected_level=selected_level,
         selected_day=None,
         selected_month=None,
         selected_year=None,
         search_query='',
-        hide_search=True,
+        hide_search_row=True,
     )
 
 

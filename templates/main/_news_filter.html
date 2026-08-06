@@ -1,8 +1,9 @@
 {# Шапка страницы новостей (заголовок + меню фильтра + строка поиска/дат) —
    общая для списка новостей (/news) и страницы отдельной новости
    (/news/<id>), чтобы навигация не пропадала при переходе в статью.
-   hide_search=True скрывает только поле поиска (используется на
-   странице отдельной новости — искать там нечего). #}
+   hide_search_row=True скрывает всю строку поиск/день/месяц/год/"за
+   все время" целиком (используется на странице отдельной новости —
+   там нечего искать и нечего фильтровать по дате). #}
 {% set active_entry = news_menu | selectattr('value', 'equalto', selected_level) | first %}
 <div class="mb-4">
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 {{ 'mb-2' if active_entry and active_entry.submenu }}">
@@ -33,8 +34,8 @@
     {% endif %}
 </div>
 
-<div class="news-search-row mb-5">
-    {% if not hide_search %}
+{% if not hide_search_row %}
+    <div class="news-search-row mb-5">
         <form method="get" action="{{ url_for('main.news') }}" class="news-search-input-form">
             {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
             {% if selected_level %}<input type="hidden" name="level" value="{{ selected_level }}">{% endif %}
@@ -46,51 +47,51 @@
                 <input type="text" name="q" value="{{ search_query }}" placeholder="Поиск...">
             </label>
         </form>
-    {% endif %}
-    <div class="news-date-filters">
-        <div class="news-date-dropdown" data-news-dropdown>
-            <button type="button" class="news-date-toggle {{ 'active' if selected_day }}">
-                {{ selected_day or 'День' }}
-                <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
-            </button>
-            <ul class="news-date-menu">
-                {% for d in news_days %}
-                    <li>
-                        <a class="{{ 'active' if selected_day == d }}"
-                           href="{{ url_for('main.news', category=selected_category or None, level=selected_level or None, q=search_query or None, month=selected_month or None, year=selected_year or None, day=d) }}">{{ d }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
+        <div class="news-date-filters">
+            <div class="news-date-dropdown" data-news-dropdown>
+                <button type="button" class="news-date-toggle {{ 'active' if selected_day }}">
+                    {{ selected_day or 'День' }}
+                    <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                </button>
+                <ul class="news-date-menu">
+                    {% for d in news_days %}
+                        <li>
+                            <a class="{{ 'active' if selected_day == d }}"
+                               href="{{ url_for('main.news', category=selected_category or None, level=selected_level or None, q=search_query or None, month=selected_month or None, year=selected_year or None, day=d) }}">{{ d }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="news-date-dropdown" data-news-dropdown>
+                <button type="button" class="news-date-toggle {{ 'active' if selected_month }}">
+                    {{ news_months[selected_month - 1][1] if selected_month else 'Месяц' }}
+                    <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                </button>
+                <ul class="news-date-menu">
+                    {% for m_value, m_label in news_months %}
+                        <li>
+                            <a class="{{ 'active' if selected_month == m_value }}"
+                               href="{{ url_for('main.news', category=selected_category or None, level=selected_level or None, q=search_query or None, day=selected_day or None, year=selected_year or None, month=m_value) }}">{{ m_label }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="news-date-dropdown" data-news-dropdown>
+                <button type="button" class="news-date-toggle {{ 'active' if selected_year }}">
+                    {{ selected_year or 'Год' }}
+                    <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                </button>
+                <ul class="news-date-menu">
+                    {% for y in news_years %}
+                        <li>
+                            <a class="{{ 'active' if selected_year == y }}"
+                               href="{{ url_for('main.news', category=selected_category or None, level=selected_level or None, q=search_query or None, day=selected_day or None, month=selected_month or None, year=y) }}">{{ y }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-        <div class="news-date-dropdown" data-news-dropdown>
-            <button type="button" class="news-date-toggle {{ 'active' if selected_month }}">
-                {{ news_months[selected_month - 1][1] if selected_month else 'Месяц' }}
-                <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
-            </button>
-            <ul class="news-date-menu">
-                {% for m_value, m_label in news_months %}
-                    <li>
-                        <a class="{{ 'active' if selected_month == m_value }}"
-                           href="{{ url_for('main.news', category=selected_category or None, level=selected_level or None, q=search_query or None, day=selected_day or None, year=selected_year or None, month=m_value) }}">{{ m_label }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <div class="news-date-dropdown" data-news-dropdown>
-            <button type="button" class="news-date-toggle {{ 'active' if selected_year }}">
-                {{ selected_year or 'Год' }}
-                <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
-            </button>
-            <ul class="news-date-menu">
-                {% for y in news_years %}
-                    <li>
-                        <a class="{{ 'active' if selected_year == y }}"
-                           href="{{ url_for('main.news', category=selected_category or None, level=selected_level or None, q=search_query or None, day=selected_day or None, month=selected_month or None, year=y) }}">{{ y }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+        <a class="btn-all-time {{ 'active' if not (selected_day or selected_month or selected_year) }}"
+           href="{{ url_for('main.news', category=selected_category or None, q=search_query or None, level=selected_level or None) }}">За все время</a>
     </div>
-    <a class="btn-all-time {{ 'active' if not (selected_day or selected_month or selected_year) }}"
-       href="{{ url_for('main.news', category=selected_category or None, q=search_query or None, level=selected_level or None) }}">За все время</a>
-</div>
+{% endif %}
