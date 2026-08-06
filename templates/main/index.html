@@ -24,7 +24,7 @@
 
     <div class="container py-5">
         <div class="row mb-4">
-            <div class="col-12">
+            <div class="col-12 position-relative">
                 <ul class="nav home-tabs" id="homeTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="tab-competitions-btn" data-bs-toggle="tab"
@@ -45,8 +45,11 @@
                     <div class="tab-pane fade show active" id="tab-competitions" role="tabpanel"
                          aria-labelledby="tab-competitions-btn">
                         {% if upcoming_competitions %}
-                            <div class="home-carousel">
-                                <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                            <div class="home-carousel-widget">
+                                <div class="home-carousel-nav">
+                                    <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                                    <button class="home-carousel-btn home-carousel-next" type="button" aria-label="Вперёд">&rsaquo;</button>
+                                </div>
                                 <div class="home-carousel-track">
                                     {% for competition in upcoming_competitions %}
                                         {% set ct = (competition.comp_type or '')|lower %}
@@ -64,7 +67,7 @@
                                             {% if competition.age_group or competition.boat_class %}
                                                 <div class="home-carousel-card-classes">
                                                     {% if competition.age_group %}
-                                                        <span class="text-muted small">{{ competition.age_group }}</span>
+                                                        <span class="home-carousel-card-age small">{{ competition.age_group }}</span>
                                                     {% endif %}
                                                     {% if competition.boat_class and 'R4' in competition.boat_class %}
                                                         <span class="badge bg-info text-dark">R4</span>
@@ -91,7 +94,6 @@
                                         </a>
                                     {% endfor %}
                                 </div>
-                                <button class="home-carousel-btn home-carousel-next" type="button" aria-label="Вперёд">&rsaquo;</button>
                             </div>
                         {% else %}
                             <p class="text-muted">Ближайших соревнований пока нет.</p>
@@ -99,8 +101,11 @@
                     </div>
                     <div class="tab-pane fade" id="tab-events" role="tabpanel" aria-labelledby="tab-events-btn">
                         {% if upcoming_events %}
-                            <div class="home-carousel">
-                                <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                            <div class="home-carousel-widget">
+                                <div class="home-carousel-nav">
+                                    <button class="home-carousel-btn home-carousel-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                                    <button class="home-carousel-btn home-carousel-next" type="button" aria-label="Вперёд">&rsaquo;</button>
+                                </div>
                                 <div class="home-carousel-track">
                                     {% for event in upcoming_events %}
                                         {% set status_lower = (event.status or '')|lower %}
@@ -126,7 +131,6 @@
                                         </a>
                                     {% endfor %}
                                 </div>
-                                <button class="home-carousel-btn home-carousel-next" type="button" aria-label="Вперёд">&rsaquo;</button>
                             </div>
                         {% else %}
                             <p class="text-muted">Ближайших мероприятий пока нет.</p>

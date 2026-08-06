@@ -339,11 +339,18 @@ header.scrolled {
     border-bottom-color: var(--color-accent);
 }
 
-.home-carousel {
-    position: relative;
+.home-carousel-nav {
+    /* Стрелки прокрутки — в строке вкладок "Соревнования/Мероприятия"
+       (как КАЛЕНДАРЬ МАТЧЕЙ на rfs.ru), а не по бокам самой ленты
+       карточек. Позиционируются от .position-relative на col-12 —
+       у каждой вкладки свой .home-carousel-widget, но виден только
+       активный (Bootstrap скрывает неактивный .tab-pane целиком). */
+    position: absolute;
+    top: 6px;
+    right: 0;
     display: flex;
-    align-items: center;
-    gap: 12px;
+    gap: 8px;
+    z-index: 2;
 }
 
 .home-carousel-track {
@@ -353,7 +360,6 @@ header.scrolled {
     scroll-behavior: smooth;
     scroll-snap-type: x mandatory;
     padding-bottom: 4px;
-    flex: 1 1 auto;
     /* Скрываем нативный скроллбар — прокрутка стрелками/свайпом,
        визуально это горизонтальная лента карточек, а не список. */
     scrollbar-width: none;
@@ -364,8 +370,8 @@ header.scrolled {
 }
 
 .home-carousel-card {
-    /* Белая карточка с рамкой (как на rfs.ru), а не тёмная плашка —
-       категория+даты сверху, лого+заголовок в центре, статус снизу.
+    /* Тот же горизонтальный градиент, что и в шапке сайта (тёмный по
+       краям, светлее к середине) — вместо белой карточки. Текст белый.
        flex:1 растягивает карточки поровну на всю ширину трека, когда
        карточек мало — с min-width как нижней границей, ниже которой
        вместо сжатия начинается горизонтальная прокрутка (много карточек).
@@ -375,9 +381,9 @@ header.scrolled {
     scroll-snap-align: start;
     flex: 1 1 0;
     min-width: 240px;
-    background: #fff;
-    color: var(--color-dark);
-    border: 1px solid #e0e0e0;
+    background: linear-gradient(90deg, var(--color-dark) 0%, #3a3d6e 50%, var(--color-dark) 100%);
+    color: #fff;
+    border: 1px solid transparent;
     border-radius: 8px;
     padding: 16px;
     text-decoration: none;
@@ -388,9 +394,9 @@ header.scrolled {
 
 .home-carousel-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
     border-color: var(--color-accent);
-    color: var(--color-dark);
+    color: #fff;
 }
 
 .home-carousel-card-top {
@@ -405,12 +411,12 @@ header.scrolled {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #888;
+    color: #9aa0c9;
 }
 
 .home-carousel-card-dates {
     font-size: 12px;
-    color: #888;
+    color: #b7b7cf;
     text-align: right;
     white-space: nowrap;
 }
@@ -422,12 +428,14 @@ header.scrolled {
 }
 
 .home-carousel-card-logo {
+    /* Светлый кружок — на тёмном градиенте карточки тёмный фон (как
+       раньше) слился бы с самой карточкой. */
     flex: none;
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--color-dark);
-    color: #fff;
+    background: #fff;
+    color: var(--color-dark);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -480,6 +488,10 @@ header.scrolled {
     margin: 0 0 10px;
 }
 
+.home-carousel-card-age {
+    color: #c9cdf0;
+}
+
 .home-carousel-card-meta-list {
     list-style: none;
     margin: 0;
@@ -488,7 +500,7 @@ header.scrolled {
     flex-direction: column;
     gap: 4px;
     font-size: 12px;
-    color: #666;
+    color: #c9cdf0;
 }
 
 .home-carousel-btn {

@@ -133,7 +133,7 @@
 (function () {
     var CARD_GAP = 16;
 
-    document.querySelectorAll('.home-carousel').forEach(function (carousel) {
+    document.querySelectorAll('.home-carousel-widget').forEach(function (carousel) {
         var track = carousel.querySelector('.home-carousel-track');
         var prevBtn = carousel.querySelector('.home-carousel-prev');
         var nextBtn = carousel.querySelector('.home-carousel-next');
