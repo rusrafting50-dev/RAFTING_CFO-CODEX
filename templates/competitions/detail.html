@@ -134,7 +134,27 @@
                 {% endif %}
             </div>
 
-            <div class="tab-pane fade" id="tab-results" role="tabpanel"></div>
+            <div class="tab-pane fade" id="tab-results" role="tabpanel">
+                {% for doc in results_docs %}
+                    <h3 class="h6">{{ doc.title }}</h3>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-sm table-zebra align-middle">
+                            <thead>
+                                <tr class="table-dark">
+                                    {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in doc.protocol_rows %}
+                                    <tr>
+                                        {% for column in doc.protocol_columns %}<td>{{ row.get(column, '') }}</td>{% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endfor %}
+            </div>
             <div class="tab-pane fade" id="tab-media" role="tabpanel"></div>
         </div>
     </div>

@@ -75,6 +75,7 @@ def detail(competition_id):
     )
 
     documents_by_type = {}
+    results_docs = []
     for document in documents:
         if document.results_data:
             # Протокол пришёл от COREZ как структурированные данные — строим таблицу.
@@ -87,10 +88,18 @@ def detail(competition_id):
                         columns.append(key)
             document.protocol_rows = rows
             document.protocol_columns = columns
-        documents_by_type.setdefault(document.doc_type, []).append(document)
+
+        # протокол_результатов — на вкладку "Результаты" (может быть
+        # несколько отдельных таблиц с разными title, например по группам
+        # спринта R4/R6 × мужчины/женщины), остальные типы — на "Протоколы".
+        if document.doc_type == 'протокол_результатов':
+            results_docs.append(document)
+        else:
+            documents_by_type.setdefault(document.doc_type, []).append(document)
 
     return render_template(
         'competitions/detail.html',
         competition=competition,
         documents_by_type=documents_by_type,
+        results_docs=results_docs,
     )

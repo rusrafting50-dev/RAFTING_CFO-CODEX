@@ -319,7 +319,11 @@ def sync_protocols():
     """Принимает от COREZ структурированные стартовые протоколы / протоколы результатов.
 
     Каждый элемент привязывается к соревнованию по его source_id и заменяет
-    существующий документ соответствующего типа (или создаёт новый).
+    существующий документ с тем же doc_type+title (или создаёт новый) — по
+    title, а не только по doc_type, потому что один и тот же doc_type
+    (например, протокол_результатов) может состоять из нескольких отдельных
+    таблиц с разными заголовками (спринт — R4/R6 × мужчины/женщины и т.д.),
+    и они не должны затирать друг друга.
     """
     items = get_items_from_request()
     if items is None:
@@ -332,6 +336,7 @@ def sync_protocols():
         competition_source_id = item.get('competition_source_id')
         doc_type = item.get('doc_type')
         rows = item.get('rows')
+        title = item.get('title') or PROTOCOL_TITLES.get(doc_type)
 
         if (
             competition_source_id is None
@@ -352,7 +357,7 @@ def sync_protocols():
             continue
 
         document = CompetitionDocument.query.filter_by(
-            competition_id=competition.id, doc_type=doc_type,
+            competition_id=competition.id, doc_type=doc_type, title=title,
         ).first()
         if document is None:
             document = CompetitionDocument(competition_id=competition.id, doc_type=doc_type)
@@ -361,7 +366,7 @@ def sync_protocols():
         else:
             updated += 1
 
-        document.title = item.get('title') or PROTOCOL_TITLES[doc_type]
+        document.title = title
         document.results_data = json.dumps(rows, ensure_ascii=False)
 
     db.session.commit()
