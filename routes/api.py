@@ -157,6 +157,11 @@ def sync_competitions():
                 competition.logo_path = saved_path
             else:
                 errors.append(f'source_id={source_id}: логотип не сохранён (неверный формат/данные)')
+        else:
+            # COREZ шлёт logo_filename/logo_base64 в каждой отправке (null,
+            # если у соревнования логотип убрали) — раз их нет и сейчас,
+            # это значит логотип убрали, а не что поле просто не пришло.
+            competition.logo_path = None
 
     db.session.commit()
     log_sync('competitions', created + updated,
