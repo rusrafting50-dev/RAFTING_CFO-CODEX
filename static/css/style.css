@@ -473,8 +473,8 @@ header.scrolled {
 
 .home-carousel-card-logo-img {
     flex: none;
-    width: 72px;
-    height: 72px;
+    width: 108px;
+    height: 108px;
     object-fit: contain;
     border-radius: 6px;
     background: #fff;
