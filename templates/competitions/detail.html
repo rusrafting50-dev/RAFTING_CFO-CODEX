@@ -12,11 +12,37 @@
             else ('bg-info' if 'всероссийск' in ct
             else 'bg-warning'))) %}
 
-        <div class="card border-0 shadow-sm mb-4" style="max-width: 420px;">
-            <div class="card-header bg-white border-bottom py-2">
-                <div class="fw-bold" style="line-height: 1.3;">{{ competition.name }}</div>
-            </div>
-            <div class="card-body pb-2">
+        <h1 class="h3 fw-bold mb-3">{{ competition.name }}</h1>
+
+        <ul class="nav home-tabs" id="compTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-info-btn" data-bs-toggle="tab"
+                        data-bs-target="#tab-info" type="button" role="tab">Информация</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-news-btn" data-bs-toggle="tab"
+                        data-bs-target="#tab-news" type="button" role="tab">Новости</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-entries-btn" data-bs-toggle="tab"
+                        data-bs-target="#tab-entries" type="button" role="tab">Заявки</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-protocols-btn" data-bs-toggle="tab"
+                        data-bs-target="#tab-protocols" type="button" role="tab">Протоколы</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-results-btn" data-bs-toggle="tab"
+                        data-bs-target="#tab-results" type="button" role="tab">Результаты</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-media-btn" data-bs-toggle="tab"
+                        data-bs-target="#tab-media" type="button" role="tab">Медиа</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="compTabsContent">
+            <div class="tab-pane fade show active" id="tab-info" role="tabpanel">
                 {% if competition.comp_type %}
                     <div class="mb-2">
                         <span class="badge {{ badge_class }}">{{ competition.comp_type }}</span>
@@ -53,57 +79,62 @@
                     {% endif %}
                 </ul>
             </div>
-        </div>
 
-        <h2 class="h5 mb-3">Документы</h2>
-        {% if documents_by_type %}
-            <ul class="nav nav-tabs" id="docTabs" role="tablist">
-                {% for doc_type, docs in documents_by_type.items() %}
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link {{ 'active' if loop.first }}"
-                                id="tab-{{ loop.index }}" data-bs-toggle="tab"
-                                data-bs-target="#pane-{{ loop.index }}" type="button" role="tab">
-                            {{ doc_type }}
-                        </button>
-                    </li>
-                {% endfor %}
-            </ul>
-            <div class="tab-content border border-top-0 p-3" id="docTabsContent">
-                {% for doc_type, docs in documents_by_type.items() %}
-                    <div class="tab-pane fade {{ 'show active' if loop.first }}"
-                         id="pane-{{ loop.index }}" role="tabpanel">
-                        {% for doc in docs %}
-                            {% if doc.results_data %}
-                                <h3 class="h6">{{ doc.title }}</h3>
-                                <div class="table-responsive mb-4">
-                                    <table class="table table-zebra align-middle">
-                                        <thead>
-                                            <tr class="table-dark">
-                                                {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for row in doc.protocol_rows %}
-                                                <tr>
-                                                    {% for column in doc.protocol_columns %}<td>{{ row.get(column, '') }}</td>{% endfor %}
-                                                </tr>
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            {% elif doc.file_path %}
-                                <p class="mb-2">
-                                    <a href="{{ url_for('static', filename=doc.file_path) }}" download>{{ doc.title }}</a>
-                                </p>
-                            {% else %}
-                                <p class="text-muted mb-2">{{ doc.title }} — данные пока не поступили.</p>
-                            {% endif %}
+            <div class="tab-pane fade" id="tab-news" role="tabpanel"></div>
+            <div class="tab-pane fade" id="tab-entries" role="tabpanel"></div>
+
+            <div class="tab-pane fade" id="tab-protocols" role="tabpanel">
+                {% if documents_by_type %}
+                    <ul class="nav nav-tabs" id="docTabs" role="tablist">
+                        {% for doc_type, docs in documents_by_type.items() %}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link {{ 'active' if loop.first }}"
+                                        id="tab-{{ loop.index }}" data-bs-toggle="tab"
+                                        data-bs-target="#pane-{{ loop.index }}" type="button" role="tab">
+                                    {{ doc_type }}
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="tab-content border border-top-0 p-3" id="docTabsContent">
+                        {% for doc_type, docs in documents_by_type.items() %}
+                            <div class="tab-pane fade {{ 'show active' if loop.first }}"
+                                 id="pane-{{ loop.index }}" role="tabpanel">
+                                {% for doc in docs %}
+                                    {% if doc.results_data %}
+                                        <h3 class="h6">{{ doc.title }}</h3>
+                                        <div class="table-responsive mb-4">
+                                            <table class="table table-zebra align-middle">
+                                                <thead>
+                                                    <tr class="table-dark">
+                                                        {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for row in doc.protocol_rows %}
+                                                        <tr>
+                                                            {% for column in doc.protocol_columns %}<td>{{ row.get(column, '') }}</td>{% endfor %}
+                                                        </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% elif doc.file_path %}
+                                        <p class="mb-2">
+                                            <a href="{{ url_for('static', filename=doc.file_path) }}" download>{{ doc.title }}</a>
+                                        </p>
+                                    {% else %}
+                                        <p class="text-muted mb-2">{{ doc.title }} — данные пока не поступили.</p>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                         {% endfor %}
                     </div>
-                {% endfor %}
+                {% endif %}
             </div>
-        {% else %}
-            <p class="text-muted">Документы пока не загружены.</p>
-        {% endif %}
+
+            <div class="tab-pane fade" id="tab-results" role="tabpanel"></div>
+            <div class="tab-pane fade" id="tab-media" role="tabpanel"></div>
+        </div>
     </div>
 {% endblock %}
