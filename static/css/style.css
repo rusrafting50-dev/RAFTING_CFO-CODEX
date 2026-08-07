@@ -390,7 +390,7 @@ header.scrolled {
     text-decoration: none;
     display: flex;
     flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
 }
 
 .home-carousel-card:hover {
@@ -398,6 +398,7 @@ header.scrolled {
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
     border-color: var(--color-accent);
     color: #fff;
+    filter: brightness(1.25);
 }
 
 .home-carousel-card-top {
