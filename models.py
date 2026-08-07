@@ -83,6 +83,8 @@ class Competition(db.Model):
     age_group = db.Column(db.String(255))  # возрастная группа (напр. "Мужчины, женщины")
     boat_class = db.Column(db.String(20))  # класс судна: R4 / R6 / R4/R6
     head_judge = db.Column(db.String(255))  # гл. судья соревнований
+    registration_number = db.Column(db.String(100))  # № ЕКП
+    logo_path = db.Column(db.String(500))  # логотип соревнования (относительно static/)
 
     documents = db.relationship(
         'CompetitionDocument', backref='competition',

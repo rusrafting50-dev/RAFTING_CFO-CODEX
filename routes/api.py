@@ -4,12 +4,15 @@
 соответствующую таблицу по полю source_id (upsert: обновляет существующую
 запись или создаёт новую). Запросы защищены заголовком X-API-Key.
 """
+import base64
+import binascii
 import json
 import os
-from datetime import date
+from datetime import date, datetime
 from functools import wraps
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
+from werkzeug.utils import secure_filename
 
 from models import Athlete, Competition, CompetitionDocument, Event, Referee, SyncLog, db
 
@@ -63,6 +66,31 @@ def log_sync(sync_type, records_count, status='success', message=''):
     )
     db.session.add(log)
     db.session.commit()
+
+
+ALLOWED_LOGO_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'}
+
+
+def save_logo_from_base64(filename, b64_data):
+    """Декодирует логотип, присланный в base64 (файлы по API не передать
+    напрямую — COREZ шлёт JSON), и сохраняет в UPLOAD_FOLDER. Возвращает
+    путь относительно static/ или None, если формат/данные не подошли."""
+    if not filename or '.' not in filename:
+        return None
+    ext = filename.rsplit('.', 1)[1].lower()
+    if ext not in ALLOWED_LOGO_EXTENSIONS:
+        return None
+    try:
+        raw = base64.b64decode(b64_data, validate=True)
+    except (binascii.Error, ValueError):
+        return None
+
+    upload_dir = current_app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_dir, exist_ok=True)
+    unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{secure_filename(filename)}"
+    with open(os.path.join(upload_dir, unique_name), 'wb') as f:
+        f.write(raw)
+    return f"uploads/{unique_name}"
 
 
 def get_items_from_request():
@@ -119,6 +147,16 @@ def sync_competitions():
         competition.age_group = item.get('age_group')
         competition.boat_class = item.get('boat_class')
         competition.head_judge = item.get('head_judge')
+        competition.registration_number = item.get('registration_number')
+
+        logo_filename = item.get('logo_filename')
+        logo_base64 = item.get('logo_base64')
+        if logo_filename and logo_base64:
+            saved_path = save_logo_from_base64(logo_filename, logo_base64)
+            if saved_path:
+                competition.logo_path = saved_path
+            else:
+                errors.append(f'source_id={source_id}: логотип не сохранён (неверный формат/данные)')
 
     db.session.commit()
     log_sync('competitions', created + updated,

@@ -58,39 +58,66 @@
                                             else ('bg-success' if 'первенство' in ct
                                             else ('bg-info' if 'всероссийск' in ct
                                             else 'bg-warning'))) %}
+                                        {# Бейдж не дублирует то, что уже написано в заголовке (как в COREZ) #}
+                                        {% set show_badge = competition.comp_type and (competition.comp_type|upper not in competition.name|upper) %}
                                         <a href="{{ url_for('competitions.detail', competition_id=competition.id) }}"
                                            class="home-carousel-card">
                                             <span class="home-carousel-card-title">{{ competition.name }}</span>
-                                            {% if competition.comp_type %}
-                                                <span class="badge {{ badge_class }} align-self-start home-carousel-card-badge">{{ competition.comp_type }}</span>
-                                            {% endif %}
-                                            {% if competition.age_group or competition.boat_class %}
-                                                <div class="home-carousel-card-classes">
+                                            <div class="home-carousel-card-body-row">
+                                                {% if competition.logo_path %}
+                                                    <img class="home-carousel-card-logo-img"
+                                                         src="{{ url_for('static', filename=competition.logo_path) }}" alt="">
+                                                {% endif %}
+                                                <div class="home-carousel-card-info">
+                                                    {% if show_badge %}
+                                                        <span class="badge {{ badge_class }} align-self-start home-carousel-card-badge">{{ competition.comp_type }}</span>
+                                                    {% endif %}
                                                     {% if competition.age_group %}
-                                                        <span class="home-carousel-card-age small">{{ competition.age_group }}</span>
+                                                        {% for group in competition.age_group.split(' / ') %}
+                                                            {% if group.strip() %}
+                                                                <div class="home-carousel-card-classes">
+                                                                    <span class="home-carousel-card-age small">{{ group.strip() }}</span>
+                                                                    {% if competition.boat_class and 'R4' in competition.boat_class %}
+                                                                        <span class="badge bg-info text-dark">R4</span>
+                                                                    {% endif %}
+                                                                    {% if competition.boat_class and 'R6' in competition.boat_class %}
+                                                                        <span class="badge bg-info text-dark">R6</span>
+                                                                    {% endif %}
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% elif competition.boat_class %}
+                                                        <div class="home-carousel-card-classes">
+                                                            {% if 'R4' in competition.boat_class %}
+                                                                <span class="badge bg-info text-dark">R4</span>
+                                                            {% endif %}
+                                                            {% if 'R6' in competition.boat_class %}
+                                                                <span class="badge bg-info text-dark">R6</span>
+                                                            {% endif %}
+                                                        </div>
                                                     {% endif %}
-                                                    {% if competition.boat_class and 'R4' in competition.boat_class %}
-                                                        <span class="badge bg-info text-dark">R4</span>
+                                                    {% if competition.registration_number %}
+                                                        <div class="home-carousel-card-reg small">№ ЕКП: {{ competition.registration_number }}</div>
                                                     {% endif %}
-                                                    {% if competition.boat_class and 'R6' in competition.boat_class %}
-                                                        <span class="badge bg-info text-dark">R6</span>
+                                                    {% if competition.head_judge %}
+                                                        <div class="home-carousel-card-judge small">⚖️ Гл. судья: {{ competition.head_judge|truncate(50) }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% if competition.start_date or competition.location %}
+                                                <hr class="home-carousel-card-hr">
+                                                <div class="home-carousel-card-meta-list">
+                                                    {% if competition.start_date %}
+                                                        <div>
+                                                            📅
+                                                            {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} – {{ competition.end_date|ru_date_full }}{% endif %}
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if competition.location %}
+                                                        <div>📍 {{ competition.location }}</div>
                                                     {% endif %}
                                                 </div>
                                             {% endif %}
-                                            <ul class="home-carousel-card-meta-list">
-                                                {% if competition.start_date %}
-                                                    <li>
-                                                        📅
-                                                        {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} – {{ competition.end_date|ru_date_full }}{% endif %}
-                                                    </li>
-                                                {% endif %}
-                                                {% if competition.location %}
-                                                    <li>📍 {{ competition.location }}</li>
-                                                {% endif %}
-                                                {% if competition.head_judge %}
-                                                    <li>⚖️ Гл. судья: {{ competition.head_judge }}</li>
-                                                {% endif %}
-                                            </ul>
                                         </a>
                                     {% endfor %}
                                 </div>
