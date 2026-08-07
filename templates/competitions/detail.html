@@ -11,7 +11,7 @@
         <table class="table table-sm table-zebra align-middle">
             <thead>
                 {% if есть_попытки %}
-                    <tr class="site-table-header">
+                    <tr class="site-table-header site-table-header-slim">
                         {% for column in doc.protocol_columns %}
                             {% if column == '1 попытка, время' %}
                                 <th colspan="3">1 попытка</th>
@@ -22,7 +22,7 @@
                             {% endif %}
                         {% endfor %}
                     </tr>
-                    <tr class="site-table-header">
+                    <tr class="site-table-header site-table-header-slim">
                         {% for column in doc.protocol_columns %}
                             {% if column.split(', ')[-1] in попытка_подколонки %}
                                 <th>{{ column.split(', ')[-1]|cap_first }}</th>

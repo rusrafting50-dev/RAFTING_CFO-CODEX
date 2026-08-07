@@ -853,6 +853,15 @@ footer hr {
     vertical-align: middle;
 }
 
+.site-table-header-slim th {
+    /* Таблица слалома — шапка в две строки ("1/2 попытка" + Время/Штраф/
+       Итог под ними), вдвое ниже обычной, иначе с обычным (вдвое
+       увеличенным) паддингом на каждую строку шапка выходит слишком
+       высокой. */
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
 .results-stage-cell {
     text-align: center;
 }
