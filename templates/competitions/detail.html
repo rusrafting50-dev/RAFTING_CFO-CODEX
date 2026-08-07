@@ -12,9 +12,9 @@
             else ('bg-info' if 'всероссийск' in ct
             else 'bg-warning'))) %}
 
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
             <h1 class="h3 mb-0">{{ competition.name }}</h1>
-            <ul class="news-filter-menu" id="compTabs" role="tablist">
+            <ul class="news-filter-menu comp-tabs-menu" id="compTabs" role="tablist">
                 <li role="presentation">
                     <button class="active" id="tab-info-btn" data-bs-toggle="tab"
                             data-bs-target="#tab-info" type="button" role="tab">Информация</button>
