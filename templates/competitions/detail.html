@@ -4,13 +4,36 @@
 {% block description %}{{ competition.name }}: даты, место проведения, документы{% endblock %}
 
 {% macro results_table(doc) %}
+    {% set попытка_подколонки = ('время', 'штраф', 'итог') %}
+    {% set есть_попытки = ('1 попытка, время' in doc.protocol_columns) %}
     <h3 class="h6">{{ doc.title }}</h3>
     <div class="table-responsive mb-4">
         <table class="table table-sm table-zebra align-middle">
             <thead>
-                <tr class="site-table-header">
-                    {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
-                </tr>
+                {% if есть_попытки %}
+                    <tr class="site-table-header">
+                        {% for column in doc.protocol_columns %}
+                            {% if column == '1 попытка, время' %}
+                                <th colspan="3">1 попытка</th>
+                            {% elif column == '2 попытка, время' %}
+                                <th colspan="3">2 попытка</th>
+                            {% elif column.split(', ')[-1] not in попытка_подколонки %}
+                                <th rowspan="2">{{ column }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    <tr class="site-table-header">
+                        {% for column in doc.protocol_columns %}
+                            {% if column.split(', ')[-1] in попытка_подколонки %}
+                                <th>{{ column.split(', ')[-1]|cap_first }}</th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% else %}
+                    <tr class="site-table-header">
+                        {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
+                    </tr>
+                {% endif %}
             </thead>
             <tbody>
                 {% for row in doc.protocol_rows %}
