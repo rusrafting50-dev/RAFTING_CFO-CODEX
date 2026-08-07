@@ -833,12 +833,12 @@ footer hr {
     margin-left: auto;
 }
 
-.results-table-header {
+.site-table-header {
     /* Тот же градиент, что и в шапке сайта, вместо Bootstrap table-dark. */
     background: linear-gradient(90deg, var(--color-dark) 0%, #3a3d6e 50%, var(--color-dark) 100%);
 }
 
-.results-table-header th {
+.site-table-header th {
     color: #fff;
     border-color: rgba(255, 255, 255, 0.15);
     /* Вдвое выше обычной шапки таблицы (было ~8px сверху/снизу) — и
