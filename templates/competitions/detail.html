@@ -12,34 +12,35 @@
             else ('bg-info' if 'всероссийск' in ct
             else 'bg-warning'))) %}
 
-        <h1 class="h3 fw-bold mb-3">{{ competition.name }}</h1>
-
-        <ul class="nav home-tabs" id="compTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab-info-btn" data-bs-toggle="tab"
-                        data-bs-target="#tab-info" type="button" role="tab">Информация</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-news-btn" data-bs-toggle="tab"
-                        data-bs-target="#tab-news" type="button" role="tab">Новости</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-entries-btn" data-bs-toggle="tab"
-                        data-bs-target="#tab-entries" type="button" role="tab">Заявки</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-protocols-btn" data-bs-toggle="tab"
-                        data-bs-target="#tab-protocols" type="button" role="tab">Протоколы</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-results-btn" data-bs-toggle="tab"
-                        data-bs-target="#tab-results" type="button" role="tab">Результаты</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-media-btn" data-bs-toggle="tab"
-                        data-bs-target="#tab-media" type="button" role="tab">Медиа</button>
-            </li>
-        </ul>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+            <h1 class="h3 mb-0">{{ competition.name }}</h1>
+            <ul class="news-filter-menu" id="compTabs" role="tablist">
+                <li role="presentation">
+                    <button class="active" id="tab-info-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-info" type="button" role="tab">Информация</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-news-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-news" type="button" role="tab">Новости</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-entries-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-entries" type="button" role="tab">Заявки</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-protocols-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-protocols" type="button" role="tab">Протоколы</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-results-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-results" type="button" role="tab">Результаты</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-media-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-media" type="button" role="tab">Медиа</button>
+                </li>
+            </ul>
+        </div>
 
         <div class="tab-content" id="compTabsContent">
             <div class="tab-pane fade show active" id="tab-info" role="tabpanel">

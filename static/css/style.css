@@ -733,7 +733,8 @@ footer hr {
     padding: 0;
 }
 
-.news-filter-menu a {
+.news-filter-menu a,
+.news-filter-menu button {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -744,14 +745,19 @@ footer hr {
     text-decoration: none;
     letter-spacing: 0.02em;
     padding-bottom: 4px;
+    background: none;
+    border: none;
     border-bottom: 2px solid transparent;
+    cursor: pointer;
 }
 
-.news-filter-menu a:hover {
+.news-filter-menu a:hover,
+.news-filter-menu button:hover {
     color: var(--color-accent);
 }
 
-.news-filter-menu a.active {
+.news-filter-menu a.active,
+.news-filter-menu button.active {
     color: var(--color-dark);
     border-bottom-color: #e53935;
 }
