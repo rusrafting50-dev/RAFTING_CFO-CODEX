@@ -135,25 +135,45 @@
             </div>
 
             <div class="tab-pane fade" id="tab-results" role="tabpanel">
-                {% for doc in results_docs %}
-                    <h3 class="h6">{{ doc.title }}</h3>
-                    <div class="table-responsive mb-4">
-                        <table class="table table-sm table-zebra align-middle">
-                            <thead>
-                                <tr class="table-dark">
-                                    {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in doc.protocol_rows %}
-                                    <tr>
-                                        {% for column in doc.protocol_columns %}<td>{{ row.get(column, '') }}</td>{% endfor %}
-                                    </tr>
+                {% if results_groups %}
+                    <ul class="news-submenu mb-3" id="resultsDiscTabs" role="tablist">
+                        {% for group in results_groups %}
+                            <li role="presentation">
+                                <button class="{{ 'active' if loop.first }}"
+                                        id="res-{{ group.doc_type }}-btn" data-bs-toggle="tab"
+                                        data-bs-target="#res-{{ group.doc_type }}" type="button" role="tab">
+                                    {{ group.label }}
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="tab-content" id="resultsDiscTabsContent">
+                        {% for group in results_groups %}
+                            <div class="tab-pane fade {{ 'show active' if loop.first }}"
+                                 id="res-{{ group.doc_type }}" role="tabpanel">
+                                {% for doc in group.docs %}
+                                    <h3 class="h6">{{ doc.title }}</h3>
+                                    <div class="table-responsive mb-4">
+                                        <table class="table table-sm table-zebra align-middle">
+                                            <thead>
+                                                <tr class="table-dark">
+                                                    {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for row in doc.protocol_rows %}
+                                                    <tr>
+                                                        {% for column in doc.protocol_columns %}<td>{{ row.get(column, '') }}</td>{% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 {% endfor %}
-                            </tbody>
-                        </table>
+                            </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                {% endif %}
             </div>
             <div class="tab-pane fade" id="tab-media" role="tabpanel"></div>
         </div>

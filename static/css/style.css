@@ -791,20 +791,26 @@ footer hr {
     overflow: hidden;
 }
 
-.news-submenu a {
+.news-submenu a,
+.news-submenu button {
     display: inline-flex;
     align-items: center;
     color: var(--color-dark);
     font-size: 14px;
     text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
     padding: 12px 18px;
 }
 
-.news-submenu a:hover {
+.news-submenu a:hover,
+.news-submenu button:hover {
     background: rgba(0, 0, 0, 0.08);
 }
 
-.news-submenu a.active {
+.news-submenu a.active,
+.news-submenu button.active {
     background: #4a4a5a;
     color: #fff;
     font-weight: 700;

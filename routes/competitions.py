@@ -9,6 +9,19 @@ from models import Competition, CompetitionDocument
 
 bp = Blueprint('competitions', __name__)
 
+# Порядок и подписи дисциплин на вкладке "Результаты" (второй ряд меню).
+# Список фиксированный — пункт появляется, только если для него реально
+# пришли данные от COREZ (многоборье пересчитывается инкрементально по мере
+# синхронизации остальных дисциплин, поэтому его пункт появляется вместе
+# со спринтом, а не только в конце соревнования).
+RESULT_DISCIPLINES = [
+    ('результаты_спринт', 'Спринт'),
+    ('результаты_пс', 'Параллельный спринт'),
+    ('результаты_слалом', 'Слалом'),
+    ('результаты_дг', 'Длинная гонка'),
+    ('результаты_мб', 'Многоборье'),
+]
+
 
 @bp.route('/')
 def calendar():
@@ -74,8 +87,10 @@ def detail(competition_id):
         .all()
     )
 
+    result_doc_types = {doc_type for doc_type, _ in RESULT_DISCIPLINES}
+
     documents_by_type = {}
-    results_docs = []
+    results_by_type = {}
     for document in documents:
         if document.results_data:
             # Протокол пришёл от COREZ как структурированные данные — строим таблицу.
@@ -89,17 +104,24 @@ def detail(competition_id):
             document.protocol_rows = rows
             document.protocol_columns = columns
 
-        # протокол_результатов — на вкладку "Результаты" (может быть
-        # несколько отдельных таблиц с разными title, например по группам
-        # спринта R4/R6 × мужчины/женщины), остальные типы — на "Протоколы".
-        if document.doc_type == 'протокол_результатов':
-            results_docs.append(document)
+        # результаты_* — на вкладку "Результаты" (сгруппированы по
+        # дисциплине, внутри каждой может быть несколько отдельных таблиц,
+        # например по группам R4/R6 × мужчины/женщины), остальные типы —
+        # на "Протоколы".
+        if document.doc_type in result_doc_types:
+            results_by_type.setdefault(document.doc_type, []).append(document)
         else:
             documents_by_type.setdefault(document.doc_type, []).append(document)
+
+    results_groups = [
+        {'doc_type': doc_type, 'label': label, 'docs': results_by_type[doc_type]}
+        for doc_type, label in RESULT_DISCIPLINES
+        if doc_type in results_by_type
+    ]
 
     return render_template(
         'competitions/detail.html',
         competition=competition,
         documents_by_type=documents_by_type,
-        results_docs=results_docs,
+        results_groups=results_groups,
     )
