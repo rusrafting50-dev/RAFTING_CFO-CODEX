@@ -44,7 +44,7 @@
                     <tr class="{{ место_класс }}">
                         {% for column in doc.protocol_columns %}
                             {% set value = row.get(column, '') %}
-                            {% if value is number or value in ('–', '-') %}
+                            {% if value is number or value in ('–', '-') or value is time_or_roman %}
                                 <td class="text-center">{{ value }}</td>
                             {% elif column == 'Стадия' %}
                                 <td class="results-stage-cell">{{ value|cap_first }}</td>

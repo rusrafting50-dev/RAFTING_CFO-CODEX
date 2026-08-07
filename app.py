@@ -1,5 +1,6 @@
 """Точка входа Flask-приложения RAFTING_SITE."""
 import os
+import re
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -12,6 +13,17 @@ from routes import register_blueprints
 load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+_TIME_CELL_RE = re.compile(r'^\d+(:\d{2})+(\.\d+)?$')  # "1:35.50", "00:10", "20:00.00"
+_ROMAN_CELL_RE = re.compile(r'^[IVXLCDM]+$')  # разряды ("I", "II", "III")
+
+
+def is_time_or_roman(value):
+    """Ячейки таблиц результатов со временем (М:СС.сс, ММ:СС) или
+    разрядом в виде римских цифр (I/II/III) — их выравниваем по центру,
+    как числа, хотя формально это строки."""
+    text = str(value)
+    return bool(_TIME_CELL_RE.match(text) or _ROMAN_CELL_RE.match(text))
 
 RU_MONTHS_GENITIVE = {
     1: 'января', 2: 'февраля', 3: 'марта', 4: 'апреля', 5: 'мая', 6: 'июня',
@@ -65,6 +77,7 @@ def create_app():
     app.jinja_env.filters['ru_date'] = format_ru_date
     app.jinja_env.filters['ru_date_full'] = format_ru_date_full
     app.jinja_env.filters['cap_first'] = cap_first
+    app.jinja_env.tests['time_or_roman'] = is_time_or_roman
 
     register_blueprints(app)
 
