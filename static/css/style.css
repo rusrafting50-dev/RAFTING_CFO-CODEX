@@ -841,6 +841,28 @@ footer hr {
 .results-table-header th {
     color: #fff;
     border-color: rgba(255, 255, 255, 0.15);
+    /* Вдвое выше обычной шапки таблицы (было ~8px сверху/снизу) — и
+       заголовки столбцов по центру в обе стороны. */
+    padding-top: 16px;
+    padding-bottom: 16px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.results-stage-cell {
+    text-align: center;
+}
+
+.place-gold td {
+    background: #fff3cd;
+}
+
+.place-silver td {
+    background: #e2e3e5;
+}
+
+.place-bronze td {
+    background: #f0d9b5;
 }
 
 .news-search-row {

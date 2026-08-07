@@ -14,11 +14,17 @@
             </thead>
             <tbody>
                 {% for row in doc.protocol_rows %}
-                    <tr>
+                    {% set место = row.get('Место') %}
+                    {% set место_класс = 'place-gold' if место == 1
+                        else ('place-silver' if место == 2
+                        else ('place-bronze' if место == 3 else '')) %}
+                    <tr class="{{ место_класс }}">
                         {% for column in doc.protocol_columns %}
                             {% set value = row.get(column, '') %}
                             {% if value is number or value in ('–', '-') %}
                                 <td class="text-center">{{ value }}</td>
+                            {% elif column == 'Стадия' %}
+                                <td class="results-stage-cell">{{ value|cap_first }}</td>
                             {% else %}
                                 <td>{{ value|cap_first }}</td>
                             {% endif %}
