@@ -39,6 +39,16 @@ def format_ru_date_full(value):
     return f'{value.day} {RU_MONTHS_GENITIVE[value.month]} {value.year}'
 
 
+def cap_first(value):
+    """Первая буква прописная, остальной текст не трогаем (в отличие от
+    str.capitalize(), который заодно понижает регистр всего остального —
+    это ломало бы аббревиатуры вроде "ДК")."""
+    text = str(value)
+    if not text:
+        return text
+    return text[0].upper() + text[1:]
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -54,6 +64,7 @@ def create_app():
     login_manager.init_app(app)
     app.jinja_env.filters['ru_date'] = format_ru_date
     app.jinja_env.filters['ru_date_full'] = format_ru_date_full
+    app.jinja_env.filters['cap_first'] = cap_first
 
     register_blueprints(app)
 

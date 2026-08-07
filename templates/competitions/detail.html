@@ -3,6 +3,33 @@
 {% block title %}{{ competition.name }} — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}{{ competition.name }}: даты, место проведения, документы{% endblock %}
 
+{% macro results_table(doc) %}
+    <h3 class="h6">{{ doc.title }}</h3>
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-zebra align-middle">
+            <thead>
+                <tr class="results-table-header">
+                    {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in doc.protocol_rows %}
+                    <tr>
+                        {% for column in doc.protocol_columns %}
+                            {% set value = row.get(column, '') %}
+                            {% if value is number or value in ('–', '-') %}
+                                <td class="text-center">{{ value }}</td>
+                            {% else %}
+                                <td>{{ value|cap_first }}</td>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endmacro %}
+
 {% block content %}
     <div class="container py-5">
         {% set ct = (competition.comp_type or '')|lower %}
@@ -103,23 +130,7 @@
                                  id="pane-{{ loop.index }}" role="tabpanel">
                                 {% for doc in docs %}
                                     {% if doc.results_data %}
-                                        <h3 class="h6">{{ doc.title }}</h3>
-                                        <div class="table-responsive mb-4">
-                                            <table class="table table-zebra align-middle">
-                                                <thead>
-                                                    <tr class="table-dark">
-                                                        {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for row in doc.protocol_rows %}
-                                                        <tr>
-                                                            {% for column in doc.protocol_columns %}<td>{{ row.get(column, '') }}</td>{% endfor %}
-                                                        </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                        {{ results_table(doc) }}
                                     {% elif doc.file_path %}
                                         <p class="mb-2">
                                             <a href="{{ url_for('static', filename=doc.file_path) }}" download>{{ doc.title }}</a>
@@ -152,23 +163,7 @@
                             <div class="tab-pane fade {{ 'show active' if loop.first }}"
                                  id="res-{{ group.doc_type }}" role="tabpanel">
                                 {% for doc in group.docs %}
-                                    <h3 class="h6">{{ doc.title }}</h3>
-                                    <div class="table-responsive mb-4">
-                                        <table class="table table-sm table-zebra align-middle">
-                                            <thead>
-                                                <tr class="table-dark">
-                                                    {% for column in doc.protocol_columns %}<th>{{ column }}</th>{% endfor %}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {% for row in doc.protocol_rows %}
-                                                    <tr>
-                                                        {% for column in doc.protocol_columns %}<td>{{ row.get(column, '') }}</td>{% endfor %}
-                                                    </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    {{ results_table(doc) }}
                                 {% endfor %}
                             </div>
                         {% endfor %}
