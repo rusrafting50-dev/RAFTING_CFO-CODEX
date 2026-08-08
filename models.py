@@ -197,6 +197,23 @@ class RegionalFederation(db.Model):
     logo_path = db.Column(db.String(500))
 
 
+class Banner(db.Model):
+    """Рекламные баннеры на страницах сайта — управляются через панель
+    администратора. page/position — ключи из BANNER_PAGE_CHOICES /
+    BANNER_POSITION_CHOICES в routes/admin.py, определяющие, на какой
+    странице и в каком месте страницы показывается баннер."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    image_path = db.Column(db.String(500), nullable=False)
+    link_url = db.Column(db.String(500))
+    page = db.Column(db.String(50), nullable=False)
+    position = db.Column(db.String(50), nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    sort_order = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class SyncLog(db.Model):
     """Журнал синхронизации данных, поступающих от COREZ, REGTEAM_RAFTING, SPORTS_REFEREE."""
 

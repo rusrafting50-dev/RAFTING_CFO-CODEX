@@ -27,6 +27,10 @@
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'regions' }}"
                            href="{{ url_for('admin.regions_list') }}">Регионы ЦФО</a>
                     {% endif %}
+                    {% if current_user.can_access('banners') %}
+                        <a class="list-group-item list-group-item-action {{ 'active' if active == 'banners' }}"
+                           href="{{ url_for('admin.banners_list') }}">Баннеры</a>
+                    {% endif %}
                     {% if current_user.role == 'admin' %}
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'users' }}"
                            href="{{ url_for('admin.users_list') }}">Пользователи</a>

@@ -12,7 +12,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from models import (
-    Athlete, Competition, CompetitionDocument, Document, FederationMember,
+    Athlete, Banner, Competition, CompetitionDocument, Document, FederationMember,
     News, NewsCategory, NewsImage, NewsLevel, Referee, RegionalFederation, SyncLog, User, db,
 )
 
@@ -41,9 +41,20 @@ SECTION_CHOICES = [
     ('documents', 'Документы'),
     ('members', 'Члены органов'),
     ('regions', 'Регионы ЦФО'),
+    ('banners', 'Баннеры'),
     ('sync', 'Синхронизация'),
 ]
 SECTION_KEYS = [key for key, _ in SECTION_CHOICES]
+
+# Каталог мест на сайте, куда можно поместить баннер — при добавлении
+# новой рекламной позиции на другой странице достаточно дописать пару сюда,
+# без изменений в модели БД (см. render в шаблоне соответствующей страницы).
+BANNER_PAGE_CHOICES = [
+    ('main.index', 'Главная'),
+]
+BANNER_POSITION_CHOICES = [
+    ('news_sidebar', 'Колонка рядом с новостями'),
+]
 COMPETITION_DOC_TYPE_CHOICES = [
     'положение', 'регламент', 'состав_гск', 'расписание',
     'график_допуска', 'регламент_жеребьёвки', 'протокол_совещания_гск',
@@ -672,6 +683,87 @@ def regions_delete(region_id):
     db.session.commit()
     flash('Региональная федерация удалена.', 'success')
     return redirect(url_for('admin.regions_list'))
+
+
+# ---------- Баннеры ----------
+
+@bp.route('/banners')
+@section_required('banners')
+def banners_list():
+    banners = Banner.query.order_by(Banner.page, Banner.position, Banner.sort_order).all()
+    return render_template(
+        'admin/banners_list.html', active='banners', banners=banners,
+        page_choices=BANNER_PAGE_CHOICES, position_choices=BANNER_POSITION_CHOICES,
+    )
+
+
+@bp.route('/banners/new', methods=['GET', 'POST'])
+@section_required('banners')
+@roles_required('admin', 'editor')
+def banners_new():
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        page = request.form.get('page', '')
+        position = request.form.get('position', '')
+        link_url = request.form.get('link_url', '').strip()
+        sort_order = request.form.get('sort_order', type=int) or 0
+        image = request.files.get('image')
+
+        page_keys = [key for key, _ in BANNER_PAGE_CHOICES]
+        position_keys = [key for key, _ in BANNER_POSITION_CHOICES]
+
+        if not title or page not in page_keys or position not in position_keys:
+            flash('Заполните название и выберите страницу/место.', 'error')
+            return render_template(
+                'admin/banner_form.html', active='banners', banner=None,
+                page_choices=BANNER_PAGE_CHOICES, position_choices=BANNER_POSITION_CHOICES,
+            )
+
+        if not image or not image.filename:
+            flash('Изображение баннера обязательно.', 'error')
+            return render_template(
+                'admin/banner_form.html', active='banners', banner=None,
+                page_choices=BANNER_PAGE_CHOICES, position_choices=BANNER_POSITION_CHOICES,
+            )
+
+        if not allowed_image(image.filename):
+            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+            return render_template(
+                'admin/banner_form.html', active='banners', banner=None,
+                page_choices=BANNER_PAGE_CHOICES, position_choices=BANNER_POSITION_CHOICES,
+            )
+
+        banner = Banner(
+            title=title,
+            page=page,
+            position=position,
+            link_url=link_url or None,
+            sort_order=sort_order,
+            image_path=save_upload(image),
+        )
+        db.session.add(banner)
+        db.session.commit()
+        flash('Баннер добавлен.', 'success')
+        return redirect(url_for('admin.banners_list'))
+
+    return render_template(
+        'admin/banner_form.html', active='banners', banner=None,
+        page_choices=BANNER_PAGE_CHOICES, position_choices=BANNER_POSITION_CHOICES,
+    )
+
+
+@bp.route('/banners/<int:banner_id>/delete', methods=['POST'])
+@section_required('banners')
+@roles_required('admin', 'editor')
+def banners_delete(banner_id):
+    banner = Banner.query.get_or_404(banner_id)
+    file_path = os.path.join(current_app.root_path, 'static', banner.image_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    db.session.delete(banner)
+    db.session.commit()
+    flash('Баннер удалён.', 'success')
+    return redirect(url_for('admin.banners_list'))
 
 
 # ---------- Пользователи (только admin) ----------

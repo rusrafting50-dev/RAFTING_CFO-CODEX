@@ -4,7 +4,7 @@ from datetime import date, datetime
 from flask import Blueprint, render_template, request
 from sqlalchemy import extract
 
-from models import Competition, Event, News
+from models import Banner, Competition, Event, News
 
 bp = Blueprint('main', __name__)
 
@@ -119,12 +119,18 @@ def index():
         .limit(8)
         .all()
     )
+    news_sidebar_banners = (
+        Banner.query.filter_by(page='main.index', position='news_sidebar', is_active=True)
+        .order_by(Banner.sort_order)
+        .all()
+    )
     return render_template(
         'main/index.html',
         hero_news=hero_news,
         latest_news=latest_news,
         upcoming_competitions=upcoming_competitions,
         upcoming_events=upcoming_events,
+        news_sidebar_banners=news_sidebar_banners,
     )
 
 

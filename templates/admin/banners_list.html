@@ -1,0 +1,54 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'banners' %}
+
+{% block title %}Баннеры — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Баннеры</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.banners_new') }}">Добавить</a>
+        {% endif %}
+    </div>
+
+    {% if banners %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Изображение</th>
+                        <th>Название</th>
+                        <th>Страница</th>
+                        <th>Место</th>
+                        <th>Порядок</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for banner in banners %}
+                        <tr>
+                            <td>
+                                <img src="{{ url_for('static', filename=banner.image_path) }}" alt=""
+                                     style="width: 80px; height: 48px; object-fit: cover; border-radius: 4px;">
+                            </td>
+                            <td>{{ banner.title }}</td>
+                            <td>{{ page_choices|selectattr('0', 'equalto', banner.page)|map(attribute='1')|first }}</td>
+                            <td>{{ position_choices|selectattr('0', 'equalto', banner.position)|map(attribute='1')|first }}</td>
+                            <td>{{ banner.sort_order }}</td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <form method="post" action="{{ url_for('admin.banners_delete', banner_id=banner.id) }}"
+                                          onsubmit="return confirm('Удалить баннер?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Баннеры пока не добавлены.</p>
+    {% endif %}
+{% endblock %}

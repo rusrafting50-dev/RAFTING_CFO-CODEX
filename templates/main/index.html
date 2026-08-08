@@ -196,9 +196,20 @@
                         </div>
                         <div class="col-lg-3">
                             <div class="d-flex flex-column h-100 gap-4 news-banners">
-                                <div class="news-banner-placeholder">Реклама</div>
-                                <div class="news-banner-placeholder">Реклама</div>
-                                <div class="news-banner-placeholder">Реклама</div>
+                                {% for banner in news_sidebar_banners %}
+                                    {% if banner.link_url %}
+                                        <a href="{{ banner.link_url }}" target="_blank" rel="noopener" class="news-banner">
+                                            <img src="{{ url_for('static', filename=banner.image_path) }}" alt="{{ banner.title }}">
+                                        </a>
+                                    {% else %}
+                                        <div class="news-banner">
+                                            <img src="{{ url_for('static', filename=banner.image_path) }}" alt="{{ banner.title }}">
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                                {% for _ in range(3 - news_sidebar_banners|length) %}
+                                    <div class="news-banner-placeholder">Реклама</div>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
