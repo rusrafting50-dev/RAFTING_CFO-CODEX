@@ -195,25 +195,26 @@
                             </div>
                         </div>
                         <div class="col-lg-3">
-                            {# Было 3 одинаковых места под баннеры — первые два объединены в
-                               одно увеличенное (под баннер, который иначе не помещался
-                               целиком), плюс одно обычное место. Итого 2 места вместо 3. #}
-                            <div class="d-flex flex-column h-100 gap-4 news-banners">
+                            {# Было 3 одинаковых места под баннеры — оставлено 2. Высота
+                               каждого места определяется собственной картинкой (см.
+                               .news-banner в style.css), поэтому размер мест здесь не
+                               различается — оба ведут себя одинаково. #}
+                            <div class="d-flex flex-column gap-4 news-banners">
                                 {% set banner_0 = news_sidebar_banners[0] if news_sidebar_banners|length > 0 else None %}
                                 {% set banner_1 = news_sidebar_banners[1] if news_sidebar_banners|length > 1 else None %}
-                                {% for banner, size_class in ((banner_0, 'news-banner-large'), (banner_1, 'news-banner-small')) %}
+                                {% for banner in (banner_0, banner_1) %}
                                     {% if banner %}
                                         {% if banner.link_url %}
-                                            <a href="{{ banner.link_url }}" target="_blank" rel="noopener" class="news-banner {{ size_class }}">
+                                            <a href="{{ banner.link_url }}" target="_blank" rel="noopener" class="news-banner">
                                                 <img src="{{ url_for('static', filename=banner.image_path) }}" alt="{{ banner.title }}">
                                             </a>
                                         {% else %}
-                                            <div class="news-banner {{ size_class }}">
+                                            <div class="news-banner">
                                                 <img src="{{ url_for('static', filename=banner.image_path) }}" alt="{{ banner.title }}">
                                             </div>
                                         {% endif %}
                                     {% else %}
-                                        <div class="news-banner-placeholder {{ size_class }}">Реклама</div>
+                                        <div class="news-banner-placeholder">Реклама</div>
                                     {% endif %}
                                 {% endfor %}
                             </div>
