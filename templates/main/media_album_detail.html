@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ album.title }} — Медиа — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ album.title }}{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <div class="media-album-detail">
+            <h1 class="media-album-detail-title">{{ album.title }}</h1>
+            {% if album.published_at %}
+                <p class="media-album-detail-date">{{ album.published_at.strftime('%d.%m.%Y') }}</p>
+            {% endif %}
+
+            <div class="media-album-grid">
+                <div class="media-album-photo"
+                     style="background-image: url('{{ url_for('static', filename=album.cover_path) }}')"></div>
+                {% for photo in album.photos %}
+                    <div class="media-album-photo"
+                         style="background-image: url('{{ url_for('static', filename=photo.file_path) }}')"></div>
+                {% endfor %}
+            </div>
+
+            <div class="news-detail-top-row">
+                <button type="button" class="scroll-top-btn">Наверх &uarr;</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}

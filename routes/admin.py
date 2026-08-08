@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Banner, Competition, CompetitionDocument, Document, FederationMember,
-    MediaAlbum, MediaVideo, News, NewsCategory, NewsImage, NewsLevel, Referee,
+    MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel, Referee,
     RegionalFederation, SyncLog, User, db,
 )
 
@@ -837,6 +837,7 @@ def media_album_new():
         title = request.form.get('title', '').strip()
         photos_count = request.form.get('photos_count', type=int) or 1
         cover = request.files.get('cover')
+        gallery_files = [f for f in request.files.getlist('photos') if f and f.filename]
 
         if not title:
             flash('Название альбома обязательно.', 'error')
@@ -846,7 +847,8 @@ def media_album_new():
             flash('Обложка альбома обязательна.', 'error')
             return render_template('admin/media_album_form.html', active='media', album=None)
 
-        if not allowed_image(cover.filename):
+        bad_images = [f for f in [cover, *gallery_files] if f and f.filename and not allowed_image(f.filename)]
+        if bad_images:
             flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
             return render_template('admin/media_album_form.html', active='media', album=None)
 
@@ -857,6 +859,8 @@ def media_album_new():
             cover_path=save_upload(cover),
         )
         db.session.add(album)
+        for gallery_file in gallery_files:
+            db.session.add(MediaAlbumPhoto(album=album, file_path=save_upload(gallery_file)))
         db.session.commit()
         flash('Альбом добавлен.', 'success')
         return redirect(url_for('admin.media_list'))
@@ -874,12 +878,14 @@ def media_album_edit(album_id):
         title = request.form.get('title', '').strip()
         photos_count = request.form.get('photos_count', type=int) or 1
         cover = request.files.get('cover')
+        gallery_files = [f for f in request.files.getlist('photos') if f and f.filename]
 
         if not title:
             flash('Название альбома обязательно.', 'error')
             return render_template('admin/media_album_form.html', active='media', album=album)
 
-        if cover and cover.filename and not allowed_image(cover.filename):
+        bad_images = [f for f in [cover, *gallery_files] if f and f.filename and not allowed_image(f.filename)]
+        if bad_images:
             flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
             return render_template('admin/media_album_form.html', active='media', album=album)
 
@@ -891,11 +897,27 @@ def media_album_edit(album_id):
             if os.path.exists(old_file_path):
                 os.remove(old_file_path)
             album.cover_path = save_upload(cover)
+        for gallery_file in gallery_files:
+            db.session.add(MediaAlbumPhoto(album=album, file_path=save_upload(gallery_file)))
         db.session.commit()
         flash('Альбом обновлён.', 'success')
         return redirect(url_for('admin.media_list'))
 
     return render_template('admin/media_album_form.html', active='media', album=album)
+
+
+@bp.route('/media/albums/<int:album_id>/photos/<int:photo_id>/delete', methods=['POST'])
+@section_required('media')
+@roles_required('admin', 'editor')
+def media_album_photo_delete(album_id, photo_id):
+    photo = MediaAlbumPhoto.query.filter_by(id=photo_id, album_id=album_id).first_or_404()
+    file_path = os.path.join(current_app.root_path, 'static', photo.file_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    db.session.delete(photo)
+    db.session.commit()
+    flash('Фото удалено.', 'success')
+    return redirect(url_for('admin.media_album_edit', album_id=album_id))
 
 
 @bp.route('/media/albums/<int:album_id>/delete', methods=['POST'])
@@ -906,6 +928,10 @@ def media_album_delete(album_id):
     file_path = os.path.join(current_app.root_path, 'static', album.cover_path)
     if os.path.exists(file_path):
         os.remove(file_path)
+    for photo in album.photos:
+        photo_path = os.path.join(current_app.root_path, 'static', photo.file_path)
+        if os.path.exists(photo_path):
+            os.remove(photo_path)
     db.session.delete(album)
     db.session.commit()
     flash('Альбом удалён.', 'success')

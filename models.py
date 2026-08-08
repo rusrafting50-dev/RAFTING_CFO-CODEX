@@ -227,6 +227,17 @@ class MediaAlbum(db.Model):
     is_published = db.Column(db.Boolean, default=True, nullable=False)
 
 
+class MediaAlbumPhoto(db.Model):
+    """Дополнительные фото альбома — сетка на странице альбома (помимо
+    обложки MediaAlbum.cover_path, которая идёт на карточку в списке)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    album_id = db.Column(db.Integer, db.ForeignKey('media_album.id'), nullable=False)
+    file_path = db.Column(db.String(500), nullable=False)
+
+    album = db.relationship('MediaAlbum', backref=db.backref('photos', cascade='all, delete-orphan'))
+
+
 class MediaVideo(db.Model):
     """Видео — раздел «Медиа» (вкладка «Видео»), добавляется вручную через
     панель администратора. video_url — ссылка на внешнее видео (YouTube/VK

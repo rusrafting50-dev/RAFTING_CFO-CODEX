@@ -33,6 +33,31 @@
                 JPG/PNG/WEBP.{% if album %} Оставьте поле пустым, чтобы не менять текущую обложку.{% endif %}
             </div>
         </div>
+        <div class="mb-3">
+            <label for="photos" class="form-label">Фото альбома (сетка на странице альбома)</label>
+            {% if album and album.photos %}
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    {% for photo in album.photos %}
+                        <div class="position-relative">
+                            <img src="{{ url_for('static', filename=photo.file_path) }}" alt=""
+                                 style="width: 120px; height: 90px; object-fit: cover;" class="rounded border">
+                            <form method="post"
+                                  action="{{ url_for('admin.media_album_photo_delete', album_id=album.id, photo_id=photo.id) }}"
+                                  onsubmit="return confirm('Удалить это фото?');"
+                                  class="position-absolute top-0 end-0 m-1">
+                                <button type="submit" class="btn btn-sm btn-danger py-0 px-1">&times;</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="photos" name="photos"
+                   accept=".jpg,.jpeg,.png,.webp" multiple>
+            <div class="form-text">
+                Показываются сеткой на странице альбома вместе с обложкой. Можно выбрать сразу
+                несколько файлов — они добавятся к уже загруженным.
+            </div>
+        </div>
         <div class="mb-3 form-check">
             <input type="checkbox" class="form-check-input" id="is_published" name="is_published"
                    {{ 'checked' if not album or album.is_published }}>

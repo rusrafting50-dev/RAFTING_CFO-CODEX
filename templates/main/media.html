@@ -20,6 +20,7 @@
         </div>
 
         <div class="news-search-row mb-5">
+            <span class="media-search-label">{{ 'ФОТОМАТЕРИАЛЫ' if media_type == 'photo' else 'ВИДЕОМАТЕРИАЛЫ' }}</span>
             <form method="get" action="{{ url_for('main.media') }}" class="news-search-input-form">
                 <input type="hidden" name="type" value="{{ media_type }}">
                 {% if selected_day %}<input type="hidden" name="day" value="{{ selected_day }}">{% endif %}
@@ -83,15 +84,18 @@
                 {% for item in media_items %}
                     <div class="col">
                         {% if media_type == 'photo' %}
-                            <div class="media-card">
+                            <a class="media-card media-card-link" href="{{ url_for('main.media_album_detail', album_id=item.id) }}">
                                 <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.cover_path) }}')">
                                     <span class="media-card-badge">{{ item.photos_count }} фото</span>
+                                    <div class="media-card-overlay">
+                                        <span class="media-card-overlay-btn">Перейти к альбому</span>
+                                    </div>
                                 </div>
                                 <div class="media-card-body">
                                     <h3 class="media-card-title">{{ item.title }}</h3>
                                     <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
                                 </div>
-                            </div>
+                            </a>
                         {% else %}
                             <a class="media-card media-card-link" href="{{ item.video_url or '#' }}" target="_blank" rel="noopener">
                                 <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.thumbnail_path) }}')">

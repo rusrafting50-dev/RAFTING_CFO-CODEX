@@ -933,6 +933,14 @@ footer hr {
     min-width: 0;
 }
 
+.media-search-label {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-dark);
+    white-space: nowrap;
+}
+
 .news-search-input {
     /* Обводка — та же форма (прямоугольная) и тот же серый цвет
        (#999), что и у кнопки "За все время" (.btn-all-time). Серый
@@ -1377,10 +1385,21 @@ footer hr {
 
 .media-teaser-item {
     /* Карточкой сверху вниз (превью, заголовок, дата) — по два в ряд
-       на колонку (см. row-cols-2 в шаблоне), а не списком в строку. */
+       на колонку (см. row-cols-2 в шаблоне), а не списком в строку.
+       При наведении слегка приподнимается (translateY + тень на
+       превью), как карточки новостей (.news-card:hover). */
     display: block;
     text-decoration: none;
     color: inherit;
+    transition: transform 0.2s ease;
+}
+
+.media-teaser-item:hover {
+    transform: translateY(-3px);
+}
+
+.media-teaser-item:hover .media-teaser-thumb {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
 .media-teaser-thumb {
@@ -1468,6 +1487,41 @@ footer hr {
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 3px;
+}
+
+/* Затемнение + кнопка "Перейти к альбому" на превью фотоальбома — только
+   при наведении, у видео-карточек всегда виден значок play (см. выше). */
+.media-card-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(26, 26, 46, 0);
+    transition: background 0.2s ease;
+}
+
+.media-card-link:hover .media-card-overlay {
+    background: rgba(26, 26, 46, 0.55);
+}
+
+.media-card-overlay-btn {
+    border: 2px solid #fff;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 8px 18px;
+    border-radius: 4px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.media-card-link:hover .media-card-overlay-btn {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .media-card-play {
@@ -1710,4 +1764,36 @@ table.table-zebra tbody tr:nth-child(odd) {
 
 table.table-zebra tbody tr:nth-child(even) {
     background: #f8f8f8;
+}
+
+/* ===== Страница альбома (/media/album/<id>) ===== */
+.media-album-detail-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin-bottom: 8px;
+}
+
+.media-album-detail-date {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.media-album-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.media-album-photo {
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    background: #ddd center/cover no-repeat;
+}
+
+@media (max-width: 767.98px) {
+    .media-album-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

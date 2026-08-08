@@ -284,6 +284,12 @@ def media():
     )
 
 
+@bp.route('/media/album/<int:album_id>')
+def media_album_detail(album_id):
+    album = MediaAlbum.query.filter_by(id=album_id, is_published=True).first_or_404()
+    return render_template('main/media_album_detail.html', album=album)
+
+
 @bp.route('/news/<int:news_id>')
 def news_detail(news_id):
     item = News.query.filter_by(id=news_id, is_published=True).first_or_404()
