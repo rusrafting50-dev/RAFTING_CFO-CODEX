@@ -8,7 +8,7 @@
         <div class="media-album-detail">
             <h1 class="media-album-detail-title">{{ album.title }}</h1>
             {% if album.published_at %}
-                <p class="media-album-detail-date">{{ album.published_at.strftime('%d.%m.%Y') }}</p>
+                <p class="media-album-detail-date">{{ album.published_at|ru_date_full }}</p>
             {% endif %}
 
             <div class="media-album-grid">

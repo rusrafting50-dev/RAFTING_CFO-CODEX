@@ -1428,7 +1428,7 @@ footer hr {
 
 .media-teaser-badge {
     position: absolute;
-    right: 6px;
+    left: 6px;
     bottom: 6px;
     background: rgba(26, 26, 46, 0.8);
     color: #fff;
@@ -1487,7 +1487,7 @@ footer hr {
 
 .media-card-badge {
     position: absolute;
-    right: 8px;
+    left: 8px;
     bottom: 8px;
     background: rgba(26, 26, 46, 0.8);
     color: #fff;

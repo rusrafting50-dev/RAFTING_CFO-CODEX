@@ -87,14 +87,14 @@
                             {% if media_type == 'photo' %}
                                 <a class="media-card media-card-link" href="{{ url_for('main.media_album_detail', album_id=item.id) }}">
                                     <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.cover_path) }}')">
-                                        <span class="media-card-badge">{{ item.photos_count }} фото</span>
+                                        <span class="media-card-badge">{{ item.photos_count }}</span>
                                         <div class="media-card-overlay">
                                             <span class="media-card-overlay-btn">Перейти к альбому</span>
                                         </div>
                                     </div>
                                     <div class="media-card-body">
                                         <h3 class="media-card-title">{{ item.title }}</h3>
-                                        <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
+                                        <p class="media-card-date">{{ item.published_at|ru_date_full }}</p>
                                     </div>
                                 </a>
                             {% else %}
@@ -104,7 +104,7 @@
                                     </div>
                                     <div class="media-card-body">
                                         <h3 class="media-card-title">{{ item.title }}</h3>
-                                        <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
+                                        <p class="media-card-date">{{ item.published_at|ru_date_full }}</p>
                                     </div>
                                 </a>
                             {% endif %}

@@ -245,7 +245,7 @@
                                                             </span>
                                                         </div>
                                                         <p class="media-teaser-title">{{ video.title }}</p>
-                                                        <p class="media-teaser-date">{{ video.published_at.strftime('%d.%m.%Y') if video.published_at else '' }}</p>
+                                                        <p class="media-teaser-date">{{ video.published_at|ru_date_full }}</p>
                                                     </a>
                                                 </div>
                                             {% endfor %}
@@ -265,10 +265,10 @@
                                                     <a class="media-teaser-item" href="{{ url_for('main.media_album_detail', album_id=album.id) }}">
                                                         <div class="media-teaser-thumb"
                                                              {% if album.cover_path %}style="background-image: url('{{ url_for('static', filename=album.cover_path) }}')"{% endif %}>
-                                                            <span class="media-teaser-badge">{{ album.photos_count }} фото</span>
+                                                            <span class="media-teaser-badge">{{ album.photos_count }}</span>
                                                         </div>
                                                         <p class="media-teaser-title">{{ album.title }}</p>
-                                                        <p class="media-teaser-date">{{ album.published_at.strftime('%d.%m.%Y') if album.published_at else '' }}</p>
+                                                        <p class="media-teaser-date">{{ album.published_at|ru_date_full }}</p>
                                                     </a>
                                                 </div>
                                             {% endfor %}
