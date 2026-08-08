@@ -253,7 +253,6 @@
                                     {% else %}
                                         <p class="text-muted">Видео пока нет.</p>
                                     {% endif %}
-                                    <a href="{{ url_for('main.media', type='video') }}" class="btn btn-all-news mt-3">ВСЕ ВИДЕО</a>
                                 </div>
                             </div>
                             <div class="col-lg-6">
@@ -277,9 +276,16 @@
                                     {% else %}
                                         <p class="text-muted">Альбомов пока нет.</p>
                                     {% endif %}
-                                    <a href="{{ url_for('main.media', type='photo') }}" class="btn btn-all-news mt-3">ВСЕ ФОТО</a>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                    <div class="row g-4 mt-3">
+                        <div class="col-lg-6">
+                            <a href="{{ url_for('main.media', type='video') }}" class="btn btn-all-news">ВСЕ ВИДЕО</a>
+                        </div>
+                        <div class="col-lg-6">
+                            <a href="{{ url_for('main.media', type='photo') }}" class="btn btn-all-news">ВСЕ ФОТО</a>
                         </div>
                     </div>
                 {% endif %}
