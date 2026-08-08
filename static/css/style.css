@@ -1439,12 +1439,19 @@ footer hr {
 }
 
 .media-teaser-title {
-    margin: 0 0 4px;
+    /* Между превью и датой всегда 5 строк высотой 18px: 1-я и 5-я —
+       пустой отступ (margin-top тут, margin-top у даты ниже), 2-4-я —
+       под заголовок (line-clamp:3 + фиксированная height, а не
+       min-height — короткий в 1-2 строки заголовок не даёт лишним
+       строкам "схлопнуться", место под них остаётся пустым). */
+    margin: 18px 0 0;
     color: #000;
     font-weight: 700;
     font-size: 14px;
+    line-height: 18px;
+    height: 54px;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -1454,7 +1461,7 @@ footer hr {
 }
 
 .media-teaser-date {
-    margin: 0;
+    margin: 18px 0 0;
     color: #888;
     font-size: 12px;
 }
