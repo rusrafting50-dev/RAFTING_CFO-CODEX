@@ -37,12 +37,21 @@
         <div class="mb-3">
             <label for="sort_order" class="form-label">Порядок показа</label>
             <input type="number" class="form-control" id="sort_order" name="sort_order" value="0" style="max-width: 120px;">
-            <div class="form-text">Меньшее число — выше/раньше среди баннеров этого места.</div>
+            <div class="form-text">
+                Меньшее число — выше/раньше среди баннеров этого места. В «Колонке рядом с новостями»
+                мест два: первый по порядку баннер попадает в верхнее (квадратное) место, второй — в нижнее
+                (вытянутое по вертикали).
+            </div>
         </div>
         <div class="mb-3">
             <label for="image" class="form-label">Изображение</label>
             <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png,.webp" required>
-            <div class="form-text">Рекомендуемая ширина — 600–640px, JPG/PNG/WEBP.</div>
+            <div class="form-text">
+                JPG/PNG/WEBP. В «Колонке рядом с новостями» места на экране примерно
+                260–310px в ширину; верхнее место заметно выше нижнего. Картинка вписывается
+                пропорционально, без обрезки, поэтому для чёткости на любом экране файл стоит
+                готовить с запасом — ширина порядка 600px.
+            </div>
         </div>
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Сохранить</button>
