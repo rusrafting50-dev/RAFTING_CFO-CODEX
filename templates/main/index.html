@@ -201,7 +201,7 @@
                             <div class="d-flex flex-column h-100 gap-4 news-banners">
                                 {% set banner_0 = news_sidebar_banners[0] if news_sidebar_banners|length > 0 else None %}
                                 {% set banner_1 = news_sidebar_banners[1] if news_sidebar_banners|length > 1 else None %}
-                                {% for banner, size_class in ((banner_0, 'news-banner-large'), (banner_1, '')) %}
+                                {% for banner, size_class in ((banner_0, 'news-banner-large'), (banner_1, 'news-banner-small')) %}
                                     {% if banner %}
                                         {% if banner.link_url %}
                                             <a href="{{ banner.link_url }}" target="_blank" rel="noopener" class="news-banner {{ size_class }}">
