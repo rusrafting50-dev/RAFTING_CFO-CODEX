@@ -85,27 +85,22 @@
                     {% for item in media_items %}
                         <div class="col">
                             {% if media_type == 'photo' %}
-                                <a class="media-card media-card-link" href="{{ url_for('main.media_album_detail', album_id=item.id) }}">
-                                    <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.cover_path) }}')">
-                                        <span class="media-card-badge">{{ item.photos_count }}</span>
-                                        <div class="media-card-overlay">
-                                            <span class="media-card-overlay-btn">Перейти к альбому</span>
-                                        </div>
+                                <a class="media-teaser-item" href="{{ url_for('main.media_album_detail', album_id=item.id) }}">
+                                    <div class="media-teaser-thumb" style="background-image: url('{{ url_for('static', filename=item.cover_path) }}')">
+                                        <span class="media-teaser-badge">{{ item.photos_count }}</span>
                                     </div>
-                                    <div class="media-card-body">
-                                        <h3 class="media-card-title">{{ item.title }}</h3>
-                                        <p class="media-card-date">{{ item.published_at|ru_date_full }}</p>
-                                    </div>
+                                    <p class="media-teaser-title">{{ item.title }}</p>
+                                    <p class="media-teaser-date">{{ item.published_at|ru_date_full }}</p>
                                 </a>
                             {% else %}
-                                <a class="media-card media-card-link" href="{{ item.video_url or '#' }}" target="_blank" rel="noopener">
-                                    <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.thumbnail_path) }}')">
-                                        <span class="media-card-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+                                <a class="media-teaser-item" href="{{ item.video_url or '#' }}" target="_blank" rel="noopener">
+                                    <div class="media-teaser-thumb" style="background-image: url('{{ url_for('static', filename=item.thumbnail_path) }}')">
+                                        <span class="media-teaser-play">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                                        </span>
                                     </div>
-                                    <div class="media-card-body">
-                                        <h3 class="media-card-title">{{ item.title }}</h3>
-                                        <p class="media-card-date">{{ item.published_at|ru_date_full }}</p>
-                                    </div>
+                                    <p class="media-teaser-title">{{ item.title }}</p>
+                                    <p class="media-teaser-date">{{ item.published_at|ru_date_full }}</p>
                                 </a>
                             {% endif %}
                         </div>
