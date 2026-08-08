@@ -224,6 +224,63 @@
                 {% else %}
                     <p class="text-muted">Новостей пока нет.</p>
                 {% endif %}
+
+                {% if latest_videos or latest_albums %}
+                    <div class="row g-4 media-teaser mt-2">
+                        <div class="col-lg-6">
+                            <div class="media-teaser-col">
+                                <h2 class="h5 media-teaser-header">Видео</h2>
+                                {% if latest_videos %}
+                                    <div class="d-flex flex-column gap-3">
+                                        {% for video in latest_videos %}
+                                            <a class="media-teaser-item"
+                                               href="{{ video.video_url or url_for('main.media', type='video') }}"
+                                               target="_blank" rel="noopener">
+                                                <div class="media-teaser-thumb"
+                                                     {% if video.thumbnail_path %}style="background-image: url('{{ url_for('static', filename=video.thumbnail_path) }}')"{% endif %}>
+                                                    <span class="media-teaser-play">
+                                                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                                                    </span>
+                                                </div>
+                                                <div class="media-teaser-info">
+                                                    <p class="media-teaser-title">{{ video.title }}</p>
+                                                    <p class="media-teaser-date">{{ video.published_at.strftime('%d.%m.%Y') if video.published_at else '' }}</p>
+                                                </div>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">Видео пока нет.</p>
+                                {% endif %}
+                                <a href="{{ url_for('main.media', type='video') }}" class="btn btn-all-news mt-3">ВСЕ ВИДЕО</a>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="media-teaser-col">
+                                <h2 class="h5 media-teaser-header">Фото</h2>
+                                {% if latest_albums %}
+                                    <div class="d-flex flex-column gap-3">
+                                        {% for album in latest_albums %}
+                                            <a class="media-teaser-item" href="{{ url_for('main.media', type='photo') }}">
+                                                <div class="media-teaser-thumb"
+                                                     {% if album.cover_path %}style="background-image: url('{{ url_for('static', filename=album.cover_path) }}')"{% endif %}>
+                                                    <span class="media-teaser-badge">{{ album.photos_count }} фото</span>
+                                                </div>
+                                                <div class="media-teaser-info">
+                                                    <p class="media-teaser-title">{{ album.title }}</p>
+                                                    <p class="media-teaser-date">{{ album.published_at.strftime('%d.%m.%Y') if album.published_at else '' }}</p>
+                                                </div>
+                                            </a>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">Альбомов пока нет.</p>
+                                {% endif %}
+                                <a href="{{ url_for('main.media', type='photo') }}" class="btn btn-all-news mt-3">ВСЕ ФОТО</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

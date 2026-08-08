@@ -1,0 +1,108 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'media' %}
+
+{% block title %}Медиа — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Альбомы (Фото)</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.media_album_new') }}">Добавить альбом</a>
+        {% endif %}
+    </div>
+
+    {% if albums %}
+        <div class="table-responsive mb-5">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Обложка</th>
+                        <th>Название</th>
+                        <th>Фото</th>
+                        <th>Дата</th>
+                        <th>Опубликован</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for album in albums %}
+                        <tr>
+                            <td>
+                                <img src="{{ url_for('static', filename=album.cover_path) }}" alt=""
+                                     style="width: 80px; height: 48px; object-fit: cover; border-radius: 4px;">
+                            </td>
+                            <td>{{ album.title }}</td>
+                            <td>{{ album.photos_count }}</td>
+                            <td>{{ album.published_at.strftime('%d.%m.%Y') if album.published_at else '' }}</td>
+                            <td>{{ 'Да' if album.is_published else 'Нет' }}</td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.media_album_edit', album_id=album.id) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.media_album_delete', album_id=album.id) }}"
+                                          onsubmit="return confirm('Удалить альбом?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted mb-5">Альбомы пока не добавлены.</p>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Видео</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.media_video_new') }}">Добавить видео</a>
+        {% endif %}
+    </div>
+
+    {% if videos %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Превью</th>
+                        <th>Название</th>
+                        <th>Ссылка</th>
+                        <th>Дата</th>
+                        <th>Опубликован</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for video in videos %}
+                        <tr>
+                            <td>
+                                <img src="{{ url_for('static', filename=video.thumbnail_path) }}" alt=""
+                                     style="width: 80px; height: 48px; object-fit: cover; border-radius: 4px;">
+                            </td>
+                            <td>{{ video.title }}</td>
+                            <td>
+                                {% if video.video_url %}
+                                    <a href="{{ video.video_url }}" target="_blank" rel="noopener">Ссылка</a>
+                                {% endif %}
+                            </td>
+                            <td>{{ video.published_at.strftime('%d.%m.%Y') if video.published_at else '' }}</td>
+                            <td>{{ 'Да' if video.is_published else 'Нет' }}</td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.media_video_edit', video_id=video.id) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.media_video_delete', video_id=video.id) }}"
+                                          onsubmit="return confirm('Удалить видео?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Видео пока не добавлены.</p>
+    {% endif %}
+{% endblock %}

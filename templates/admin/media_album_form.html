@@ -1,0 +1,46 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'media' %}
+
+{% block title %}{{ 'Редактирование альбома' if album else 'Новый альбом' }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">{{ 'Редактирование альбома' if album else 'Новый альбом' }}</h1>
+
+    <form method="post"
+          action="{{ url_for('admin.media_album_edit', album_id=album.id) if album else url_for('admin.media_album_new') }}"
+          class="card p-4" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="title" class="form-label">Название</label>
+            <input type="text" class="form-control" id="title" name="title" required
+                   value="{{ album.title if album else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="photos_count" class="form-label">Количество фото в альбоме</label>
+            <input type="number" class="form-control" id="photos_count" name="photos_count" min="1"
+                   value="{{ album.photos_count if album else 1 }}" style="max-width: 120px;">
+        </div>
+        <div class="mb-3">
+            <label for="cover" class="form-label">Обложка альбома</label>
+            {% if album and album.cover_path %}
+                <div class="mb-2">
+                    <img src="{{ url_for('static', filename=album.cover_path) }}" alt=""
+                         style="max-width: 200px; max-height: 200px; object-fit: contain;" class="border rounded p-1">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="cover" name="cover" accept=".jpg,.jpeg,.png,.webp"
+                   {{ 'required' if not album }}>
+            <div class="form-text">
+                JPG/PNG/WEBP.{% if album %} Оставьте поле пустым, чтобы не менять текущую обложку.{% endif %}
+            </div>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="is_published" name="is_published"
+                   {{ 'checked' if not album or album.is_published }}>
+            <label class="form-check-label" for="is_published">Опубликован (виден на сайте)</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.media_list') }}">Отмена</a>
+        </div>
+    </form>
+{% endblock %}

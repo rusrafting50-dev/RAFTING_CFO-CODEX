@@ -13,7 +13,8 @@ from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Banner, Competition, CompetitionDocument, Document, FederationMember,
-    News, NewsCategory, NewsImage, NewsLevel, Referee, RegionalFederation, SyncLog, User, db,
+    MediaAlbum, MediaVideo, News, NewsCategory, NewsImage, NewsLevel, Referee,
+    RegionalFederation, SyncLog, User, db,
 )
 
 bp = Blueprint('admin', __name__)
@@ -42,6 +43,7 @@ SECTION_CHOICES = [
     ('members', 'Члены органов'),
     ('regions', 'Регионы ЦФО'),
     ('banners', 'Баннеры'),
+    ('media', 'Медиа'),
     ('sync', 'Синхронизация'),
 ]
 SECTION_KEYS = [key for key, _ in SECTION_CHOICES]
@@ -815,6 +817,182 @@ def banners_delete(banner_id):
     db.session.commit()
     flash('Баннер удалён.', 'success')
     return redirect(url_for('admin.banners_list'))
+
+
+# ---------- Медиа (альбомы и видео) ----------
+
+@bp.route('/media')
+@section_required('media')
+def media_list():
+    albums = MediaAlbum.query.order_by(MediaAlbum.published_at.desc()).all()
+    videos = MediaVideo.query.order_by(MediaVideo.published_at.desc()).all()
+    return render_template('admin/media_list.html', active='media', albums=albums, videos=videos)
+
+
+@bp.route('/media/albums/new', methods=['GET', 'POST'])
+@section_required('media')
+@roles_required('admin', 'editor')
+def media_album_new():
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        photos_count = request.form.get('photos_count', type=int) or 1
+        cover = request.files.get('cover')
+
+        if not title:
+            flash('Название альбома обязательно.', 'error')
+            return render_template('admin/media_album_form.html', active='media', album=None)
+
+        if not cover or not cover.filename:
+            flash('Обложка альбома обязательна.', 'error')
+            return render_template('admin/media_album_form.html', active='media', album=None)
+
+        if not allowed_image(cover.filename):
+            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/media_album_form.html', active='media', album=None)
+
+        album = MediaAlbum(
+            title=title,
+            photos_count=photos_count,
+            is_published=bool(request.form.get('is_published')),
+            cover_path=save_upload(cover),
+        )
+        db.session.add(album)
+        db.session.commit()
+        flash('Альбом добавлен.', 'success')
+        return redirect(url_for('admin.media_list'))
+
+    return render_template('admin/media_album_form.html', active='media', album=None)
+
+
+@bp.route('/media/albums/<int:album_id>/edit', methods=['GET', 'POST'])
+@section_required('media')
+@roles_required('admin', 'editor')
+def media_album_edit(album_id):
+    album = MediaAlbum.query.get_or_404(album_id)
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        photos_count = request.form.get('photos_count', type=int) or 1
+        cover = request.files.get('cover')
+
+        if not title:
+            flash('Название альбома обязательно.', 'error')
+            return render_template('admin/media_album_form.html', active='media', album=album)
+
+        if cover and cover.filename and not allowed_image(cover.filename):
+            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/media_album_form.html', active='media', album=album)
+
+        album.title = title
+        album.photos_count = photos_count
+        album.is_published = bool(request.form.get('is_published'))
+        if cover and cover.filename:
+            old_file_path = os.path.join(current_app.root_path, 'static', album.cover_path)
+            if os.path.exists(old_file_path):
+                os.remove(old_file_path)
+            album.cover_path = save_upload(cover)
+        db.session.commit()
+        flash('Альбом обновлён.', 'success')
+        return redirect(url_for('admin.media_list'))
+
+    return render_template('admin/media_album_form.html', active='media', album=album)
+
+
+@bp.route('/media/albums/<int:album_id>/delete', methods=['POST'])
+@section_required('media')
+@roles_required('admin', 'editor')
+def media_album_delete(album_id):
+    album = MediaAlbum.query.get_or_404(album_id)
+    file_path = os.path.join(current_app.root_path, 'static', album.cover_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    db.session.delete(album)
+    db.session.commit()
+    flash('Альбом удалён.', 'success')
+    return redirect(url_for('admin.media_list'))
+
+
+@bp.route('/media/videos/new', methods=['GET', 'POST'])
+@section_required('media')
+@roles_required('admin', 'editor')
+def media_video_new():
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        video_url = request.form.get('video_url', '').strip()
+        thumbnail = request.files.get('thumbnail')
+
+        if not title:
+            flash('Название видео обязательно.', 'error')
+            return render_template('admin/media_video_form.html', active='media', video=None)
+
+        if not thumbnail or not thumbnail.filename:
+            flash('Превью видео обязательно.', 'error')
+            return render_template('admin/media_video_form.html', active='media', video=None)
+
+        if not allowed_image(thumbnail.filename):
+            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/media_video_form.html', active='media', video=None)
+
+        video = MediaVideo(
+            title=title,
+            video_url=video_url or None,
+            is_published=bool(request.form.get('is_published')),
+            thumbnail_path=save_upload(thumbnail),
+        )
+        db.session.add(video)
+        db.session.commit()
+        flash('Видео добавлено.', 'success')
+        return redirect(url_for('admin.media_list'))
+
+    return render_template('admin/media_video_form.html', active='media', video=None)
+
+
+@bp.route('/media/videos/<int:video_id>/edit', methods=['GET', 'POST'])
+@section_required('media')
+@roles_required('admin', 'editor')
+def media_video_edit(video_id):
+    video = MediaVideo.query.get_or_404(video_id)
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        video_url = request.form.get('video_url', '').strip()
+        thumbnail = request.files.get('thumbnail')
+
+        if not title:
+            flash('Название видео обязательно.', 'error')
+            return render_template('admin/media_video_form.html', active='media', video=video)
+
+        if thumbnail and thumbnail.filename and not allowed_image(thumbnail.filename):
+            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/media_video_form.html', active='media', video=video)
+
+        video.title = title
+        video.video_url = video_url or None
+        video.is_published = bool(request.form.get('is_published'))
+        if thumbnail and thumbnail.filename:
+            old_file_path = os.path.join(current_app.root_path, 'static', video.thumbnail_path)
+            if os.path.exists(old_file_path):
+                os.remove(old_file_path)
+            video.thumbnail_path = save_upload(thumbnail)
+        db.session.commit()
+        flash('Видео обновлено.', 'success')
+        return redirect(url_for('admin.media_list'))
+
+    return render_template('admin/media_video_form.html', active='media', video=video)
+
+
+@bp.route('/media/videos/<int:video_id>/delete', methods=['POST'])
+@section_required('media')
+@roles_required('admin', 'editor')
+def media_video_delete(video_id):
+    video = MediaVideo.query.get_or_404(video_id)
+    file_path = os.path.join(current_app.root_path, 'static', video.thumbnail_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    db.session.delete(video)
+    db.session.commit()
+    flash('Видео удалено.', 'success')
+    return redirect(url_for('admin.media_list'))
 
 
 # ---------- Пользователи (только admin) ----------

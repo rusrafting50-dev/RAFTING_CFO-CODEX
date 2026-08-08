@@ -4,7 +4,7 @@ from datetime import date, datetime
 from flask import Blueprint, render_template, request
 from sqlalchemy import extract
 
-from models import Banner, Competition, Event, News
+from models import Banner, Competition, Event, MediaAlbum, MediaVideo, News
 
 bp = Blueprint('main', __name__)
 
@@ -53,6 +53,8 @@ NEWS_MONTHS = [
     (9, 'Сентябрь'), (10, 'Октябрь'), (11, 'Ноябрь'), (12, 'Декабрь'),
 ]
 NEWS_MIN_YEAR = 2023
+MEDIA_PER_PAGE = 8
+MEDIA_MIN_YEAR = 2023
 
 
 def news_menu_selection(item):
@@ -124,6 +126,18 @@ def index():
         .order_by(Banner.sort_order)
         .all()
     )
+    latest_videos = (
+        MediaVideo.query.filter_by(is_published=True)
+        .order_by(MediaVideo.published_at.desc())
+        .limit(2)
+        .all()
+    )
+    latest_albums = (
+        MediaAlbum.query.filter_by(is_published=True)
+        .order_by(MediaAlbum.published_at.desc())
+        .limit(2)
+        .all()
+    )
     return render_template(
         'main/index.html',
         hero_news=hero_news,
@@ -131,6 +145,8 @@ def index():
         upcoming_competitions=upcoming_competitions,
         upcoming_events=upcoming_events,
         news_sidebar_banners=news_sidebar_banners,
+        latest_videos=latest_videos,
+        latest_albums=latest_albums,
     )
 
 
@@ -203,6 +219,62 @@ def news():
         news_days=list(range(1, 32)),
         selected_category=category,
         selected_level=level,
+        selected_day=day,
+        selected_month=month,
+        selected_year=year,
+        search_query=search_query,
+        has_next=has_next,
+        next_page=page + 1 if has_next else None,
+    )
+
+
+@bp.route('/media')
+def media():
+    media_type = request.args.get('type', 'photo')
+    if media_type not in ('photo', 'video'):
+        media_type = 'photo'
+    day = request.args.get('day', type=int)
+    month = request.args.get('month', type=int)
+    year = request.args.get('year', type=int)
+    search_query = request.args.get('q', '').strip()
+    page = max(request.args.get('page', 1, type=int), 1)
+
+    current_year = datetime.utcnow().year
+    if day is not None and not (1 <= day <= 31):
+        day = None
+    if month is not None and not (1 <= month <= 12):
+        month = None
+    if year is not None and not (MEDIA_MIN_YEAR <= year <= current_year):
+        year = None
+
+    model = MediaAlbum if media_type == 'photo' else MediaVideo
+    query = model.query.filter_by(is_published=True)
+    if day:
+        query = query.filter(extract('day', model.published_at) == day)
+    if month:
+        query = query.filter(extract('month', model.published_at) == month)
+    if year:
+        query = query.filter(extract('year', model.published_at) == year)
+
+    matching = query.order_by(model.published_at.desc()).all()
+
+    if search_query:
+        # См. news() выше — то же обоснование для поиска в Python.
+        needle = search_query.lower()
+        matching = [item for item in matching if needle in item.title.lower()]
+
+    total = len(matching)
+    start = (page - 1) * MEDIA_PER_PAGE
+    media_items = matching[start:start + MEDIA_PER_PAGE]
+    has_next = start + MEDIA_PER_PAGE < total
+
+    return render_template(
+        'main/media.html',
+        media_type=media_type,
+        media_items=media_items,
+        media_months=NEWS_MONTHS,
+        media_years=list(range(current_year, MEDIA_MIN_YEAR - 1, -1)),
+        media_days=list(range(1, 32)),
         selected_day=day,
         selected_month=month,
         selected_year=year,

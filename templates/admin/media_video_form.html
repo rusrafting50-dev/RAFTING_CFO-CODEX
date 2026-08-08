@@ -1,0 +1,46 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'media' %}
+
+{% block title %}{{ 'Редактирование видео' if video else 'Новое видео' }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">{{ 'Редактирование видео' if video else 'Новое видео' }}</h1>
+
+    <form method="post"
+          action="{{ url_for('admin.media_video_edit', video_id=video.id) if video else url_for('admin.media_video_new') }}"
+          class="card p-4" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="title" class="form-label">Название</label>
+            <input type="text" class="form-control" id="title" name="title" required
+                   value="{{ video.title if video else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="video_url" class="form-label">Ссылка на видео (YouTube, VK и т.п.)</label>
+            <input type="url" class="form-control" id="video_url" name="video_url" placeholder="https://..."
+                   value="{{ video.video_url if video and video.video_url else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="thumbnail" class="form-label">Превью (обложка видео)</label>
+            {% if video and video.thumbnail_path %}
+                <div class="mb-2">
+                    <img src="{{ url_for('static', filename=video.thumbnail_path) }}" alt=""
+                         style="max-width: 200px; max-height: 200px; object-fit: contain;" class="border rounded p-1">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept=".jpg,.jpeg,.png,.webp"
+                   {{ 'required' if not video }}>
+            <div class="form-text">
+                JPG/PNG/WEBP.{% if video %} Оставьте поле пустым, чтобы не менять текущее превью.{% endif %}
+            </div>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="is_published" name="is_published"
+                   {{ 'checked' if not video or video.is_published }}>
+            <label class="form-check-label" for="is_published">Опубликовано (видно на сайте)</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.media_list') }}">Отмена</a>
+        </div>
+    </form>
+{% endblock %}

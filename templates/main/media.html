@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Медиа — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Фото и видео Федерации рафтинга Центрального федерального округа{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <div class="mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <h1 class="h3 mb-0">Медиа</h1>
+                <ul class="news-filter-menu">
+                    <li>
+                        <a class="{{ 'active' if media_type == 'photo' }}" href="{{ url_for('main.media', type='photo') }}">Фото</a>
+                    </li>
+                    <li>
+                        <a class="{{ 'active' if media_type == 'video' }}" href="{{ url_for('main.media', type='video') }}">Видео</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="news-search-row mb-5">
+            <form method="get" action="{{ url_for('main.media') }}" class="news-search-input-form">
+                <input type="hidden" name="type" value="{{ media_type }}">
+                {% if selected_day %}<input type="hidden" name="day" value="{{ selected_day }}">{% endif %}
+                {% if selected_month %}<input type="hidden" name="month" value="{{ selected_month }}">{% endif %}
+                {% if selected_year %}<input type="hidden" name="year" value="{{ selected_year }}">{% endif %}
+                <label class="news-search-input">
+                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M13.5 12h-.8l-.3-.3c1-1.1 1.6-2.6 1.6-4.2C14 3.9 11.6 1.5 8.5 1.5S3 3.9 3 7s2.4 5.5 5.5 5.5c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l4.2 4.2 1.3-1.3-4.2-4.2ZM8.5 11C6.6 11 5 9.4 5 7.5S6.6 4 8.5 4 12 5.6 12 7.5 10.4 11 8.5 11Z"/></svg>
+                    <input type="text" name="q" value="{{ search_query }}" placeholder="Поиск по названию...">
+                </label>
+            </form>
+            <div class="news-date-filters">
+                <div class="news-date-dropdown" data-news-dropdown>
+                    <button type="button" class="news-date-toggle {{ 'active' if selected_day }}">
+                        {{ selected_day or 'День' }}
+                        <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                    </button>
+                    <ul class="news-date-menu">
+                        {% for d in media_days %}
+                            <li>
+                                <a class="{{ 'active' if selected_day == d }}"
+                                   href="{{ url_for('main.media', type=media_type, q=search_query or None, month=selected_month or None, year=selected_year or None, day=d) }}">{{ d }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="news-date-dropdown" data-news-dropdown>
+                    <button type="button" class="news-date-toggle {{ 'active' if selected_month }}">
+                        {{ media_months[selected_month - 1][1] if selected_month else 'Месяц' }}
+                        <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                    </button>
+                    <ul class="news-date-menu">
+                        {% for m_value, m_label in media_months %}
+                            <li>
+                                <a class="{{ 'active' if selected_month == m_value }}"
+                                   href="{{ url_for('main.media', type=media_type, q=search_query or None, day=selected_day or None, year=selected_year or None, month=m_value) }}">{{ m_label }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="news-date-dropdown" data-news-dropdown>
+                    <button type="button" class="news-date-toggle {{ 'active' if selected_year }}">
+                        {{ selected_year or 'Год' }}
+                        <svg class="news-date-caret" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                    </button>
+                    <ul class="news-date-menu">
+                        {% for y in media_years %}
+                            <li>
+                                <a class="{{ 'active' if selected_year == y }}"
+                                   href="{{ url_for('main.media', type=media_type, q=search_query or None, day=selected_day or None, month=selected_month or None, year=y) }}">{{ y }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <a class="btn-all-time {{ 'active' if not (selected_day or selected_month or selected_year) }}"
+               href="{{ url_for('main.media', type=media_type, q=search_query or None) }}">За все время</a>
+        </div>
+
+        {% if media_items %}
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 mb-4">
+                {% for item in media_items %}
+                    <div class="col">
+                        {% if media_type == 'photo' %}
+                            <div class="media-card">
+                                <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.cover_path) }}')">
+                                    <span class="media-card-badge">{{ item.photos_count }} фото</span>
+                                </div>
+                                <div class="media-card-body">
+                                    <h3 class="media-card-title">{{ item.title }}</h3>
+                                    <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <a class="media-card media-card-link" href="{{ item.video_url or '#' }}" target="_blank" rel="noopener">
+                                <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.thumbnail_path) }}')">
+                                    <span class="media-card-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+                                </div>
+                                <div class="media-card-body">
+                                    <h3 class="media-card-title">{{ item.title }}</h3>
+                                    <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
+                                </div>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            {% if has_next %}
+                <a href="{{ url_for('main.media', type=media_type, page=next_page, q=search_query or None, day=selected_day or None, month=selected_month or None, year=selected_year or None) }}"
+                   class="btn-load-more">
+                    {{ 'ПОСМОТРЕТЬ БОЛЬШЕ АЛЬБОМОВ' if media_type == 'photo' else 'ПОСМОТРЕТЬ БОЛЬШЕ ВИДЕО' }}
+                </a>
+            {% endif %}
+        {% else %}
+            <p class="text-muted">{{ 'Альбомов пока нет.' if media_type == 'photo' else 'Видео пока нет.' }}</p>
+        {% endif %}
+    </div>
+{% endblock %}

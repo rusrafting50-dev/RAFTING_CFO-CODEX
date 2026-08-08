@@ -214,6 +214,32 @@ class Banner(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class MediaAlbum(db.Model):
+    """Фотоальбом — раздел «Медиа» (вкладка «Фото»), добавляется вручную
+    через панель администратора. photos_count — просто число для бейджа
+    на обложке (сколько фото в альбоме), сами фото не хранятся отдельно."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    cover_path = db.Column(db.String(500), nullable=False)
+    photos_count = db.Column(db.Integer, default=1, nullable=False)
+    published_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_published = db.Column(db.Boolean, default=True, nullable=False)
+
+
+class MediaVideo(db.Model):
+    """Видео — раздел «Медиа» (вкладка «Видео»), добавляется вручную через
+    панель администратора. video_url — ссылка на внешнее видео (YouTube/VK
+    и т.п.), сам ролик не хранится на сайте."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    thumbnail_path = db.Column(db.String(500), nullable=False)
+    video_url = db.Column(db.String(500))
+    published_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_published = db.Column(db.Boolean, default=True, nullable=False)
+
+
 class SyncLog(db.Model):
     """Журнал синхронизации данных, поступающих от COREZ, REGTEAM_RAFTING, SPORTS_REFEREE."""
 
