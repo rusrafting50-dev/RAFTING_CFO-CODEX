@@ -5,6 +5,20 @@
 
 {% block content %}
     <div class="container py-5">
+        <div class="mb-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <h2 class="h3 mb-0">Медиа</h2>
+                <ul class="news-filter-menu">
+                    <li>
+                        <a class="active" href="{{ url_for('main.media', type='photo') }}">Фото</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('main.media', type='video') }}">Видео</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
         <div class="media-album-detail">
             <h1 class="media-album-detail-title">{{ album.title }}</h1>
             {% if album.published_at %}
