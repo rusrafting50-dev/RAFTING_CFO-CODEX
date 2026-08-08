@@ -80,35 +80,37 @@
         </div>
 
         {% if media_items %}
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4 mb-4">
-                {% for item in media_items %}
-                    <div class="col">
-                        {% if media_type == 'photo' %}
-                            <a class="media-card media-card-link" href="{{ url_for('main.media_album_detail', album_id=item.id) }}">
-                                <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.cover_path) }}')">
-                                    <span class="media-card-badge">{{ item.photos_count }} фото</span>
-                                    <div class="media-card-overlay">
-                                        <span class="media-card-overlay-btn">Перейти к альбому</span>
+            <div class="media-teaser-box mb-4">
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+                    {% for item in media_items %}
+                        <div class="col">
+                            {% if media_type == 'photo' %}
+                                <a class="media-card media-card-link" href="{{ url_for('main.media_album_detail', album_id=item.id) }}">
+                                    <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.cover_path) }}')">
+                                        <span class="media-card-badge">{{ item.photos_count }} фото</span>
+                                        <div class="media-card-overlay">
+                                            <span class="media-card-overlay-btn">Перейти к альбому</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="media-card-body">
-                                    <h3 class="media-card-title">{{ item.title }}</h3>
-                                    <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
-                                </div>
-                            </a>
-                        {% else %}
-                            <a class="media-card media-card-link" href="{{ item.video_url or '#' }}" target="_blank" rel="noopener">
-                                <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.thumbnail_path) }}')">
-                                    <span class="media-card-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
-                                </div>
-                                <div class="media-card-body">
-                                    <h3 class="media-card-title">{{ item.title }}</h3>
-                                    <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
-                                </div>
-                            </a>
-                        {% endif %}
-                    </div>
-                {% endfor %}
+                                    <div class="media-card-body">
+                                        <h3 class="media-card-title">{{ item.title }}</h3>
+                                        <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
+                                    </div>
+                                </a>
+                            {% else %}
+                                <a class="media-card media-card-link" href="{{ item.video_url or '#' }}" target="_blank" rel="noopener">
+                                    <div class="media-card-thumb" style="background-image: url('{{ url_for('static', filename=item.thumbnail_path) }}')">
+                                        <span class="media-card-play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span>
+                                    </div>
+                                    <div class="media-card-body">
+                                        <h3 class="media-card-title">{{ item.title }}</h3>
+                                        <p class="media-card-date">{{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}</p>
+                                    </div>
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
             {% if has_next %}
                 <a href="{{ url_for('main.media', type=media_type, page=next_page, q=search_query or None, day=selected_day or None, month=selected_month or None, year=selected_year or None) }}"

@@ -1468,12 +1468,13 @@ footer hr {
 
 /* ===== Страница "Медиа" (сетка карточек фото/видео) ===== */
 .media-card {
+    /* Без белой подложки и тени — карточка лежит прямо на затемнённом
+       фоне .media-teaser-box (см. ниже), как на главной странице,
+       а не выделяется отдельной белой плашкой. */
     display: block;
     height: 100%;
-    background: #fff;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     text-decoration: none;
     color: inherit;
 }
