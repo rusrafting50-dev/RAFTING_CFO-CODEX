@@ -701,18 +701,24 @@ header.scrolled {
 .news-banner {
     /* Реальный загруженный баннер — та же ячейка, что и у плейсхолдера
        "Реклама" (см. .news-banner-placeholder), но без фона-заглушки:
-       под изображение, растянутое на всю ширину/высоту своей ячейки. */
+       под изображение. Ячейка шире, чем выше, а баннеры обычно
+       квадратные/близкие к квадрату — с object-fit:cover верх и низ
+       картинки (где как раз текст) обрезались бы; contain показывает
+       баннер целиком, с полями по бокам. */
     flex: 1 1 0;
     min-height: 140px;
     border-radius: 8px;
     overflow: hidden;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
 }
 
 .news-banner img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
 }
 
