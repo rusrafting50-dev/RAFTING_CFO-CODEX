@@ -1,23 +1,26 @@
 {% extends "admin/base_admin.html" %}
 {% set active = 'banners' %}
 
-{% block title %}Новый баннер — Панель администратора{% endblock %}
+{% block title %}{{ 'Редактирование баннера' if banner else 'Новый баннер' }} — Панель администратора{% endblock %}
 
 {% block admin_content %}
-    <h1 class="h4 mb-4">Новый баннер</h1>
+    <h1 class="h4 mb-4">{{ 'Редактирование баннера' if banner else 'Новый баннер' }}</h1>
 
-    <form method="post" class="card p-4" enctype="multipart/form-data">
+    <form method="post"
+          action="{{ url_for('admin.banners_edit', banner_id=banner.id) if banner else url_for('admin.banners_new') }}"
+          class="card p-4" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="title" class="form-label">Название</label>
             <input type="text" class="form-control" id="title" name="title" required
-                   placeholder="Например: Генеральный партнёр — TIME TRIAL">
+                   placeholder="Например: Генеральный партнёр — TIME TRIAL"
+                   value="{{ banner.title if banner else '' }}">
         </div>
         <div class="mb-3">
             <label for="page" class="form-label">Страница</label>
             <select class="form-select" id="page" name="page" required>
                 <option value="">— выберите —</option>
                 {% for value, label in page_choices %}
-                    <option value="{{ value }}">{{ label }}</option>
+                    <option value="{{ value }}" {{ 'selected' if banner and banner.page == value }}>{{ label }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -26,31 +29,41 @@
             <select class="form-select" id="position" name="position" required>
                 <option value="">— выберите —</option>
                 {% for value, label in position_choices %}
-                    <option value="{{ value }}">{{ label }}</option>
+                    <option value="{{ value }}" {{ 'selected' if banner and banner.position == value }}>{{ label }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="mb-3">
             <label for="link_url" class="form-label">Ссылка при клике (необязательно)</label>
-            <input type="url" class="form-control" id="link_url" name="link_url" placeholder="https://...">
+            <input type="url" class="form-control" id="link_url" name="link_url" placeholder="https://..."
+                   value="{{ banner.link_url if banner and banner.link_url else '' }}">
         </div>
         <div class="mb-3">
             <label for="sort_order" class="form-label">Порядок показа</label>
-            <input type="number" class="form-control" id="sort_order" name="sort_order" value="0" style="max-width: 120px;">
+            <input type="number" class="form-control" id="sort_order" name="sort_order"
+                   value="{{ banner.sort_order if banner else 0 }}" style="max-width: 120px;">
             <div class="form-text">
                 Меньшее число — выше/раньше среди баннеров этого места. В «Колонке рядом с новостями»
-                мест два: первый по порядку баннер попадает в верхнее (квадратное) место, второй — в нижнее
-                (вытянутое по вертикали).
+                мест два: первый по порядку баннер попадает в верхнее место (высота подстраивается под
+                картинку, без обрезки), второй — в нижнее (растягивается до конца новостей, может слегка
+                обрезаться по краям).
             </div>
         </div>
         <div class="mb-3">
             <label for="image" class="form-label">Изображение</label>
-            <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png,.webp" required>
+            {% if banner and banner.image_path %}
+                <div class="mb-2">
+                    <img src="{{ url_for('static', filename=banner.image_path) }}" alt=""
+                         style="max-width: 200px; max-height: 200px; object-fit: contain;" class="border rounded p-1">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png,.webp"
+                   {{ 'required' if not banner }}>
             <div class="form-text">
-                JPG/PNG/WEBP. В «Колонке рядом с новостями» места на экране примерно
-                260–310px в ширину; верхнее место заметно выше нижнего. Картинка вписывается
-                пропорционально, без обрезки, поэтому для чёткости на любом экране файл стоит
-                готовить с запасом — ширина порядка 600px.
+                JPG/PNG/WEBP. Место на экране примерно 260–310px в ширину, высота подстраивается под
+                картинку (верхнее место) или под остаток колонки (нижнее место) — для чёткости на любом
+                экране файл стоит готовить с запасом, ширина порядка 600px.
+                {% if banner %}Оставьте поле пустым, чтобы не менять текущее изображение.{% endif %}
             </div>
         </div>
         <div class="d-flex gap-2">

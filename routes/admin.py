@@ -752,6 +752,57 @@ def banners_new():
     )
 
 
+@bp.route('/banners/<int:banner_id>/edit', methods=['GET', 'POST'])
+@section_required('banners')
+@roles_required('admin', 'editor')
+def banners_edit(banner_id):
+    banner = Banner.query.get_or_404(banner_id)
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        page = request.form.get('page', '')
+        position = request.form.get('position', '')
+        link_url = request.form.get('link_url', '').strip()
+        sort_order = request.form.get('sort_order', type=int) or 0
+        image = request.files.get('image')
+
+        page_keys = [key for key, _ in BANNER_PAGE_CHOICES]
+        position_keys = [key for key, _ in BANNER_POSITION_CHOICES]
+
+        if not title or page not in page_keys or position not in position_keys:
+            flash('Заполните название и выберите страницу/место.', 'error')
+            return render_template(
+                'admin/banner_form.html', active='banners', banner=banner,
+                page_choices=BANNER_PAGE_CHOICES, position_choices=BANNER_POSITION_CHOICES,
+            )
+
+        if image and image.filename and not allowed_image(image.filename):
+            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+            return render_template(
+                'admin/banner_form.html', active='banners', banner=banner,
+                page_choices=BANNER_PAGE_CHOICES, position_choices=BANNER_POSITION_CHOICES,
+            )
+
+        banner.title = title
+        banner.page = page
+        banner.position = position
+        banner.link_url = link_url or None
+        banner.sort_order = sort_order
+        if image and image.filename:
+            old_file_path = os.path.join(current_app.root_path, 'static', banner.image_path)
+            if os.path.exists(old_file_path):
+                os.remove(old_file_path)
+            banner.image_path = save_upload(image)
+        db.session.commit()
+        flash('Баннер обновлён.', 'success')
+        return redirect(url_for('admin.banners_list'))
+
+    return render_template(
+        'admin/banner_form.html', active='banners', banner=banner,
+        page_choices=BANNER_PAGE_CHOICES, position_choices=BANNER_POSITION_CHOICES,
+    )
+
+
 @bp.route('/banners/<int:banner_id>/delete', methods=['POST'])
 @section_required('banners')
 @roles_required('admin', 'editor')

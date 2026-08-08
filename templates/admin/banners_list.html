@@ -37,6 +37,7 @@
                             <td>{{ banner.sort_order }}</td>
                             {% if current_user.role in ('admin', 'editor') %}
                                 <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.banners_edit', banner_id=banner.id) }}">Изменить</a>
                                     <form method="post" action="{{ url_for('admin.banners_delete', banner_id=banner.id) }}"
                                           onsubmit="return confirm('Удалить баннер?');">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
