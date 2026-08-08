@@ -713,9 +713,13 @@ header.scrolled {
 }
 
 .news-banner img {
+    /* contain, а не cover — с cover в увеличенной (и от этого более
+       узкой относительно своей высоты) ячейке начали обрезаться уже
+       бока картинки. contain уменьшает баннер по ширине и высоте
+       пропорционально, целиком помещая его в ячейку, без обрезки. */
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
 }
 
