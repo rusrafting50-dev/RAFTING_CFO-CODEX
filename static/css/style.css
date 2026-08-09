@@ -556,7 +556,11 @@ header.scrolled {
 
 .home-carousel-btn {
     /* Крупные скобки без кружка вокруг — как на rfs.ru, вместо
-       круглой кнопки с рамкой. */
+       круглой кнопки с рамкой. Сама скобка — SVG-иконка (не текстовый
+       символ): её размер задаётся напрямую через width/height у svg
+       ниже, а не масштабированием шрифта — так толщина линии остаётся
+       постоянной (vector-effect: non-scaling-stroke на самой линии)
+       независимо от того, насколько скобка растянута по ширине/высоте. */
     flex: 0 0 auto;
     width: auto;
     height: auto;
@@ -564,21 +568,24 @@ header.scrolled {
     border: none;
     background: none;
     color: var(--color-dark);
-    font-size: 36px;
-    font-weight: 700;
-    line-height: 1;
     padding: 0 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    /* Вдвое выше, ширина не меняется — растягиваем только по Y. */
-    transform: scaleY(2);
 }
 
 .home-carousel-btn:hover {
     background: none;
     color: var(--color-accent);
+}
+
+.home-carousel-btn svg {
+    /* Ширина увеличена на 50% (было 20px), высота — вдвое больше
+       исходной (была 36px), как и раньше. */
+    width: 30px;
+    height: 72px;
+    overflow: visible;
 }
 
 /* ===== Карточки ===== */
