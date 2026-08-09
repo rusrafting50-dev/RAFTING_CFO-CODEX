@@ -346,7 +346,7 @@ header.scrolled {
        у каждой вкладки свой .home-carousel-widget, но виден только
        активный (Bootstrap скрывает неактивный .tab-pane целиком). */
     position: absolute;
-    top: 6px;
+    top: 0;
     right: 0;
     display: flex;
     gap: 8px;
@@ -581,10 +581,14 @@ header.scrolled {
 }
 
 .home-carousel-btn svg {
-    /* Ширина увеличена на 50% (было 20px), высота — вдвое больше
-       исходной (была 36px), как и раньше. */
+    /* preserveAspectRatio="none" на самом svg (в разметке) — чтобы
+       width/height ниже растягивали скобку по осям независимо, а не
+       вписывались с сохранением пропорций (иначе увеличение высоты
+       визуально ничего не меняло: скобка была "вписана" по меньшей
+       стороне). Ширина не менялась, высота увеличена на 50% (видимая
+       высота скобки была 20px, стала 30px). */
     width: 30px;
-    height: 72px;
+    height: 45px;
     overflow: visible;
 }
 
@@ -808,17 +812,24 @@ footer {
 footer h2 {
     font-size: 0.85rem;
     letter-spacing: 0.05em;
-    color: #8b8ba7;
+    /* Цвет фона, где расположены карточки новостей (--color-bg). */
+    color: #f5f5f5;
 }
 
 footer a {
-    color: #fff;
+    /* Цвет фона раздела Видео/Фото (.media-teaser-box). */
+    color: #e9ebee;
     text-decoration: none;
 }
 
 footer a:hover {
     color: #aaa;
     text-decoration: none;
+}
+
+footer p.text-center {
+    /* Цвет фона, где расположены карточки новостей (--color-bg). */
+    color: #f5f5f5;
 }
 
 footer hr {
@@ -828,7 +839,7 @@ footer hr {
 .footer-right {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     gap: 20px;
     height: 100%;
 }
@@ -839,12 +850,12 @@ footer hr {
 }
 
 .footer-social-icon {
-    /* Белый кружок с тёмным значком внутри — как на rfs.ru. */
+    /* Кружок цвета фона карточек новостей с тёмным значком внутри. */
     flex: none;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #fff;
+    background: #f5f5f5;
     color: var(--color-dark);
     display: flex;
     align-items: center;
@@ -871,14 +882,14 @@ footer hr {
 }
 
 .footer-logo {
+    /* Цвет фона карточек новостей — подложка под чёрно-белый логотип,
+       иначе он теряется на тёмном фоне подвала. */
     max-width: 140px;
     height: auto;
-}
-
-@media (min-width: 992px) {
-    .footer-right {
-        align-items: flex-end;
-    }
+    background: #f5f5f5;
+    padding: 8px;
+    border-radius: 6px;
+    box-sizing: border-box;
 }
 
 /* ===== Страница "Новости" (список + колонка "Официально") ===== */
