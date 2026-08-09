@@ -17,6 +17,27 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 _TIME_CELL_RE = re.compile(r'^\d+(:\d{2})+(\.\d+)?$')  # "1:35.50", "00:10", "20:00.00"
 _ROMAN_CELL_RE = re.compile(r'^[IVXLCDM]+$')  # разряды ("I", "II", "III")
 
+_YOUTUBE_EMBED_RE = re.compile(
+    r'(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([a-zA-Z0-9_-]{11})'
+)
+_VK_VIDEO_RE = re.compile(r'vk(?:video)?\.(?:com|ru)/video(-?\d+)_(\d+)')
+
+
+def video_embed_url(url):
+    """Ссылка для встраивания видео в свой плеер (iframe) на сайте —
+    YouTube и VK Видео; для остальных источников встраивание недоступно,
+    пусто (шаблон в этом случае просто открывает исходную ссылку)."""
+    if not url:
+        return ''
+    youtube_match = _YOUTUBE_EMBED_RE.search(url)
+    if youtube_match:
+        return f'https://www.youtube.com/embed/{youtube_match.group(1)}'
+    vk_match = _VK_VIDEO_RE.search(url)
+    if vk_match:
+        owner_id, video_id = vk_match.groups()
+        return f'https://vk.com/video_ext.php?oid={owner_id}&id={video_id}&hd=2'
+    return ''
+
 
 def is_time_or_roman(value):
     """Ячейки таблиц результатов со временем (М:СС.сс, ММ:СС) или
@@ -90,6 +111,7 @@ def create_app():
     app.jinja_env.filters['ru_date_full'] = format_ru_date_full
     app.jinja_env.filters['cap_first'] = cap_first
     app.jinja_env.filters['media_thumb'] = media_thumb
+    app.jinja_env.filters['video_embed_url'] = video_embed_url
     app.jinja_env.tests['time_or_roman'] = is_time_or_roman
 
     register_blueprints(app)

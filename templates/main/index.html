@@ -237,7 +237,10 @@
                                                 <div class="col">
                                                     <a class="media-teaser-item"
                                                        href="{{ video.video_url or url_for('main.media', type='video') }}"
-                                                       target="_blank" rel="noopener">
+                                                       target="_blank" rel="noopener"
+                                                       data-video-embed="{{ video.video_url|video_embed_url }}"
+                                                       data-video-title="{{ video.title }}"
+                                                       data-video-url="{{ video.video_url or '' }}">
                                                         <div class="media-teaser-thumb media-teaser-thumb-video"
                                                              {% if video.thumbnail_path %}style="background-image: url('{{ video.thumbnail_path|media_thumb }}')"{% endif %}>
                                                             <span class="media-teaser-play">

@@ -126,6 +126,23 @@
     </div>
 </footer>
 
+<div class="video-lightbox" id="videoLightbox" aria-hidden="true">
+    <button class="news-lightbox-close" type="button" aria-label="Закрыть">&times;</button>
+    <div class="video-lightbox-content">
+        <div class="video-lightbox-player">
+            <iframe id="videoLightboxIframe" src="" title="Видео"
+                    allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div class="video-lightbox-info">
+            <h2 class="video-lightbox-title" id="videoLightboxTitle"></h2>
+            <a class="video-lightbox-link" id="videoLightboxLink" href="" target="_blank" rel="noopener">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7h-4v2h4a3 3 0 1 1 0 6h-4v2h4a5 5 0 0 0 0-10zm-6 8H7a3 3 0 1 1 0-6h4V7H7a5 5 0 0 0 0 10h4zm-3-5h8v2H8z"/></svg>
+                Адрес ссылки на видео
+            </a>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 {% block extra_scripts %}{% endblock %}

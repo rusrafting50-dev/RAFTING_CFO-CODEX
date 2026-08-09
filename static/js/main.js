@@ -253,6 +253,56 @@
     });
 })();
 
+// Лайтбокс со встроенным плеером видео (YouTube/VK): клик по видео на
+// главной или на странице "Медиа" открывает его поверх страницы своим
+// плеером, без перехода на сторонний сайт — если ссылка поддерживает
+// встраивание (см. video_embed_url в app.py). Иначе data-video-embed
+// пуст, обработчик не вешается и клик по ссылке идёт как обычно.
+(function () {
+    var lightbox = document.getElementById('videoLightbox');
+    var iframe = document.getElementById('videoLightboxIframe');
+    if (!lightbox || !iframe) {
+        return;
+    }
+
+    var titleEl = document.getElementById('videoLightboxTitle');
+    var linkEl = document.getElementById('videoLightboxLink');
+    var closeBtn = lightbox.querySelector('.news-lightbox-close');
+
+    function close() {
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        iframe.src = 'about:blank';
+    }
+
+    document.querySelectorAll('[data-video-embed]').forEach(function (trigger) {
+        var embedUrl = trigger.getAttribute('data-video-embed');
+        if (!embedUrl) {
+            return;
+        }
+        trigger.addEventListener('click', function (event) {
+            event.preventDefault();
+            iframe.src = embedUrl;
+            titleEl.textContent = trigger.getAttribute('data-video-title') || '';
+            linkEl.href = trigger.getAttribute('data-video-url') || '#';
+            lightbox.classList.add('open');
+            lightbox.setAttribute('aria-hidden', 'false');
+        });
+    });
+
+    closeBtn.addEventListener('click', close);
+    lightbox.addEventListener('click', function (event) {
+        if (event.target === lightbox) {
+            close();
+        }
+    });
+    document.addEventListener('keydown', function (event) {
+        if (lightbox.classList.contains('open') && event.key === 'Escape') {
+            close();
+        }
+    });
+})();
+
 // Кнопка "Наверх" на странице новости — прокрутка к началу страницы.
 (function () {
     document.querySelectorAll('.scroll-top-btn').forEach(function (btn) {
