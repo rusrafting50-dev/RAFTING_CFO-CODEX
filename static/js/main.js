@@ -258,21 +258,39 @@
 // плеером, без перехода на сторонний сайт — если ссылка поддерживает
 // встраивание (см. video_embed_url в app.py). Иначе data-video-embed
 // пуст, обработчик не вешается и клик по ссылке идёт как обычно.
+// При открытии сперва показывается обложка видео со значком play —
+// сам плеер (iframe) загружается и стартует только по клику на неё.
 (function () {
     var lightbox = document.getElementById('videoLightbox');
     var iframe = document.getElementById('videoLightboxIframe');
-    if (!lightbox || !iframe) {
+    var cover = document.getElementById('videoLightboxCover');
+    if (!lightbox || !iframe || !cover) {
         return;
     }
 
     var titleEl = document.getElementById('videoLightboxTitle');
     var linkEl = document.getElementById('videoLightboxLink');
     var closeBtn = lightbox.querySelector('.news-lightbox-close');
+    var currentEmbedUrl = '';
+
+    function showCover() {
+        iframe.src = 'about:blank';
+        cover.hidden = false;
+    }
+
+    function playVideo() {
+        if (!currentEmbedUrl) {
+            return;
+        }
+        iframe.src = currentEmbedUrl;
+        cover.hidden = true;
+    }
 
     function close() {
         lightbox.classList.remove('open');
         lightbox.setAttribute('aria-hidden', 'true');
-        iframe.src = 'about:blank';
+        showCover();
+        currentEmbedUrl = '';
     }
 
     document.querySelectorAll('[data-video-embed]').forEach(function (trigger) {
@@ -282,7 +300,9 @@
         }
         trigger.addEventListener('click', function (event) {
             event.preventDefault();
-            iframe.src = embedUrl;
+            currentEmbedUrl = embedUrl;
+            cover.style.backgroundImage = "url('" + (trigger.getAttribute('data-video-thumb') || '') + "')";
+            showCover();
             titleEl.textContent = trigger.getAttribute('data-video-title') || '';
             linkEl.href = trigger.getAttribute('data-video-url') || '#';
             lightbox.classList.add('open');
@@ -290,6 +310,7 @@
         });
     });
 
+    cover.addEventListener('click', playVideo);
     closeBtn.addEventListener('click', close);
     lightbox.addEventListener('click', function (event) {
         if (event.target === lightbox) {

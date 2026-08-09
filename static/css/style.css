@@ -1798,7 +1798,7 @@ table.table-zebra tbody tr:nth-child(even) {
     z-index: 2000;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.92);
     padding: 24px;
 }
 
@@ -1816,7 +1816,8 @@ table.table-zebra tbody tr:nth-child(even) {
     width: 100%;
     aspect-ratio: 16 / 9;
     background: #000;
-    border-radius: 4px 4px 0 0;
+    border: 8px solid #fff;
+    box-sizing: border-box;
     overflow: hidden;
 }
 
@@ -1828,10 +1829,51 @@ table.table-zebra tbody tr:nth-child(even) {
     border: none;
 }
 
+/* Обложка видео со значком play поверх — показывается сразу при
+   открытии лайтбокса, сама видео-загрузка (iframe) стартует только
+   по клику (см. JS), чтобы не грузить/не автозапускать плеер сразу. */
+.video-lightbox-cover {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000 center/cover no-repeat;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.video-lightbox-cover[hidden] {
+    display: none;
+}
+
+.video-lightbox-play {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(15, 15, 15, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease;
+}
+
+.video-lightbox-cover:hover .video-lightbox-play {
+    transform: scale(1.5);
+}
+
+.video-lightbox-play svg {
+    width: 32px;
+    height: 32px;
+    margin-left: 4px;
+    fill: #fff;
+}
+
 .video-lightbox-info {
     background: #fff;
     padding: 16px 20px;
-    border-radius: 0 0 4px 4px;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -1855,6 +1897,11 @@ table.table-zebra tbody tr:nth-child(even) {
     font-weight: 700;
     text-decoration: none;
     white-space: nowrap;
+    /* Прижимает ссылку к правому краю, даже когда строка переносится
+       (заголовок слишком длинный) — margin-left:auto забирает всё
+       свободное место на СВОЕЙ строке, а не justify-content, который
+       на перенесённой (второй) строке прижал бы ссылку к левому краю. */
+    margin-left: auto;
 }
 
 .video-lightbox-link svg {

@@ -96,7 +96,8 @@
                                 <a class="media-teaser-item" href="{{ item.video_url or '#' }}" target="_blank" rel="noopener"
                                    data-video-embed="{{ item.video_url|video_embed_url }}"
                                    data-video-title="{{ item.title }}"
-                                   data-video-url="{{ item.video_url or '' }}">
+                                   data-video-url="{{ item.video_url or '' }}"
+                                   data-video-thumb="{{ item.thumbnail_path|media_thumb }}">
                                     <div class="media-teaser-thumb media-teaser-thumb-video" style="background-image: url('{{ item.thumbnail_path|media_thumb }}')">
                                         <span class="media-teaser-play">
                                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>

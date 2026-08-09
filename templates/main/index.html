@@ -240,7 +240,8 @@
                                                        target="_blank" rel="noopener"
                                                        data-video-embed="{{ video.video_url|video_embed_url }}"
                                                        data-video-title="{{ video.title }}"
-                                                       data-video-url="{{ video.video_url or '' }}">
+                                                       data-video-url="{{ video.video_url or '' }}"
+                                                       data-video-thumb="{{ video.thumbnail_path|media_thumb }}">
                                                         <div class="media-teaser-thumb media-teaser-thumb-video"
                                                              {% if video.thumbnail_path %}style="background-image: url('{{ video.thumbnail_path|media_thumb }}')"{% endif %}>
                                                             <span class="media-teaser-play">
