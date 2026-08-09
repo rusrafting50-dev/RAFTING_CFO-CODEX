@@ -61,12 +61,13 @@
                         <div class="position-relative">
                             <img src="{{ url_for('static', filename=image.file_path) }}" alt=""
                                  style="width: 120px; height: 90px; object-fit: cover;" class="rounded border">
-                            <form method="post"
-                                  action="{{ url_for('admin.news_image_delete', news_id=news.id, image_id=image.id) }}"
-                                  onsubmit="return confirm('Удалить это фото?');"
-                                  class="position-absolute top-0 end-0 m-1">
-                                <button type="submit" class="btn btn-sm btn-danger py-0 px-1">&times;</button>
-                            </form>
+                            {# form="..." вместо вложенной <form> — вложенные формы недопустимы в
+                               HTML: закрывающий тег вложенной формы преждевременно закрывает
+                               внешнюю форму новости, из-за чего кнопка "Сохранить" ниже выпадает
+                               из формы и перестаёт что-либо отправлять. #}
+                            <button type="submit" form="deleteGalleryImage{{ image.id }}"
+                                    onclick="return confirm('Удалить это фото?');"
+                                    class="btn btn-sm btn-danger py-0 px-1 position-absolute top-0 end-0 m-1">&times;</button>
                         </div>
                     {% endfor %}
                 </div>
@@ -108,4 +109,12 @@
             <a class="btn btn-outline-secondary" href="{{ url_for('admin.news_list') }}">Отмена</a>
         </div>
     </form>
+
+    {% if news and news.gallery_images %}
+        {% for image in news.gallery_images %}
+            <form id="deleteGalleryImage{{ image.id }}" method="post"
+                  action="{{ url_for('admin.news_image_delete', news_id=news.id, image_id=image.id) }}"
+                  hidden></form>
+        {% endfor %}
+    {% endif %}
 {% endblock %}

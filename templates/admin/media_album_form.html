@@ -41,12 +41,13 @@
                         <div class="position-relative">
                             <img src="{{ url_for('static', filename=photo.file_path) }}" alt=""
                                  style="width: 120px; height: 90px; object-fit: cover;" class="rounded border">
-                            <form method="post"
-                                  action="{{ url_for('admin.media_album_photo_delete', album_id=album.id, photo_id=photo.id) }}"
-                                  onsubmit="return confirm('Удалить это фото?');"
-                                  class="position-absolute top-0 end-0 m-1">
-                                <button type="submit" class="btn btn-sm btn-danger py-0 px-1">&times;</button>
-                            </form>
+                            {# form="..." вместо вложенной <form> — вложенные формы недопустимы в
+                               HTML: закрывающий тег вложенной формы преждевременно закрывает
+                               внешнюю форму альбома, из-за чего кнопка "Сохранить" ниже выпадает
+                               из формы и перестаёт что-либо отправлять. #}
+                            <button type="submit" form="deletePhoto{{ photo.id }}"
+                                    onclick="return confirm('Удалить это фото?');"
+                                    class="btn btn-sm btn-danger py-0 px-1 position-absolute top-0 end-0 m-1">&times;</button>
                         </div>
                     {% endfor %}
                 </div>
@@ -68,4 +69,12 @@
             <a class="btn btn-outline-secondary" href="{{ url_for('admin.media_list') }}">Отмена</a>
         </div>
     </form>
+
+    {% if album and album.photos %}
+        {% for photo in album.photos %}
+            <form id="deletePhoto{{ photo.id }}" method="post"
+                  action="{{ url_for('admin.media_album_photo_delete', album_id=album.id, photo_id=photo.id) }}"
+                  hidden></form>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
