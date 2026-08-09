@@ -832,17 +832,18 @@ footer hr {
 }
 
 .footer-social-icon {
+    /* Белый кружок с тёмным значком внутри — как на rfs.ru. */
     flex: none;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
+    background: #fff;
+    color: var(--color-dark);
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    transition: background 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .footer-social-icon:hover {
