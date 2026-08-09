@@ -1522,7 +1522,13 @@ footer hr {
     font-size: 20.8px;
     font-weight: 700;
     padding: 3px 11px;
-    min-width: 24px;
+    /* Фиксированная ширина под три цифры — не растёт и не сжимается
+       от того, сколько цифр в числе (57px = ширина "999" при этом
+       шрифте + отступы). */
+    width: 58px;
+    box-sizing: border-box;
+    /* Весь значок (плашка + галочки) уменьшен на 30%. */
+    transform: scale(0.7);
 }
 
 .media-teaser-badge::before,
@@ -1535,16 +1541,17 @@ footer hr {
        её конца на 10% от полной длины). */
     width: 90%;
     height: 90%;
-    border-bottom: 3px solid rgba(26, 26, 46, 0.85);
-    border-right: 3px solid rgba(26, 26, 46, 0.85);
+    border-bottom: 1.5px solid rgba(26, 26, 46, 0.85);
+    border-right: 1.5px solid rgba(26, 26, 46, 0.85);
 }
 
 .media-teaser-badge::before {
-    transform: translate(6px, 6px);
+    /* Расстояние до плашки и между галочками уменьшено вдвое (было 6px). */
+    transform: translate(3px, 3px);
 }
 
 .media-teaser-badge::after {
-    transform: translate(12px, 12px);
+    transform: translate(6px, 6px);
 }
 
 .media-teaser-title {
