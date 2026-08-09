@@ -882,14 +882,8 @@ footer hr {
 }
 
 .footer-logo {
-    /* Цвет фона карточек новостей — подложка под чёрно-белый логотип,
-       иначе он теряется на тёмном фоне подвала. */
     max-width: 140px;
     height: auto;
-    background: #f5f5f5;
-    padding: 8px;
-    border-radius: 6px;
-    box-sizing: border-box;
 }
 
 /* ===== Страница "Новости" (список + колонка "Официально") ===== */
