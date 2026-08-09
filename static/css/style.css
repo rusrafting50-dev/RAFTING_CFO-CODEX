@@ -818,13 +818,15 @@ footer {
 footer h2 {
     font-size: 0.85rem;
     letter-spacing: 0.05em;
-    /* Цвет фона, где расположены карточки новостей (--color-bg). */
-    color: #f5f5f5;
+    /* Цвет фона раздела Видео/Фото (.media-teaser-box). */
+    color: #e9ebee;
 }
 
 footer a {
-    /* Цвет фона раздела Видео/Фото (.media-teaser-box). */
-    color: #e9ebee;
+    /* Темнее заголовков разделов — текстовые ссылки не должны с ними
+       сливаться. */
+    color: #8b8ba7;
+    font-size: 13px;
     text-decoration: none;
 }
 
@@ -834,8 +836,8 @@ footer a:hover {
 }
 
 footer p.text-center {
-    /* Цвет фона, где расположены карточки новостей (--color-bg). */
-    color: #f5f5f5;
+    /* Цвет фона раздела Видео/Фото (.media-teaser-box). */
+    color: #e9ebee;
 }
 
 footer hr {
@@ -856,12 +858,12 @@ footer hr {
 }
 
 .footer-social-icon {
-    /* Кружок цвета фона карточек новостей с тёмным значком внутри. */
+    /* Кружок цвета фона раздела Видео/Фото с тёмным значком внутри. */
     flex: none;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #f5f5f5;
+    background: #e9ebee;
     color: var(--color-dark);
     display: flex;
     align-items: center;
