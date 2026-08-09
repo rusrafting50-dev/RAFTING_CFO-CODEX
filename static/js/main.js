@@ -176,14 +176,17 @@
     });
 })();
 
-// Лайтбокс слайдера доп. фото на странице новости: клик по миниатюре
-// открывает увеличенное фото на весь экран (в естественных пропорциях,
-// без обрезки) с той же навигацией вперёд/назад.
+// Лайтбокс с миниатюрами: клик по фото (в слайдере новости или в сетке
+// альбома "Медиа") открывает увеличенное фото на весь экран (в
+// естественных пропорциях, без обрезки) с навигацией вперёд/назад и
+// строкой миниатюр внизу. Общий для .news-gallery и .media-album-grid —
+// оба типа контейнеров идут парой с .news-lightbox сразу следующим
+// элементом в разметке (см. news_detail.html, media_album_detail.html).
 (function () {
-    document.querySelectorAll('.news-gallery').forEach(function (gallery) {
-        var slides = Array.prototype.slice.call(gallery.querySelectorAll('.news-gallery-slide'));
+    document.querySelectorAll('.news-gallery, .media-album-grid').forEach(function (gallery) {
+        var slides = Array.prototype.slice.call(gallery.querySelectorAll('[data-full-src]'));
         var lightbox = gallery.nextElementSibling;
-        if (!lightbox || !lightbox.classList.contains('news-lightbox')) {
+        if (!slides.length || !lightbox || !lightbox.classList.contains('news-lightbox')) {
             return;
         }
 
@@ -191,11 +194,18 @@
         var closeBtn = lightbox.querySelector('.news-lightbox-close');
         var prevBtn = lightbox.querySelector('.news-lightbox-prev');
         var nextBtn = lightbox.querySelector('.news-lightbox-next');
+        var thumbs = Array.prototype.slice.call(lightbox.querySelectorAll('.news-lightbox-thumb'));
         var currentIndex = 0;
 
         function show(index) {
             currentIndex = (index + slides.length) % slides.length;
             img.src = slides[currentIndex].getAttribute('data-full-src');
+            thumbs.forEach(function (thumb, i) {
+                thumb.classList.toggle('active', i === currentIndex);
+            });
+            if (thumbs[currentIndex]) {
+                thumbs[currentIndex].scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+            }
         }
 
         function open(index) {
@@ -212,6 +222,10 @@
 
         slides.forEach(function (slide, index) {
             slide.addEventListener('click', function () { open(index); });
+        });
+
+        thumbs.forEach(function (thumb, index) {
+            thumb.addEventListener('click', function () { show(index); });
         });
 
         closeBtn.addEventListener('click', close);

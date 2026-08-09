@@ -25,13 +25,33 @@
                 <p class="media-album-detail-date">{{ album.published_at|ru_date_full }}</p>
             {% endif %}
 
+            {% set album_photo_paths = [album.cover_path] + (album.photos | map(attribute='file_path') | list) %}
             <div class="media-album-grid">
-                <div class="media-album-photo"
-                     style="background-image: url('{{ url_for('static', filename=album.cover_path) }}')"></div>
-                {% for photo in album.photos %}
-                    <div class="media-album-photo"
-                         style="background-image: url('{{ url_for('static', filename=photo.file_path) }}')"></div>
+                {% for path in album_photo_paths %}
+                    <button type="button" class="media-album-photo"
+                            style="background-image: url('{{ url_for('static', filename=path) }}')"
+                            data-full-src="{{ url_for('static', filename=path) }}"
+                            aria-label="Открыть фото {{ loop.index }} из {{ loop.length }}">
+                        <span class="media-album-photo-zoom">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+                        </span>
+                    </button>
                 {% endfor %}
+            </div>
+            <div class="news-lightbox" aria-hidden="true">
+                <button class="news-lightbox-close" type="button" aria-label="Закрыть">&times;</button>
+                <button class="news-lightbox-btn news-lightbox-prev" type="button" aria-label="Назад">&lsaquo;</button>
+                <div class="news-lightbox-main">
+                    <img class="news-lightbox-img" src="" alt="">
+                    <div class="news-lightbox-thumbs">
+                        {% for path in album_photo_paths %}
+                            <button type="button" class="news-lightbox-thumb"
+                                    style="background-image: url('{{ url_for('static', filename=path) }}')"
+                                    aria-label="Фото {{ loop.index }} из {{ loop.length }}"></button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button class="news-lightbox-btn news-lightbox-next" type="button" aria-label="Вперёд">&rsaquo;</button>
             </div>
 
             <div class="news-detail-top-row">

@@ -45,7 +45,16 @@
                         <div class="news-lightbox" aria-hidden="true">
                             <button class="news-lightbox-close" type="button" aria-label="Закрыть">&times;</button>
                             <button class="news-lightbox-btn news-lightbox-prev" type="button" aria-label="Назад">&lsaquo;</button>
-                            <img class="news-lightbox-img" src="" alt="">
+                            <div class="news-lightbox-main">
+                                <img class="news-lightbox-img" src="" alt="">
+                                <div class="news-lightbox-thumbs">
+                                    {% for image in item.gallery_images %}
+                                        <button type="button" class="news-lightbox-thumb"
+                                                style="background-image: url('{{ url_for('static', filename=image.file_path) }}')"
+                                                aria-label="Фото {{ loop.index }} из {{ loop.length }}"></button>
+                                    {% endfor %}
+                                </div>
+                            </div>
                             <button class="news-lightbox-btn news-lightbox-next" type="button" aria-label="Вперёд">&rsaquo;</button>
                         </div>
                     {% endif %}
