@@ -1512,7 +1512,7 @@ footer hr {
        галочка), обозначающая скрытые за плашкой фото. */
     position: absolute;
     left: 3.57px;
-    bottom: 6.78px;
+    bottom: 5.74px;
     z-index: 1;
     display: inline-flex;
     align-items: center;
@@ -1523,10 +1523,10 @@ footer hr {
     font-size: 20.8px;
     font-weight: 400;
     padding: 0 4px;
-    /* Итоговый размер на экране — 30×15px: собственный размер задан
-       с поправкой на transform: scale(0.7) ниже (30/0.7, 15/0.7). */
+    /* Итоговый размер на экране — 30×20px: собственный размер задан
+       с поправкой на transform: scale(0.7) ниже (30/0.7, 20/0.7). */
     width: 42.86px;
-    height: 21.43px;
+    height: 28.57px;
     box-sizing: border-box;
     transform: scale(0.7);
 }
@@ -1537,10 +1537,10 @@ footer hr {
     position: absolute;
     bottom: 0;
     right: 0;
-    /* Тот же итоговый размер на экране, что у прямоугольника — 30×15px
+    /* Тот же итоговый размер на экране, что у прямоугольника — 30×20px
        (тоже с поправкой на общий transform: scale(0.7)). */
     width: 42.86px;
-    height: 21.43px;
+    height: 28.57px;
     border-bottom: 1.5px solid rgba(26, 26, 46, 0.85);
     border-right: 1.5px solid rgba(26, 26, 46, 0.85);
 }
