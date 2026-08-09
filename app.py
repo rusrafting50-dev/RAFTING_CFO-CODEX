@@ -90,6 +90,12 @@ def media_thumb(path):
     if not path:
         return ''
     if path.startswith('http://') or path.startswith('https://'):
+        # Записи, сохранённые до перехода на mqdefault.jpg (см.
+        # admin.youtube_thumbnail_url), ещё указывают на hqdefault.jpg —
+        # у него канва 4:3 с чёрными полосами для 16:9 видео. Правим на
+        # лету при выводе, без миграции базы.
+        if path.startswith('https://img.youtube.com/vi/') and path.endswith('/hqdefault.jpg'):
+            return path[: -len('hqdefault.jpg')] + 'mqdefault.jpg'
         return path
     return url_for('static', filename=path)
 

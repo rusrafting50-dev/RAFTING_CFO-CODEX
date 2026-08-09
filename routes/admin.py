@@ -39,7 +39,11 @@ def extract_youtube_id(url):
 
 
 def youtube_thumbnail_url(video_id):
-    return f'https://img.youtube.com/vi/{video_id}/hqdefault.jpg'
+    # mqdefault.jpg — честные пропорции 16:9 и есть у любого видео. У
+    # hqdefault.jpg (использовался раньше) канва 4:3 — для 16:9 видео
+    # это чёрные полосы сверху/снизу, выпилить их обрезкой поля нельзя,
+    # т.к. они запечены в саму картинку.
+    return f'https://img.youtube.com/vi/{video_id}/mqdefault.jpg'
 
 
 def news_category_choices():
