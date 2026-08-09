@@ -735,6 +735,27 @@ header.scrolled {
     object-fit: cover;
 }
 
+/* ===== Полоса логотипов партнёров (перед подвалом) ===== */
+.partners-strip {
+    /* Чуть светлее подвала (--color-dark: #1a1a2e). */
+    background: #2b2b4d;
+}
+
+.partners-strip-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 56px;
+    padding: 32px 20px;
+}
+
+.partners-strip-logo {
+    max-height: 44px;
+    width: auto;
+    object-fit: contain;
+}
+
 /* ===== Подвал ===== */
 footer {
     background: var(--color-dark);
