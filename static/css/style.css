@@ -1511,8 +1511,8 @@ footer hr {
        дубликаты, а только линия-обводка верхнего правого угла (как
        галочка), обозначающая скрытые за плашкой фото. */
     position: absolute;
-    left: -16px;
-    bottom: -8px;
+    left: 3.57px;
+    bottom: 6.78px;
     z-index: 1;
     display: inline-flex;
     align-items: center;
