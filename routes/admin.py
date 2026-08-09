@@ -1,5 +1,6 @@
 """Панель администратора: вход, дашборд, управление контентом."""
 import os
+import re
 from datetime import datetime
 from functools import wraps
 
@@ -26,6 +27,19 @@ SYNC_SOURCES = ['COREZ', 'REGTEAM_RAFTING', 'SPORTS_REFEREE']
 BODY_CHOICES = ['исполком', 'коллегия_судей', 'тренерский_совет', 'комитет_представителей']
 DOC_CATEGORY_CHOICES = ['федеральный', 'региональный', 'wrf', 'фрр', 'федерация']
 ROLE_CHOICES = ['admin', 'editor', 'viewer']
+
+YOUTUBE_ID_RE = re.compile(
+    r'(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([a-zA-Z0-9_-]{11})'
+)
+
+
+def extract_youtube_id(url):
+    match = YOUTUBE_ID_RE.search(url or '')
+    return match.group(1) if match else None
+
+
+def youtube_thumbnail_url(video_id):
+    return f'https://img.youtube.com/vi/{video_id}/hqdefault.jpg'
 
 
 def news_category_choices():
@@ -946,24 +960,32 @@ def media_video_new():
         title = request.form.get('title', '').strip()
         video_url = request.form.get('video_url', '').strip()
         thumbnail = request.files.get('thumbnail')
+        use_youtube_thumbnail = bool(request.form.get('use_youtube_thumbnail'))
 
         if not title:
             flash('Название видео обязательно.', 'error')
             return render_template('admin/media_video_form.html', active='media', video=None)
 
-        if not thumbnail or not thumbnail.filename:
-            flash('Превью видео обязательно.', 'error')
-            return render_template('admin/media_video_form.html', active='media', video=None)
-
-        if not allowed_image(thumbnail.filename):
-            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
-            return render_template('admin/media_video_form.html', active='media', video=None)
+        if use_youtube_thumbnail:
+            youtube_id = extract_youtube_id(video_url)
+            if not youtube_id:
+                flash('Не удалось определить обложку YouTube — проверьте ссылку на видео.', 'error')
+                return render_template('admin/media_video_form.html', active='media', video=None)
+            thumbnail_path = youtube_thumbnail_url(youtube_id)
+        else:
+            if not thumbnail or not thumbnail.filename:
+                flash('Превью видео обязательно (или включите обложку с YouTube).', 'error')
+                return render_template('admin/media_video_form.html', active='media', video=None)
+            if not allowed_image(thumbnail.filename):
+                flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+                return render_template('admin/media_video_form.html', active='media', video=None)
+            thumbnail_path = save_upload(thumbnail)
 
         video = MediaVideo(
             title=title,
             video_url=video_url or None,
             is_published=bool(request.form.get('is_published')),
-            thumbnail_path=save_upload(thumbnail),
+            thumbnail_path=thumbnail_path,
         )
         db.session.add(video)
         db.session.commit()
@@ -983,23 +1005,37 @@ def media_video_edit(video_id):
         title = request.form.get('title', '').strip()
         video_url = request.form.get('video_url', '').strip()
         thumbnail = request.files.get('thumbnail')
+        use_youtube_thumbnail = bool(request.form.get('use_youtube_thumbnail'))
 
         if not title:
             flash('Название видео обязательно.', 'error')
             return render_template('admin/media_video_form.html', active='media', video=video)
 
-        if thumbnail and thumbnail.filename and not allowed_image(thumbnail.filename):
+        if not use_youtube_thumbnail and thumbnail and thumbnail.filename and not allowed_image(thumbnail.filename):
             flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
             return render_template('admin/media_video_form.html', active='media', video=video)
+
+        def delete_old_local_thumbnail():
+            if video.thumbnail_path and not video.thumbnail_path.startswith('http'):
+                old_file_path = os.path.join(current_app.root_path, 'static', video.thumbnail_path)
+                if os.path.exists(old_file_path):
+                    os.remove(old_file_path)
 
         video.title = title
         video.video_url = video_url or None
         video.is_published = bool(request.form.get('is_published'))
-        if thumbnail and thumbnail.filename:
-            old_file_path = os.path.join(current_app.root_path, 'static', video.thumbnail_path)
-            if os.path.exists(old_file_path):
-                os.remove(old_file_path)
+
+        if use_youtube_thumbnail:
+            youtube_id = extract_youtube_id(video_url)
+            if not youtube_id:
+                flash('Не удалось определить обложку YouTube — проверьте ссылку на видео.', 'error')
+                return render_template('admin/media_video_form.html', active='media', video=video)
+            delete_old_local_thumbnail()
+            video.thumbnail_path = youtube_thumbnail_url(youtube_id)
+        elif thumbnail and thumbnail.filename:
+            delete_old_local_thumbnail()
             video.thumbnail_path = save_upload(thumbnail)
+
         db.session.commit()
         flash('Видео обновлено.', 'success')
         return redirect(url_for('admin.media_list'))
@@ -1012,9 +1048,10 @@ def media_video_edit(video_id):
 @roles_required('admin', 'editor')
 def media_video_delete(video_id):
     video = MediaVideo.query.get_or_404(video_id)
-    file_path = os.path.join(current_app.root_path, 'static', video.thumbnail_path)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    if video.thumbnail_path and not video.thumbnail_path.startswith('http'):
+        file_path = os.path.join(current_app.root_path, 'static', video.thumbnail_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
     db.session.delete(video)
     db.session.commit()
     flash('Видео удалено.', 'success')

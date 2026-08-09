@@ -77,7 +77,7 @@
                     {% for video in videos %}
                         <tr>
                             <td>
-                                <img src="{{ url_for('static', filename=video.thumbnail_path) }}" alt=""
+                                <img src="{{ video.thumbnail_path|media_thumb }}" alt=""
                                      style="width: 80px; height: 48px; object-fit: cover; border-radius: 4px;">
                             </td>
                             <td>{{ video.title }}</td>

@@ -23,14 +23,23 @@
             <label for="thumbnail" class="form-label">Превью (обложка видео)</label>
             {% if video and video.thumbnail_path %}
                 <div class="mb-2">
-                    <img src="{{ url_for('static', filename=video.thumbnail_path) }}" alt=""
+                    <img src="{{ video.thumbnail_path|media_thumb }}" alt=""
                          style="max-width: 200px; max-height: 200px; object-fit: contain;" class="border rounded p-1">
                 </div>
             {% endif %}
-            <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept=".jpg,.jpeg,.png,.webp"
-                   {{ 'required' if not video }}>
+            <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept=".jpg,.jpeg,.png,.webp">
             <div class="form-text">
                 JPG/PNG/WEBP.{% if video %} Оставьте поле пустым, чтобы не менять текущее превью.{% endif %}
+                Не обязательно, если ниже включена обложка с YouTube.
+            </div>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="use_youtube_thumbnail" name="use_youtube_thumbnail"
+                   {{ 'checked' if video and video.thumbnail_path and video.thumbnail_path.startswith('http') }}>
+            <label class="form-check-label" for="use_youtube_thumbnail">Использовать обложку с YouTube</label>
+            <div class="form-text">
+                Если ссылка на видео выше — с YouTube, обложку можно не загружать: она подставится
+                автоматически с самого YouTube.
             </div>
         </div>
         <div class="mb-3 form-check">

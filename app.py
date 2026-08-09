@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 
 from dotenv import load_dotenv
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for
 
 from auth import create_default_admin, ensure_schema, login_manager, seed_news_taxonomy
 from models import db
@@ -61,6 +61,18 @@ def cap_first(value):
     return text[0].upper() + text[1:]
 
 
+def media_thumb(path):
+    """Путь к превью видео/фото: обычно локальный файл в static/uploads
+    (резолвится как обычно), но для видео с YouTube-обложкой (см.
+    admin.media_video_new/_edit) это готовая внешняя ссылка на img.youtube.com —
+    её нужно вывести как есть, без url_for('static', ...)."""
+    if not path:
+        return ''
+    if path.startswith('http://') or path.startswith('https://'):
+        return path
+    return url_for('static', filename=path)
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -77,6 +89,7 @@ def create_app():
     app.jinja_env.filters['ru_date'] = format_ru_date
     app.jinja_env.filters['ru_date_full'] = format_ru_date_full
     app.jinja_env.filters['cap_first'] = cap_first
+    app.jinja_env.filters['media_thumb'] = media_thumb
     app.jinja_env.tests['time_or_roman'] = is_time_or_roman
 
     register_blueprints(app)
