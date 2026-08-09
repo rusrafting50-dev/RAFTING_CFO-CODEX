@@ -1,0 +1,53 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'partners' %}
+
+{% block title %}Логотипы партнёров — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Логотипы партнёров</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.partners_new') }}">Добавить</a>
+        {% endif %}
+    </div>
+
+    {% if logos %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Логотип</th>
+                        <th>Название</th>
+                        <th>Порядок</th>
+                        <th>Активен</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for logo in logos %}
+                        <tr>
+                            <td>
+                                <img src="{{ url_for('static', filename=logo.image_path) }}" alt=""
+                                     style="width: 80px; height: 48px; object-fit: contain; background: #1a1a2e; border-radius: 4px;">
+                            </td>
+                            <td>{{ logo.name }}</td>
+                            <td>{{ logo.sort_order }}</td>
+                            <td>{{ 'Да' if logo.is_active else 'Нет' }}</td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.partners_edit', logo_id=logo.id) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.partners_delete', logo_id=logo.id) }}"
+                                          onsubmit="return confirm('Удалить логотип?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Логотипы пока не добавлены.</p>
+    {% endif %}
+{% endblock %}

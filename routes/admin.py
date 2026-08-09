@@ -14,8 +14,8 @@ from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Banner, Competition, CompetitionDocument, Document, FederationMember,
-    MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel, Referee,
-    RegionalFederation, SyncLog, User, db,
+    MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel,
+    PartnerLogo, Referee, RegionalFederation, SyncLog, User, db,
 )
 
 bp = Blueprint('admin', __name__)
@@ -73,6 +73,7 @@ SECTION_CHOICES = [
     ('regions', 'Регионы ЦФО'),
     ('banners', 'Баннеры'),
     ('media', 'Медиа'),
+    ('partners', 'Логотипы партнёров'),
     ('sync', 'Синхронизация'),
 ]
 SECTION_KEYS = [key for key, _ in SECTION_CHOICES]
@@ -846,6 +847,102 @@ def banners_delete(banner_id):
     db.session.commit()
     flash('Баннер удалён.', 'success')
     return redirect(url_for('admin.banners_list'))
+
+
+# ---------- Логотипы партнёров (полоса перед подвалом) ----------
+
+@bp.route('/partners')
+@section_required('partners')
+def partners_list():
+    logos = PartnerLogo.query.order_by(PartnerLogo.sort_order).all()
+    return render_template('admin/partners_list.html', active='partners', logos=logos)
+
+
+@bp.route('/partners/new', methods=['GET', 'POST'])
+@section_required('partners')
+@roles_required('admin', 'editor')
+def partners_new():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        link_url = request.form.get('link_url', '').strip()
+        sort_order = request.form.get('sort_order', type=int) or 0
+        image = request.files.get('image')
+
+        if not name:
+            flash('Название партнёра обязательно.', 'error')
+            return render_template('admin/partner_form.html', active='partners', logo=None)
+
+        if not image or not image.filename:
+            flash('Изображение логотипа обязательно.', 'error')
+            return render_template('admin/partner_form.html', active='partners', logo=None)
+
+        if not allowed_image(image.filename):
+            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/partner_form.html', active='partners', logo=None)
+
+        logo = PartnerLogo(
+            name=name,
+            link_url=link_url or None,
+            sort_order=sort_order,
+            is_active=bool(request.form.get('is_active')),
+            image_path=save_upload(image),
+        )
+        db.session.add(logo)
+        db.session.commit()
+        flash('Логотип добавлен.', 'success')
+        return redirect(url_for('admin.partners_list'))
+
+    return render_template('admin/partner_form.html', active='partners', logo=None)
+
+
+@bp.route('/partners/<int:logo_id>/edit', methods=['GET', 'POST'])
+@section_required('partners')
+@roles_required('admin', 'editor')
+def partners_edit(logo_id):
+    logo = PartnerLogo.query.get_or_404(logo_id)
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        link_url = request.form.get('link_url', '').strip()
+        sort_order = request.form.get('sort_order', type=int) or 0
+        image = request.files.get('image')
+
+        if not name:
+            flash('Название партнёра обязательно.', 'error')
+            return render_template('admin/partner_form.html', active='partners', logo=logo)
+
+        if image and image.filename and not allowed_image(image.filename):
+            flash('Допустимые форматы изображения: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/partner_form.html', active='partners', logo=logo)
+
+        logo.name = name
+        logo.link_url = link_url or None
+        logo.sort_order = sort_order
+        logo.is_active = bool(request.form.get('is_active'))
+        if image and image.filename:
+            old_file_path = os.path.join(current_app.root_path, 'static', logo.image_path)
+            if os.path.exists(old_file_path):
+                os.remove(old_file_path)
+            logo.image_path = save_upload(image)
+        db.session.commit()
+        flash('Логотип обновлён.', 'success')
+        return redirect(url_for('admin.partners_list'))
+
+    return render_template('admin/partner_form.html', active='partners', logo=logo)
+
+
+@bp.route('/partners/<int:logo_id>/delete', methods=['POST'])
+@section_required('partners')
+@roles_required('admin', 'editor')
+def partners_delete(logo_id):
+    logo = PartnerLogo.query.get_or_404(logo_id)
+    file_path = os.path.join(current_app.root_path, 'static', logo.image_path)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+    db.session.delete(logo)
+    db.session.commit()
+    flash('Логотип удалён.', 'success')
+    return redirect(url_for('admin.partners_list'))
 
 
 # ---------- Медиа (альбомы и видео) ----------

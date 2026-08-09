@@ -214,6 +214,20 @@ class Banner(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class PartnerLogo(db.Model):
+    """Логотипы партнёров в полосе перед подвалом (см. base.html) —
+    управляются через панель администратора. sort_order определяет
+    порядок слева направо."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    image_path = db.Column(db.String(500), nullable=False)
+    link_url = db.Column(db.String(500))
+    sort_order = db.Column(db.Integer, default=0, nullable=False)
+    is_active = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class MediaAlbum(db.Model):
     """Фотоальбом — раздел «Медиа» (вкладка «Фото»), добавляется вручную
     через панель администратора. photos_count — просто число для бейджа

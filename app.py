@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, url_for
 
 from auth import create_default_admin, ensure_schema, login_manager, seed_news_taxonomy
-from models import db
+from models import PartnerLogo, db
 from routes import register_blueprints
 
 load_dotenv()
@@ -131,6 +131,14 @@ def create_app():
     @app.context_processor
     def inject_now():
         return {'now': datetime.utcnow()}
+
+    @app.context_processor
+    def inject_partner_logos():
+        # Полоса логотипов перед подвалом (base.html) видна на каждой
+        # странице сайта — данные для неё подтягиваются здесь, а не в
+        # каждом view отдельно.
+        logos = PartnerLogo.query.filter_by(is_active=True).order_by(PartnerLogo.sort_order).all()
+        return {'partner_logos': logos}
 
     @app.errorhandler(404)
     def not_found(error):

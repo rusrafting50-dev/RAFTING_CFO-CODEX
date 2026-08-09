@@ -1,0 +1,55 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'partners' %}
+
+{% block title %}{{ 'Редактирование логотипа' if logo else 'Новый логотип' }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">{{ 'Редактирование логотипа' if logo else 'Новый логотип' }}</h1>
+
+    <form method="post"
+          action="{{ url_for('admin.partners_edit', logo_id=logo.id) if logo else url_for('admin.partners_new') }}"
+          class="card p-4" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="name" class="form-label">Название партнёра</label>
+            <input type="text" class="form-control" id="name" name="name" required
+                   placeholder="Например: Минспорт"
+                   value="{{ logo.name if logo else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="link_url" class="form-label">Ссылка при клике (необязательно)</label>
+            <input type="url" class="form-control" id="link_url" name="link_url" placeholder="https://..."
+                   value="{{ logo.link_url if logo and logo.link_url else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="sort_order" class="form-label">Порядок показа</label>
+            <input type="number" class="form-control" id="sort_order" name="sort_order"
+                   value="{{ logo.sort_order if logo else 0 }}" style="max-width: 120px;">
+            <div class="form-text">Меньшее число — левее в строке логотипов.</div>
+        </div>
+        <div class="mb-3">
+            <label for="image" class="form-label">Изображение логотипа</label>
+            {% if logo and logo.image_path %}
+                <div class="mb-2">
+                    <img src="{{ url_for('static', filename=logo.image_path) }}" alt=""
+                         style="max-width: 200px; max-height: 100px; object-fit: contain; background: #1a1a2e;"
+                         class="border rounded p-2">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png,.webp"
+                   {{ 'required' if not logo }}>
+            <div class="form-text">
+                JPG/PNG/WEBP, лучше со прозрачным фоном — логотип выводится на тёмной полосе перед подвалом.
+                {% if logo %}Оставьте поле пустым, чтобы не менять текущее изображение.{% endif %}
+            </div>
+        </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                   {{ 'checked' if not logo or logo.is_active }}>
+            <label class="form-check-label" for="is_active">Активен (виден на сайте)</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.partners_list') }}">Отмена</a>
+        </div>
+    </form>
+{% endblock %}

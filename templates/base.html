@@ -79,14 +79,21 @@
     {% block content %}{% endblock %}
 </main>
 
-<section class="partners-strip">
-    <div class="container partners-strip-inner">
-        <img class="partners-strip-logo" src="{{ url_for('static', filename='img/partners/minsport.png') }}" alt="Минспорт">
-        <img class="partners-strip-logo" src="{{ url_for('static', filename='img/partners/csp.png') }}" alt="ЦСП">
-        <img class="partners-strip-logo" src="{{ url_for('static', filename='img/partners/sport-reserve.png') }}" alt="Спортивный резерв">
-        <img class="partners-strip-logo" src="{{ url_for('static', filename='img/partners/timetrial.png') }}" alt="Timetrial">
-    </div>
-</section>
+{% if partner_logos %}
+    <section class="partners-strip">
+        <div class="container partners-strip-inner">
+            {% for logo in partner_logos %}
+                {% if logo.link_url %}
+                    <a href="{{ logo.link_url }}" target="_blank" rel="noopener">
+                        <img class="partners-strip-logo" src="{{ url_for('static', filename=logo.image_path) }}" alt="{{ logo.name }}">
+                    </a>
+                {% else %}
+                    <img class="partners-strip-logo" src="{{ url_for('static', filename=logo.image_path) }}" alt="{{ logo.name }}">
+                {% endif %}
+            {% endfor %}
+        </div>
+    </section>
+{% endif %}
 
 <footer>
     <div class="container py-5">
