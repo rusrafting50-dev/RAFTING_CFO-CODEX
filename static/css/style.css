@@ -754,6 +754,14 @@ header.scrolled {
     max-height: 88px;
     width: auto;
     object-fit: contain;
+    /* Не чисто белый, а слегка притушенный — та же полупрозрачность,
+       что у разделительных линий на карточках соревнований в слайдере
+       (.home-carousel-card-hr: rgba(255,255,255,.5) на тёмном фоне). */
+    opacity: 0.5;
+}
+
+.partners-strip-logo-lg {
+    max-height: 132px;
 }
 
 /* ===== Подвал ===== */

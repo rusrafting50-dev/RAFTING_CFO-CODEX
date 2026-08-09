@@ -83,12 +83,13 @@
     <section class="partners-strip">
         <div class="container partners-strip-inner">
             {% for logo in partner_logos %}
+                {% set logo_class = 'partners-strip-logo partners-strip-logo-lg' if 'минспорт' in logo.name|lower else 'partners-strip-logo' %}
                 {% if logo.link_url %}
                     <a href="{{ logo.link_url }}" target="_blank" rel="noopener">
-                        <img class="partners-strip-logo" src="{{ url_for('static', filename=logo.image_path) }}" alt="{{ logo.name }}">
+                        <img class="{{ logo_class }}" src="{{ url_for('static', filename=logo.image_path) }}" alt="{{ logo.name }}">
                     </a>
                 {% else %}
-                    <img class="partners-strip-logo" src="{{ url_for('static', filename=logo.image_path) }}" alt="{{ logo.name }}">
+                    <img class="{{ logo_class }}" src="{{ url_for('static', filename=logo.image_path) }}" alt="{{ logo.name }}">
                 {% endif %}
             {% endfor %}
         </div>
