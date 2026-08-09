@@ -100,16 +100,6 @@
     <div class="container py-5">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
             <div class="col">
-                <h2 class="h6 text-uppercase">Федерация</h2>
-                <ul class="list-unstyled">
-                    <li><a href="{{ url_for('federation.about') }}">О федерации</a></li>
-                    <li><a href="{{ url_for('federation.structure') }}">Структура</a></li>
-                    <li><a href="{{ url_for('main.contacts') }}">Контакты</a></li>
-                    <li><a href="{{ url_for('main.news') }}">Новости</a></li>
-                    <li><a href="{{ url_for('admin.login') }}">Вход для сотрудников</a></li>
-                </ul>
-            </div>
-            <div class="col">
                 <h2 class="h6 text-uppercase">Рафтинг ЦФО</h2>
                 <ul class="list-unstyled">
                     <li><a href="#">Представители ЦФО в ФРР</a></li>
@@ -126,6 +116,7 @@
                     <li><a href="{{ url_for('team.index') }}">Сборные команды</a></li>
                     <li><a href="{{ url_for('referees.index') }}">Спортивные судьи</a></li>
                     <li><a href="#">Оборудование и снаряжение</a></li>
+                    <li><a href="{{ url_for('admin.login') }}">Панель управления</a></li>
                 </ul>
             </div>
             <div class="col">
@@ -136,6 +127,21 @@
                     <li><a href="{{ url_for('events.index', event_type='семинар_тренеров') }}">Семинары повышения квалификации тренеров</a></li>
                     <li><a href="#">Архив</a></li>
                 </ul>
+            </div>
+            <div class="col">
+                <div class="footer-right">
+                    <div class="footer-social">
+                        <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="Telegram">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.05 3.5 2.7 10.6c-1.2.47-1.2 1.13-.22 1.43l4.7 1.47 1.8 5.5c.22.6.11.84.75.84.5 0 .72-.23 1-.5l2.4-2.3 4.98 3.68c.92.5 1.58.24 1.81-.85l3.28-15.4c.33-1.34-.5-1.94-1.65-1.47Z"/></svg>
+                        </a>
+                        <a class="footer-social-icon footer-social-icon-text" href="#" target="_blank" rel="noopener" aria-label="ВКонтакте">VK</a>
+                        <a class="footer-social-icon footer-social-icon-text" href="#" target="_blank" rel="noopener" aria-label="MAX">MAX</a>
+                        <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="YouTube">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 8v8l7-4-7-4Z"/></svg>
+                        </a>
+                    </div>
+                    <img class="footer-logo" src="{{ url_for('static', filename='img/ФРР лого.png') }}" alt="Федерация рафтинга России">
+                </div>
             </div>
         </div>
         <hr>

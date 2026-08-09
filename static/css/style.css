@@ -818,6 +818,61 @@ footer hr {
     border-color: rgba(255, 255, 255, 0.15);
 }
 
+.footer-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    height: 100%;
+}
+
+.footer-social {
+    display: flex;
+    gap: 10px;
+}
+
+.footer-social-icon {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.footer-social-icon:hover {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.footer-social-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.footer-social-icon-text {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.footer-logo {
+    max-width: 140px;
+    height: auto;
+}
+
+@media (min-width: 992px) {
+    .footer-right {
+        align-items: flex-end;
+    }
+}
+
 /* ===== Страница "Новости" (список + колонка "Официально") ===== */
 .news-filter-menu {
     display: flex;
