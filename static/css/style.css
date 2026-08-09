@@ -742,15 +742,20 @@ header.scrolled {
 }
 
 .partners-strip-inner {
+    /* Всегда одной строкой (flex-wrap: nowrap) — если логотипы не
+       помещаются по ширине, строка прокручивается по горизонтали, а не
+       переносится на вторую строку. */
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
     gap: 56px;
     padding: 32px 20px;
+    overflow-x: auto;
 }
 
 .partners-strip-logo {
+    flex: none;
     max-height: 88px;
     width: auto;
     object-fit: contain;
@@ -762,6 +767,21 @@ header.scrolled {
 
 .partners-strip-logo-lg {
     max-height: 132px;
+}
+
+@media (max-width: 767.98px) {
+    .partners-strip-inner {
+        justify-content: flex-start;
+        gap: 32px;
+    }
+
+    .partners-strip-logo {
+        max-height: 48px;
+    }
+
+    .partners-strip-logo-lg {
+        max-height: 72px;
+    }
 }
 
 /* ===== Подвал ===== */
