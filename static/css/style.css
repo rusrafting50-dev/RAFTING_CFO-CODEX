@@ -555,15 +555,19 @@ header.scrolled {
 }
 
 .home-carousel-btn {
+    /* Крупные скобки без кружка вокруг — как на rfs.ru, вместо
+       круглой кнопки с рамкой. */
     flex: 0 0 auto;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 1px solid #ccc;
-    background: #fff;
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    border: none;
+    background: none;
     color: var(--color-dark);
-    font-size: 20px;
+    font-size: 36px;
+    font-weight: 700;
     line-height: 1;
+    padding: 0 4px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -571,9 +575,8 @@ header.scrolled {
 }
 
 .home-carousel-btn:hover {
-    background: var(--color-accent);
-    color: #fff;
-    border-color: var(--color-accent);
+    background: none;
+    color: var(--color-accent);
 }
 
 /* ===== Карточки ===== */
