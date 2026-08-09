@@ -572,6 +572,8 @@ header.scrolled {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    /* Вдвое выше, ширина не меняется — растягиваем только по Y. */
+    transform: scaleY(2);
 }
 
 .home-carousel-btn:hover {
