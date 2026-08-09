@@ -856,13 +856,13 @@ footer hr {
 }
 
 .footer-social-icon {
-    /* Кружок цвета фона раздела Видео/Фото с тёмным значком внутри. */
+    /* Белый кружок с чёрным значком — как в присланных вариантах. */
     flex: none;
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #e9ebee;
-    color: var(--color-dark);
+    background: #fff;
+    color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -879,6 +879,16 @@ footer hr {
     width: 20px;
     height: 20px;
     fill: currentColor;
+}
+
+.footer-social-icon-cutout {
+    /* "Вырезы" внутри значка (треугольник YouTube, кружок Дзен) —
+       всегда цвета фона самой кнопки, а не значка. */
+    fill: #fff;
+}
+
+.footer-social-icon:hover .footer-social-icon-cutout {
+    fill: var(--color-accent);
 }
 
 .footer-social-icon-text {
