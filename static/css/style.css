@@ -1500,14 +1500,40 @@ footer hr {
 }
 
 .media-teaser-badge {
+    /* Значок "стопка фото" — сама плашка с числом плюс два смещённых
+       слоя-дубликата позади (::before/::after), создающие эффект стопки
+       карточек друг за другом. */
     position: absolute;
-    left: 10px;
-    bottom: 10px;
+    left: 16px;
+    bottom: 16px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: rgba(26, 26, 46, 0.85);
     color: #fff;
     font-size: 16px;
     font-weight: 700;
     padding: 6px 14px;
+    min-width: 24px;
+}
+
+.media-teaser-badge::before,
+.media-teaser-badge::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    z-index: -1;
+}
+
+.media-teaser-badge::before {
+    transform: translate(5px, -5px);
+}
+
+.media-teaser-badge::after {
+    transform: translate(10px, -10px);
 }
 
 .media-teaser-title {
