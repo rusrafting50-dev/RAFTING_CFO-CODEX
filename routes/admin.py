@@ -20,6 +20,17 @@ from models import (
 
 bp = Blueprint('admin', __name__)
 
+
+@bp.after_request
+def no_cache(response):
+    """Панель администратора не должна отдавать страницы из browser-кэша
+    (в т.ч. bfcache при переходе назад/вперёд) — иначе после сохранения
+    формы (например, названия альбома) можно случайно увидеть старые
+    данные и решить, что изменение не сохранилось."""
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
+    return response
+
+
 ALLOWED_DOCUMENT_EXTENSIONS = {'pdf', 'docx'}
 ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 SYNC_SOURCES = ['COREZ', 'REGTEAM_RAFTING', 'SPORTS_REFEREE']
