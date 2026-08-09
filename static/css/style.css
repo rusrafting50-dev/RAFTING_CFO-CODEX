@@ -313,6 +313,12 @@ header.scrolled {
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
+.home-content {
+    /* Белый фон между баннером и полосой логотипов партнёров —
+       вместо общего серого фона страницы (--color-bg). */
+    background: #fff;
+}
+
 /* ===== Вкладки + карусель карточек на главной (стиль rfs.ru) ===== */
 .home-tabs {
     border-bottom: 2px solid #e0e0e0;
