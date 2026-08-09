@@ -1518,16 +1518,16 @@ footer hr {
     align-items: center;
     justify-content: center;
     background: rgba(26, 26, 46, 0.85);
-    color: #fff;
+    /* Цвет цифр — как фон блока Видео/Фото (.media-teaser-box). */
+    color: #e9ebee;
     font-size: 20.8px;
     font-weight: 400;
-    /* Прямоугольник уменьшен на 15% (было 58×30px, ширина и отступы
-       пропорционально уменьшены) — размер шрифта цифр при этом не
-       менялся. */
-    padding: 0.75px 9.35px;
-    width: 49.3px;
+    padding: 0 4px;
+    /* Итоговый размер на экране — 30×15px: собственный размер задан
+       с поправкой на transform: scale(0.7) ниже (30/0.7, 15/0.7). */
+    width: 42.86px;
+    height: 21.43px;
     box-sizing: border-box;
-    /* Весь значок (плашка + галочки) уменьшен на 30%. */
     transform: scale(0.7);
 }
 
@@ -1537,10 +1537,10 @@ footer hr {
     position: absolute;
     bottom: 0;
     right: 0;
-    /* Фиксированный размер (был 90% от плашки при её прежних 58×30px)
-       — не меняется от уменьшения прямоугольника. */
-    width: 52.1875px;
-    height: 27px;
+    /* Тот же итоговый размер на экране, что у прямоугольника — 30×15px
+       (тоже с поправкой на общий transform: scale(0.7)). */
+    width: 42.86px;
+    height: 21.43px;
     border-bottom: 1.5px solid rgba(26, 26, 46, 0.85);
     border-right: 1.5px solid rgba(26, 26, 46, 0.85);
 }
