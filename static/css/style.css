@@ -1449,14 +1449,27 @@ footer hr {
 
 .media-teaser-badge {
     position: absolute;
-    left: 6px;
-    bottom: 6px;
+    left: 10px;
+    bottom: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     background: rgba(26, 26, 46, 0.8);
     color: #fff;
-    font-size: 11px;
+    font-size: 16px;
     font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 3px;
+    padding: 6px 12px;
+    border-radius: 4px;
+}
+
+.media-teaser-badge svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .media-teaser-title {
