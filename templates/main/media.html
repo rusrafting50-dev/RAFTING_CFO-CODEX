@@ -87,14 +87,7 @@
                             {% if media_type == 'photo' %}
                                 <a class="media-teaser-item" href="{{ url_for('main.media_album_detail', album_id=item.id) }}">
                                     <div class="media-teaser-thumb" style="background-image: url('{{ url_for('static', filename=item.cover_path) }}')">
-                                        <span class="media-teaser-badge">
-                                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                                <polyline points="21 15 16 10 5 21"></polyline>
-                                            </svg>
-                                            {{ item.photos_count }}
-                                        </span>
+                                        <span class="media-teaser-badge">{{ item.photos_count }}</span>
                                     </div>
                                     <p class="media-teaser-title">{{ item.title }}</p>
                                     <p class="media-teaser-date">{{ item.published_at|ru_date_full }}</p>
