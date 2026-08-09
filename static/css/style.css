@@ -1505,9 +1505,11 @@ footer hr {
 }
 
 .media-teaser-badge {
-    /* Значок "стопка фото" — сама плашка с числом плюс два смещённых
-       слоя-дубликата позади (::before/::after), создающие эффект стопки
-       карточек друг за другом. */
+    /* Значок "стопка фото" из трёх независимых частей на прозрачном
+       фоне: сама плашка с числом плюс два отдельных элемента-"уголка"
+       (::before/::after) рядом с ней — не залитые прямоугольники-
+       дубликаты, а только линия-обводка верхнего правого угла (как
+       галочка), обозначающая скрытые за плашкой фото. */
     position: absolute;
     left: 16px;
     bottom: 16px;
@@ -1527,17 +1529,20 @@ footer hr {
 .media-teaser-badge::after {
     content: '';
     position: absolute;
-    inset: 0;
-    background: inherit;
-    z-index: -1;
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-top: 3px solid rgba(26, 26, 46, 0.85);
+    border-right: 3px solid rgba(26, 26, 46, 0.85);
 }
 
 .media-teaser-badge::before {
-    transform: translate(5px, -5px);
+    transform: translate(6px, -6px);
 }
 
 .media-teaser-badge::after {
-    transform: translate(10px, -10px);
+    transform: translate(12px, -12px);
 }
 
 .media-teaser-title {
