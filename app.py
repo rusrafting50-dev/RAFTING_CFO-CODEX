@@ -72,6 +72,23 @@ def format_ru_date_full(value):
     return f'{value.day} {RU_MONTHS_GENITIVE[value.month]} {value.year}'
 
 
+def format_ru_date_range(start, end):
+    """Диапазон дат без повторов месяца/года у обеих границ, если они
+    совпадают: "23 – 24 мая 2026" (тот же месяц и год), "31 мая –
+    1 июня 2026" (тот же год, месяц разный), иначе — обе даты
+    полностью ("30 декабря 2026 – 2 января 2027")."""
+    if not start:
+        return ''
+    if not end or end == start:
+        return format_ru_date_full(start)
+    if start.year == end.year:
+        if start.month == end.month:
+            return f'{start.day} – {end.day} {RU_MONTHS_GENITIVE[start.month]} {start.year}'
+        return (f'{start.day} {RU_MONTHS_GENITIVE[start.month]} – '
+                f'{end.day} {RU_MONTHS_GENITIVE[end.month]} {start.year}')
+    return f'{format_ru_date_full(start)} – {format_ru_date_full(end)}'
+
+
 def cap_first(value):
     """Первая буква прописная, остальной текст не трогаем (в отличие от
     str.capitalize(), который заодно понижает регистр всего остального —
@@ -115,6 +132,7 @@ def create_app():
     login_manager.init_app(app)
     app.jinja_env.filters['ru_date'] = format_ru_date
     app.jinja_env.filters['ru_date_full'] = format_ru_date_full
+    app.jinja_env.filters['ru_date_range'] = format_ru_date_range
     app.jinja_env.filters['cap_first'] = cap_first
     app.jinja_env.filters['media_thumb'] = media_thumb
     app.jinja_env.filters['video_embed_url'] = video_embed_url
