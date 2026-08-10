@@ -89,6 +89,21 @@ def format_ru_date_range(start, end):
     return f'{format_ru_date_full(start)} – {format_ru_date_full(end)}'
 
 
+_SEMINAR_CATEGORY_BADGE = {
+    'Всероссийская': 'bg-danger',
+    'Первая': 'bg-warning text-dark',
+    'Вторая': 'bg-info text-dark',
+    'Третья': 'bg-secondary',
+    'Юный судья': 'bg-success',
+}
+
+
+def seminar_category_badge(value):
+    """Категория семинара -> класс цветного бейджа Bootstrap — те же
+    цвета, что и на карточке семинара в SPORTS_REFEREE."""
+    return _SEMINAR_CATEGORY_BADGE.get(value, 'bg-secondary')
+
+
 def cap_first(value):
     """Первая буква прописная, остальной текст не трогаем (в отличие от
     str.capitalize(), который заодно понижает регистр всего остального —
@@ -134,6 +149,7 @@ def create_app():
     app.jinja_env.filters['ru_date_full'] = format_ru_date_full
     app.jinja_env.filters['ru_date_range'] = format_ru_date_range
     app.jinja_env.filters['cap_first'] = cap_first
+    app.jinja_env.filters['seminar_category_badge'] = seminar_category_badge
     app.jinja_env.filters['media_thumb'] = media_thumb
     app.jinja_env.filters['video_embed_url'] = video_embed_url
     app.jinja_env.tests['time_or_roman'] = is_time_or_roman

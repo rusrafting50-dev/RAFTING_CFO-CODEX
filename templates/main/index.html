@@ -165,7 +165,7 @@
                                                 <div class="home-carousel-card-body-row">
                                                     <div class="home-carousel-card-info">
                                                         {% if event.category %}
-                                                            <span class="badge bg-secondary align-self-start home-carousel-card-badge">{{ event.category }}{% if event.program_hours %}, {{ event.program_hours }} ч.{% endif %}</span>
+                                                            <span class="badge {{ event.category|seminar_category_badge }} align-self-start home-carousel-card-badge">{{ event.category }}{% if event.program_hours %}, {{ event.program_hours }}{% endif %}</span>
                                                         {% else %}
                                                             <span class="badge bg-secondary align-self-start home-carousel-card-badge">{{ (event.event_type or 'Мероприятие').replace('_', ' ')|cap_first }}</span>
                                                         {% endif %}

@@ -38,7 +38,7 @@
                         <span class="badge bg-secondary">{{ event.event_type.replace('_', ' ')|cap_first }}</span>
                     {% endif %}
                     {% if event.category %}
-                        <span class="badge bg-secondary">{{ event.category }}{% if event.program_hours %}, {{ event.program_hours }} ч.{% endif %}</span>
+                        <span class="badge {{ event.category|seminar_category_badge }}">{{ event.category }}{% if event.program_hours %}, {{ event.program_hours }}{% endif %}</span>
                     {% endif %}
                     {% if event.qualification_exam == 'Да' %}
                         <span class="badge bg-dark">Квалификационный зачёт</span>
