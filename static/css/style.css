@@ -859,25 +859,28 @@ footer hr {
 }
 
 .footer-logo {
-    /* Ширина вровень с рядом кнопок соцсетей ниже (4 x 44px + 3 x 16px
-       gap = 224px), высота — пропорционально. */
-    width: 224px;
-    height: auto;
+    /* Высота подобрана так, чтобы кнопки соцсетей + логотип по
+       вертикали в сумме совпадали с высотой самого большого меню
+       слева ("Рафтинг ЦФО": 139px при типичной desktop-ширине) —
+       26 (кнопки) + 9 (отступ) + 104 (логотип) = 139. Ширина
+       пропорциональна (auto), т.к. это теперь главный размер. */
+    height: 104px;
+    width: auto;
 }
 
 .footer-social-single {
     display: flex;
-    width: 224px;
-    gap: 16px;
-    margin-bottom: 16px;
+    width: 131px;
+    gap: 9px;
+    margin-bottom: 9px;
 }
 
 .footer-social-icon {
     /* Готовые круглые бейджи (PNG) — свой фон/обводка уже "внутри"
        картинки, тут только размер и рамка кликабельной области. */
     flex: none;
-    width: 44px;
-    height: 44px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
