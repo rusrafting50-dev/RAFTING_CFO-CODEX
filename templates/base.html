@@ -98,7 +98,7 @@
 
 <footer>
     <div class="container py-5">
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
             <div class="col">
                 <h2 class="h6 text-uppercase">Рафтинг ЦФО</h2>
                 <ul class="list-unstyled">
@@ -127,29 +127,6 @@
                     <li><a href="{{ url_for('events.index', event_type='семинар_тренеров') }}">Семинары повышения квалификации тренеров</a></li>
                     <li><a href="#">Архив</a></li>
                 </ul>
-            </div>
-            <div class="col">
-                <div class="footer-right">
-                    <div class="footer-social">
-                        <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="Telegram">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.05 3.5 2.7 10.6c-1.2.47-1.2 1.13-.22 1.43l4.7 1.47 1.8 5.5c.22.6.11.84.75.84.5 0 .72-.23 1-.5l2.4-2.3 4.98 3.68c.92.5 1.58.24 1.81-.85l3.28-15.4c.33-1.34-.5-1.94-1.65-1.47Z"/></svg>
-                        </a>
-                        <a class="footer-social-icon footer-social-icon-text" href="#" target="_blank" rel="noopener" aria-label="ВКонтакте">VK</a>
-                        <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="YouTube">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <rect x="3" y="6" width="18" height="12" rx="4"/>
-                                <polygon points="10 9 10 15 16 12" class="footer-social-icon-cutout"/>
-                            </svg>
-                        </a>
-                        <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="Дзен">
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                                <path d="M15.8 3.2c-3 0-5.6 1.8-6.9 4.4C7.7 10.4 6.5 12.6 4.4 14c-1 .7-.9 2 .4 2.2 1.3.2 2.1-.4 2.8-1.1.6 1.8 2.1 3.7 4.3 3.7 4.6 0 8.3-4.1 8.3-9.7 0-3.3-1.8-5.9-4.4-5.9Z"/>
-                                <circle cx="12.6" cy="8.4" r="2" class="footer-social-icon-cutout"/>
-                            </svg>
-                        </a>
-                    </div>
-                    <img class="footer-logo" src="{{ url_for('static', filename='img/ФРР лого чб.png') }}" alt="Федерация рафтинга России">
-                </div>
             </div>
         </div>
         <hr>
