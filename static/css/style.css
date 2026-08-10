@@ -869,9 +869,11 @@ footer hr {
 }
 
 .footer-social-icon svg {
-    width: 20px;
-    height: 20px;
+    /* В 3 раза больше (было 20px) — сам кружок-фон при этом не меняется. */
+    width: 60px;
+    height: 60px;
     fill: currentColor;
+    overflow: visible;
 }
 
 /* ===== Страница "Новости" (список + колонка "Официально") ===== */
