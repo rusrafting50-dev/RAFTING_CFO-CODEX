@@ -842,6 +842,38 @@ footer hr {
     border-color: rgba(255, 255, 255, 0.15);
 }
 
+.footer-social-single {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.footer-social-icon {
+    /* Белый кружок с чёрным значком. */
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #fff;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.footer-social-icon:hover {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.footer-social-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
 /* ===== Страница "Новости" (список + колонка "Официально") ===== */
 .news-filter-menu {
     display: flex;
