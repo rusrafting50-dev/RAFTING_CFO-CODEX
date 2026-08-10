@@ -42,7 +42,7 @@
                                 <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
                                 <td>{{ event.event_type }}</td>
                                 <td>{{ event.location }}</td>
-                                <td>{{ event.status }}</td>
+                                <td>{{ event.status|event_status_label }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

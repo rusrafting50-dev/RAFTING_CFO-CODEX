@@ -89,6 +89,19 @@ def format_ru_date_range(start, end):
     return f'{format_ru_date_full(start)} – {format_ru_date_full(end)}'
 
 
+def event_status_label(value):
+    """Статус мероприятия (анонс/идёт/завершён) -> подпись на сайте:
+    "Прием заявок" / "Прием заявок окончен" / "Завершён"."""
+    status_lower = (value or '').lower()
+    if 'заверш' in status_lower:
+        return 'Завершён'
+    if status_lower == 'идёт':
+        return 'Прием заявок окончен'
+    if status_lower == 'анонс':
+        return 'Прием заявок'
+    return cap_first(value)
+
+
 _SEMINAR_CATEGORY_BADGE = {
     'Всероссийская': 'bg-danger',
     'Первая': 'bg-warning text-dark',
@@ -150,6 +163,7 @@ def create_app():
     app.jinja_env.filters['ru_date_range'] = format_ru_date_range
     app.jinja_env.filters['cap_first'] = cap_first
     app.jinja_env.filters['seminar_category_badge'] = seminar_category_badge
+    app.jinja_env.filters['event_status_label'] = event_status_label
     app.jinja_env.filters['media_thumb'] = media_thumb
     app.jinja_env.filters['video_embed_url'] = video_embed_url
     app.jinja_env.tests['time_or_roman'] = is_time_or_roman

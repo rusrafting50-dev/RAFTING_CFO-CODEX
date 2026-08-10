@@ -177,7 +177,7 @@
                                                         {% endif %}
                                                         {% if event.status %}
                                                             <span class="home-carousel-status {{ 'home-carousel-status-done' if 'заверш' in status_lower else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
-                                                                {{ event.status|capitalize }}
+                                                                {{ event.status|event_status_label }}
                                                             </span>
                                                         {% endif %}
                                                     </div>
