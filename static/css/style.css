@@ -842,6 +842,18 @@ footer hr {
     border-color: rgba(255, 255, 255, 0.15);
 }
 
+.footer-logo {
+    /* Тот же размер, что у логотипа в шапке (.logo) в обычном
+       (не свёрнутом прокруткой) состоянии. */
+    height: 64px;
+}
+
+@media (min-width: 992px) {
+    .footer-logo {
+        height: 88px;
+    }
+}
+
 .footer-social-single {
     display: flex;
     justify-content: center;

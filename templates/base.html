@@ -112,7 +112,7 @@
                 <img src="{{ url_for('static', filename='img/icon_max.png') }}" alt="">
             </a>
         </div>
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
             <div class="col">
                 <h2 class="h6 text-uppercase">Рафтинг ЦФО</h2>
                 <ul class="list-unstyled">
@@ -141,6 +141,9 @@
                     <li><a href="{{ url_for('events.index', event_type='семинар_тренеров') }}">Семинары повышения квалификации тренеров</a></li>
                     <li><a href="#">Архив</a></li>
                 </ul>
+            </div>
+            <div class="col d-flex align-items-center justify-content-center justify-content-lg-end">
+                <img class="footer-logo" src="{{ url_for('static', filename='img/ФРР_лого_серый.png') }}" alt="Федерация рафтинга России">
             </div>
         </div>
         <hr>
