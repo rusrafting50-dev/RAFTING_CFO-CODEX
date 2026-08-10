@@ -113,20 +113,18 @@
                                                     {% endif %}
                                                 </div>
                                             </div>
-                                            {% if competition.start_date or competition.location %}
-                                                <hr class="home-carousel-card-hr">
-                                                <div class="home-carousel-card-meta-list">
-                                                    {% if competition.start_date %}
-                                                        <div>
-                                                            📅
-                                                            {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} – {{ competition.end_date|ru_date_full }}{% endif %}
-                                                        </div>
-                                                    {% endif %}
-                                                    {% if competition.location %}
-                                                        <div>📍 {{ competition.location }}</div>
-                                                    {% endif %}
-                                                </div>
-                                            {% endif %}
+                                            <hr class="home-carousel-card-hr">
+                                            <div class="home-carousel-card-meta-list">
+                                                {% if competition.start_date %}
+                                                    <div>
+                                                        📅
+                                                        {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} – {{ competition.end_date|ru_date_full }}{% endif %}
+                                                    </div>
+                                                {% endif %}
+                                                {% if competition.location %}
+                                                    <div>📍 {{ competition.location }}</div>
+                                                {% endif %}
+                                            </div>
                                         </a>
                                     {% endfor %}
                                 </div>
