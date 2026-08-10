@@ -877,6 +877,12 @@ footer hr {
     overflow: visible;
 }
 
+.footer-social-icon svg.footer-social-icon-vk {
+    /* −15% от 51px. */
+    width: 43.35px;
+    height: 43.35px;
+}
+
 /* ===== Страница "Новости" (список + колонка "Официально") ===== */
 .news-filter-menu {
     display: flex;
