@@ -426,30 +426,6 @@ header.scrolled {
     border-bottom-color: rgba(0, 0, 0, 0.15);
 }
 
-.home-carousel-card-logo {
-    /* Светлый кружок — на тёмном градиенте карточки тёмный фон (как
-       раньше) слился бы с самой карточкой; на белой карточке
-       (.home-carousel-card-light) — серый кружок с рамкой по той же
-       причине наоборот. */
-    flex: none;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: #fff;
-    color: var(--color-dark);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 18px;
-    text-transform: uppercase;
-}
-
-.home-carousel-card-light .home-carousel-card-logo {
-    background: var(--color-bg);
-    border: 1px solid #e0e0e0;
-}
-
 .home-carousel-card-zone-top {
     /* Высота зоны фиксирована (не завязана на line-height текста) —
        граница здесь border-bottom самой зоны, а не заголовка. Заголовок
