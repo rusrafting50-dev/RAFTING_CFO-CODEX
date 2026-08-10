@@ -1987,7 +1987,8 @@ table.table-zebra tbody tr:nth-child(even) {
     width: 100%;
     aspect-ratio: 16 / 9;
     background: #000;
-    border: 8px solid #fff;
+    /* В 3 раза меньше исходных 8px. */
+    border: 2.67px solid #fff;
     box-sizing: border-box;
     overflow: hidden;
 }
@@ -2043,7 +2044,8 @@ table.table-zebra tbody tr:nth-child(even) {
 }
 
 .video-lightbox-info {
-    background: #fff;
+    /* Цвет полосы логотипов партнёров (.partners-strip). */
+    background: #2b2b4d;
     padding: 16px 20px;
     display: flex;
     flex-wrap: wrap;
@@ -2056,7 +2058,8 @@ table.table-zebra tbody tr:nth-child(even) {
     margin: 0;
     font-size: 18px;
     font-weight: 700;
-    color: var(--color-dark);
+    /* Цвет заголовков в футере главной страницы (footer h2). */
+    color: #e9ebee;
 }
 
 .video-lightbox-link {
