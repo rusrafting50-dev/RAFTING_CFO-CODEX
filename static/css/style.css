@@ -883,6 +883,13 @@ footer hr {
     height: 43.35px;
 }
 
+.footer-social-icon svg.footer-social-icon-youtube {
+    /* Значок широкий (letterbox внутри квадратного viewBox) — при
+       общем размере остальных иконок (51px) сильно выходил за круг. */
+    width: 28px;
+    height: 28px;
+}
+
 /* ===== Страница "Новости" (список + колонка "Официально") ===== */
 .news-filter-menu {
     display: flex;
