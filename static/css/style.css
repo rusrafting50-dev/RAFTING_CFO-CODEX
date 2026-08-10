@@ -407,37 +407,30 @@ header.scrolled {
     filter: brightness(1.25);
 }
 
-.home-carousel-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 8px;
+.home-carousel-card-light {
+    /* Тот же формат карточки (зоны/линии), что у соревнований, но на
+       белом фоне — для карточек мероприятий (семинаров). */
+    background: #fff;
+    color: var(--color-dark);
 }
 
-.home-carousel-badge {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #fff;
+.home-carousel-card-light:hover {
+    /* filter:brightness выше рассчитан на тёмный градиент — на белом
+       фоне он бы, наоборот, "выбеливал" карточку. */
+    filter: none;
+    color: var(--color-dark);
 }
 
-.home-carousel-card-dates {
-    font-size: 12px;
-    color: #fff;
-    text-align: right;
-    white-space: nowrap;
-}
-
-.home-carousel-card-body {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
+.home-carousel-card-light .home-carousel-card-zone-top,
+.home-carousel-card-light .home-carousel-card-zone-mid {
+    border-bottom-color: rgba(0, 0, 0, 0.15);
 }
 
 .home-carousel-card-logo {
     /* Светлый кружок — на тёмном градиенте карточки тёмный фон (как
-       раньше) слился бы с самой карточкой. */
+       раньше) слился бы с самой карточкой; на белой карточке
+       (.home-carousel-card-light) — серый кружок с рамкой по той же
+       причине наоборот. */
     flex: none;
     width: 44px;
     height: 44px;
@@ -450,6 +443,11 @@ header.scrolled {
     font-weight: 700;
     font-size: 18px;
     text-transform: uppercase;
+}
+
+.home-carousel-card-light .home-carousel-card-logo {
+    background: var(--color-bg);
+    border: 1px solid #e0e0e0;
 }
 
 .home-carousel-card-zone-top {
@@ -528,7 +526,7 @@ header.scrolled {
 .home-carousel-card-reg,
 .home-carousel-card-judge {
     font-size: 12px;
-    color: #fff;
+    color: inherit;
     margin: 0 0 4px;
 }
 
@@ -564,7 +562,7 @@ header.scrolled {
 
 .home-carousel-card-age {
     font-size: 12px;
-    color: #fff;
+    color: inherit;
 }
 
 .home-carousel-card-zone-bottom {
@@ -593,7 +591,7 @@ header.scrolled {
     text-align: center;
     gap: 4px;
     line-height: 1.4;
-    color: #fff;
+    color: inherit;
 }
 
 .home-carousel-btn {

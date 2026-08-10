@@ -157,24 +157,33 @@
                                     {% for event in upcoming_events %}
                                         {% set status_lower = (event.status or '')|lower %}
                                         <a href="{{ url_for('events.detail', event_id=event.id) }}"
-                                           class="home-carousel-card">
-                                            <div class="home-carousel-card-top">
-                                                <span class="home-carousel-badge">{{ (event.event_type or 'Мероприятие').replace('_', ' ') }}</span>
-                                                {% if event.start_date %}
-                                                    <span class="home-carousel-card-dates">
-                                                        {{ event.start_date|ru_date_full }}{% if event.end_date and event.end_date != event.start_date %} – {{ event.end_date|ru_date_full }}{% endif %}
-                                                    </span>
-                                                {% endif %}
-                                            </div>
-                                            <div class="home-carousel-card-body">
-                                                <span class="home-carousel-card-logo">{{ event.name[:1] }}</span>
+                                           class="home-carousel-card home-carousel-card-light">
+                                            <div class="home-carousel-card-zone-top">
                                                 <span class="home-carousel-card-title">{{ event.name }}</span>
                                             </div>
-                                            {% if event.status %}
-                                                <span class="home-carousel-status {{ 'home-carousel-status-done' if 'заверш' in status_lower else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
-                                                    {{ event.status|capitalize }}
-                                                </span>
-                                            {% endif %}
+                                            <div class="home-carousel-card-zone-mid">
+                                                <div class="home-carousel-card-body-row">
+                                                    <span class="home-carousel-card-logo">{{ event.name[:1] }}</span>
+                                                    <div class="home-carousel-card-info">
+                                                        <span class="badge bg-secondary align-self-start home-carousel-card-badge">{{ (event.event_type or 'Мероприятие').replace('_', ' ')|cap_first }}</span>
+                                                        {% if event.status %}
+                                                            <span class="home-carousel-status {{ 'home-carousel-status-done' if 'заверш' in status_lower else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
+                                                                {{ event.status|capitalize }}
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="home-carousel-card-zone-bottom">
+                                                <div class="home-carousel-card-meta-list">
+                                                    {% if event.start_date %}
+                                                        <div>📅 {{ event.start_date|ru_date_range(event.end_date) }}</div>
+                                                    {% endif %}
+                                                    {% if event.location %}
+                                                        <div>📍 {{ event.location }}</div>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
                                         </a>
                                     {% endfor %}
                                 </div>
