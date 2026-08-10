@@ -143,6 +143,10 @@ class Event(db.Model):
     end_date = db.Column(db.Date)
     location = db.Column(db.String(255))
     status = db.Column(db.String(50))  # анонс / идёт / завершён
+    category = db.Column(db.String(100))  # присваиваемая (подтверждаемая) категория
+    program_hours = db.Column(db.String(20))  # количество часов программы семинара
+    qualification_exam = db.Column(db.String(10))  # квалификационный зачёт: Да/Нет
+    leader_full_name = db.Column(db.String(255))  # руководитель семинара
     source_id = db.Column(db.Integer)  # ID в базе SPORTS_REFEREE
 
 

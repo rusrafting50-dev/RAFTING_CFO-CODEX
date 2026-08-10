@@ -311,6 +311,10 @@ def sync_events():
         event.end_date = end_date
         event.location = item.get('location')
         event.status = item.get('status')
+        event.category = item.get('category')
+        event.program_hours = item.get('program_hours')
+        event.qualification_exam = item.get('qualification_exam')
+        event.leader_full_name = item.get('leader_full_name')
 
     db.session.commit()
     log_sync('events', created + updated,

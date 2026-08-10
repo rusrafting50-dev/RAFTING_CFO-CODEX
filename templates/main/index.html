@@ -165,7 +165,17 @@
                                                 <div class="home-carousel-card-body-row">
                                                     <span class="home-carousel-card-logo">{{ event.name[:1] }}</span>
                                                     <div class="home-carousel-card-info">
-                                                        <span class="badge bg-secondary align-self-start home-carousel-card-badge">{{ (event.event_type or 'Мероприятие').replace('_', ' ')|cap_first }}</span>
+                                                        {% if event.category %}
+                                                            <span class="badge bg-secondary align-self-start home-carousel-card-badge">{{ event.category }}{% if event.program_hours %}, {{ event.program_hours }} ч.{% endif %}</span>
+                                                        {% else %}
+                                                            <span class="badge bg-secondary align-self-start home-carousel-card-badge">{{ (event.event_type or 'Мероприятие').replace('_', ' ')|cap_first }}</span>
+                                                        {% endif %}
+                                                        {% if event.qualification_exam == 'Да' %}
+                                                            <span class="badge bg-dark align-self-start home-carousel-card-badge">Квалификационный зачёт</span>
+                                                        {% endif %}
+                                                        {% if event.leader_full_name %}
+                                                            <div class="home-carousel-card-judge small">Руководитель: {{ event.leader_full_name }}</div>
+                                                        {% endif %}
                                                         {% if event.status %}
                                                             <span class="home-carousel-status {{ 'home-carousel-status-done' if 'заверш' in status_lower else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
                                                                 {{ event.status|capitalize }}

@@ -51,6 +51,10 @@ def ensure_schema():
     _ensure_column(inspector, 'competition', 'head_judge', 'VARCHAR(255)')
     _ensure_column(inspector, 'competition', 'registration_number', 'VARCHAR(100)')
     _ensure_column(inspector, 'competition', 'logo_path', 'VARCHAR(500)')
+    _ensure_column(inspector, 'event', 'category', 'VARCHAR(100)')
+    _ensure_column(inspector, 'event', 'program_hours', 'VARCHAR(20)')
+    _ensure_column(inspector, 'event', 'qualification_exam', 'VARCHAR(10)')
+    _ensure_column(inspector, 'event', 'leader_full_name', 'VARCHAR(255)')
 
 
 def seed_news_taxonomy():
