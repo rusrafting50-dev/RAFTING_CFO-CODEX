@@ -5,19 +5,71 @@
 
 {% block content %}
     <div class="container py-5">
-        <h1 class="h3 mb-3">{{ event.name }}</h1>
-        <div class="card">
-            <div class="card-body">
-                <p class="mb-1"><strong>Даты:</strong>
-                    {{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '—' }}
-                    {% if event.end_date and event.end_date != event.start_date %}
-                        &ndash; {{ event.end_date.strftime('%d.%m.%Y') }}
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
+            <h1 class="h3 mb-0">{{ event.name }}</h1>
+            <ul class="news-filter-menu comp-tabs-menu" id="eventTabs" role="tablist">
+                <li role="presentation">
+                    <button class="active" id="tab-info-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-info" type="button" role="tab">О мероприятии</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-news-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-news" type="button" role="tab">Новости</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-participants-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-participants" type="button" role="tab">Участники</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-results-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-results" type="button" role="tab">Результаты</button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-media-btn" data-bs-toggle="tab"
+                            data-bs-target="#tab-media" type="button" role="tab">Медиа</button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="eventTabsContent">
+            <div class="tab-pane fade show active" id="tab-info" role="tabpanel">
+                <div class="mb-2 d-flex align-items-center gap-2 flex-wrap">
+                    {% if event.event_type %}
+                        <span class="badge bg-secondary">{{ event.event_type.replace('_', ' ')|cap_first }}</span>
                     {% endif %}
-                </p>
-                <p class="mb-1"><strong>Тип:</strong> {{ event.event_type or '—' }}</p>
-                <p class="mb-1"><strong>Место проведения:</strong> {{ event.location or '—' }}</p>
-                <p class="mb-0"><strong>Статус:</strong> {{ event.status or '—' }}</p>
+                    {% if event.category %}
+                        <span class="badge bg-secondary">{{ event.category }}{% if event.program_hours %}, {{ event.program_hours }} ч.{% endif %}</span>
+                    {% endif %}
+                    {% if event.qualification_exam == 'Да' %}
+                        <span class="badge bg-dark">Квалификационный зачёт</span>
+                    {% endif %}
+                </div>
+                <ul class="list-unstyled small mb-0">
+                    {% if event.start_date %}
+                        <li class="mb-1">
+                            <span class="text-muted">📅</span>
+                            {{ event.start_date|ru_date_range(event.end_date) }}
+                        </li>
+                    {% endif %}
+                    {% if event.location %}
+                        <li class="mb-1"><span class="text-muted">📍</span> {{ event.location }}</li>
+                    {% endif %}
+                    {% if event.leader_full_name %}
+                        <li class="mb-1">
+                            <span class="text-muted">👤</span>
+                            Руководитель семинара: {{ event.leader_full_name }}
+                        </li>
+                    {% endif %}
+                    {% if event.status %}
+                        <li class="mb-1"><span class="text-muted">•</span> Статус: {{ event.status }}</li>
+                    {% endif %}
+                </ul>
             </div>
+
+            <div class="tab-pane fade" id="tab-news" role="tabpanel"></div>
+            <div class="tab-pane fade" id="tab-participants" role="tabpanel"></div>
+            <div class="tab-pane fade" id="tab-results" role="tabpanel"></div>
+            <div class="tab-pane fade" id="tab-media" role="tabpanel"></div>
         </div>
     </div>
 {% endblock %}
