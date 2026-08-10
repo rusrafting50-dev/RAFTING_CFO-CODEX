@@ -115,12 +115,21 @@ def index():
         .all()
     )
     upcoming_competitions = (future_competitions + past_competitions)[:8]
-    upcoming_events = (
+    # Та же логика, что у соревнований выше: сначала будущие, а если их
+    # меньше восьми — довобавляем прошедшие, чтобы слайдер не пустовал и
+    # только что синхронизированное мероприятие с прошедшей датой не
+    # "пропадало" с главной, оставаясь видимым на своей странице.
+    future_events = (
         Event.query.filter(Event.start_date >= date.today())
         .order_by(Event.start_date.asc())
-        .limit(8)
         .all()
     )
+    past_events = (
+        Event.query.filter(Event.start_date < date.today())
+        .order_by(Event.start_date.desc())
+        .all()
+    )
+    upcoming_events = (future_events + past_events)[:8]
     news_sidebar_banners = (
         Banner.query.filter_by(page='main.index', position='news_sidebar', is_active=True)
         .order_by(Banner.sort_order)
