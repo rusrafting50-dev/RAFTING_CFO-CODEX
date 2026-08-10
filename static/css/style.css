@@ -452,25 +452,48 @@ header.scrolled {
     text-transform: uppercase;
 }
 
+.home-carousel-card-zone-top {
+    /* Верхняя линия — всегда ровно 60px от верхнего края карточки:
+       1px — border самой .home-carousel-card, 10px — её padding-top,
+       ещё 49px — высота этой зоны. Высота зоны фиксирована (не завязана
+       на line-height текста), граница — border-bottom самой зоны, а не
+       заголовка. Заголовок центрируется внутри по вертикали
+       (align-items:center) — короткое название в одну строку не
+       "прилипает" к верху. */
+    box-sizing: border-box;
+    height: 49px;
+    padding: 0 0 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
 .home-carousel-card-title {
-    /* Заголовок по центру, как в шапке карточки COREZ — с чертой под
-       ним, как border-bottom у card-header в COREZ. min-height — ровно
-       2 строки (line-height 1.3 x 2 = 2.6em) вне зависимости от того,
-       уместилось название в одну строку или две — иначе черта под
-       коротким названием оказывалась выше, чем под длинным, и линии
-       между карточками не совпадали по высоте. */
+    /* Заголовок по центру, как в шапке карточки COREZ. */
     font-weight: 700;
     font-size: 15px;
     line-height: 1.3;
-    min-height: 2.6em;
     text-align: center;
-    margin: 0 0 6px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+.home-carousel-card-zone-mid {
+    /* Нижняя линия — ровно 180px от верхнего края (60 + 120 высоты
+       этой зоны), независимо от того, сколько необязательных строк
+       (бейдж/классы/№ЕКП/судья) реально заполнено и есть ли логотип:
+       содержимое центрируется по вертикали (align-items:center). */
+    box-sizing: border-box;
+    height: 120px;
+    /* Без вертикальных отступов — логотип рядом (108px) должен
+       помещаться в зону с запасом при центрировании. */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .home-carousel-card-badge {
@@ -479,6 +502,7 @@ header.scrolled {
 }
 
 .home-carousel-card-body-row {
+    width: 100%;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -495,14 +519,11 @@ header.scrolled {
 }
 
 .home-carousel-card-info {
-    /* min-height — под 5 строк (бейдж/классы/№ ЕКП/судья), тех же
-       108px, что и .home-carousel-card-logo-img рядом — чтобы линия
-       под этим блоком (hr ниже) была на одном уровне независимо от
-       того, сколько из необязательных строк у конкретного
-       соревнования реально заполнено и есть ли логотип. */
+    /* Высоту (под линию ниже) держит .home-carousel-card-zone-mid —
+       здесь она не нужна, зато при малом числе строк содержимое
+       центрируется по вертикали вместе со всей зоной. */
     flex: 1 1 auto;
     min-width: 0;
-    min-height: 108px;
     display: flex;
     flex-direction: column;
 }
@@ -514,15 +535,6 @@ header.scrolled {
     margin: 0 0 4px;
 }
 
-.home-carousel-card-hr {
-    /* Bootstrap задаёт всем <hr> ещё и opacity:.25 сверх цвета границы
-       (bootstrap/scss/_reboot.scss) — без сброса здесь линия выходила
-       в ~4 раза бледнее, чем border-bottom заголовка (обычный span). */
-    opacity: 1;
-    border: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.5);
-    margin: 9px 0;
-}
 
 .home-carousel-status {
     align-self: flex-start;
@@ -558,10 +570,22 @@ header.scrolled {
     color: #fff;
 }
 
+.home-carousel-card-zone-bottom {
+    /* min-height — ровно под 2 строки (дата + место); если реально
+       заполнена только одна строка (или обе отсутствуют), содержимое
+       центрируется по вертикали (align-items:center), а не липнет
+       к линии сверху — низ карточки у всех соревнований на одном
+       уровне независимо от заполненности. */
+    box-sizing: border-box;
+    min-height: calc(2 * 1.4em + 4px + 16px);
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+
 .home-carousel-card-meta-list {
-    /* min-height — ровно под 2 строки (дата + место), даже если из
-       двух заполнена только одна или обе строки не влезли в одну и
-       перенеслись — низ карточки у всех соревнований на одном уровне. */
+    width: 100%;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -570,9 +594,7 @@ header.scrolled {
     align-items: center;
     text-align: center;
     gap: 4px;
-    font-size: 12px;
     line-height: 1.4;
-    min-height: calc(2 * 1.4em + 4px);
     color: #fff;
 }
 
