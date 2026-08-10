@@ -843,22 +843,17 @@ footer hr {
 }
 
 .footer-logo {
-    /* Тот же размер, что у логотипа в шапке (.logo) в обычном
-       (не свёрнутом прокруткой) состоянии. */
-    height: 64px;
-}
-
-@media (min-width: 992px) {
-    .footer-logo {
-        height: 88px;
-    }
+    /* Ширина вровень с рядом кнопок соцсетей ниже (4 x 44px + 3 x 16px
+       gap = 224px), высота — пропорционально. */
+    width: 224px;
+    height: auto;
 }
 
 .footer-social-single {
     display: flex;
-    justify-content: center;
+    width: 224px;
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .footer-social-icon {

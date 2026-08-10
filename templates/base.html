@@ -98,20 +98,6 @@
 
 <footer>
     <div class="container py-5">
-        <div class="footer-social-single">
-            <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="Telegram">
-                <img src="{{ url_for('static', filename='img/icon_telegram.png') }}" alt="">
-            </a>
-            <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="ВКонтакте">
-                <img src="{{ url_for('static', filename='img/icon_vk.png') }}" alt="">
-            </a>
-            <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="YouTube">
-                <img src="{{ url_for('static', filename='img/icon_youtube.png') }}" alt="">
-            </a>
-            <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="MAX">
-                <img src="{{ url_for('static', filename='img/icon_max.png') }}" alt="">
-            </a>
-        </div>
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
             <div class="col">
                 <h2 class="h6 text-uppercase">Рафтинг ЦФО</h2>
@@ -142,7 +128,21 @@
                     <li><a href="#">Архив</a></li>
                 </ul>
             </div>
-            <div class="col d-flex align-items-center justify-content-center justify-content-lg-end">
+            <div class="col d-flex flex-column align-items-center align-items-lg-end">
+                <div class="footer-social-single">
+                    <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="Telegram">
+                        <img src="{{ url_for('static', filename='img/icon_telegram.png') }}" alt="">
+                    </a>
+                    <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="ВКонтакте">
+                        <img src="{{ url_for('static', filename='img/icon_vk.png') }}" alt="">
+                    </a>
+                    <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="YouTube">
+                        <img src="{{ url_for('static', filename='img/icon_youtube.png') }}" alt="">
+                    </a>
+                    <a class="footer-social-icon" href="#" target="_blank" rel="noopener" aria-label="MAX">
+                        <img src="{{ url_for('static', filename='img/icon_max.png') }}" alt="">
+                    </a>
+                </div>
                 <img class="footer-logo" src="{{ url_for('static', filename='img/ФРР_лого_серый.png') }}" alt="Федерация рафтинга России">
             </div>
         </div>
