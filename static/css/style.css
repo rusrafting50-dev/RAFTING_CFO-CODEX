@@ -392,7 +392,7 @@ header.scrolled {
     color: #fff;
     border: 1px solid transparent;
     border-radius: 8px;
-    padding: 10px 16px;
+    padding: 5px 16px;
     text-decoration: none;
     display: flex;
     flex-direction: column;
@@ -479,14 +479,14 @@ header.scrolled {
 }
 
 .home-carousel-card-zone-mid {
-    /* Верх и низ карточки — по 50px (см. -zone-top/-zone-bottom), эта
-       зона забирает всё, что остаётся от прежней общей высоты карточки
-       (244.6px): 244.6 - 2 (border) - 20 (padding) - 50 - 50 = 122.6px.
-       Независимо от того, сколько необязательных строк
-       (бейдж/классы/№ЕКП/судья) реально заполнено и есть ли логотип,
-       содержимое центрируется по вертикали (align-items:center). */
+    /* Padding карточки уменьшен с 10px до 5px сверху/снизу (-10px
+       суммарно) — эти освободившиеся 10px целиком добавлены сюда:
+       122.6px + 10px = 132.6px. Независимо от того, сколько
+       необязательных строк (бейдж/классы/№ЕКП/судья) реально заполнено
+       и есть ли логотип, содержимое центрируется по вертикали
+       (align-items:center). */
     box-sizing: border-box;
-    height: 122.6px;
+    height: 132.6px;
     padding: 0;
     display: flex;
     align-items: center;
