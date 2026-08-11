@@ -37,7 +37,7 @@ SYNC_SOURCES = ['COREZ', 'REGTEAM_RAFTING', 'SPORTS_REFEREE']
 
 BODY_CHOICES = ['исполком', 'коллегия_судей', 'тренерский_совет', 'комитет_представителей']
 DOC_CATEGORY_CHOICES = ['федеральный', 'региональный', 'wrf', 'фрр', 'федерация']
-ROLE_CHOICES = ['admin', 'editor', 'viewer']
+ROLE_CHOICES = ['admin', 'editor', 'viewer', 'region_rep']
 
 YOUTUBE_ID_RE = re.compile(
     r'(?:youtube\.com/(?:watch\?v=|embed/|shorts/)|youtu\.be/)([a-zA-Z0-9_-]{11})'
@@ -1189,6 +1189,8 @@ def users_list():
 @bp.route('/users/new', methods=['GET', 'POST'])
 @roles_required('admin')
 def users_new():
+    regions = RegionalFederation.query.order_by(RegionalFederation.name).all()
+
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
@@ -1198,14 +1200,14 @@ def users_new():
             flash('Логин и пароль обязательны.', 'error')
             return render_template(
                 'admin/user_form.html', active='users', user=None,
-                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES, regions=regions,
             )
 
         if User.query.filter_by(username=username).first():
             flash('Пользователь с таким логином уже существует.', 'error')
             return render_template(
                 'admin/user_form.html', active='users', user=None,
-                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES, regions=regions,
             )
 
         if role not in ROLE_CHOICES:
@@ -1215,6 +1217,7 @@ def users_new():
             username=username,
             password_hash=generate_password_hash(password),
             role=role,
+            region=request.form.get('region', '').strip() or None if role == 'region_rep' else None,
             is_active=True,
             allowed_sections=_sections_from_form(),
         )
@@ -1225,7 +1228,7 @@ def users_new():
 
     return render_template(
         'admin/user_form.html', active='users', user=None,
-        role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+        role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES, regions=regions,
     )
 
 
@@ -1233,6 +1236,7 @@ def users_new():
 @roles_required('admin')
 def users_edit(user_id):
     user = User.query.get_or_404(user_id)
+    regions = RegionalFederation.query.order_by(RegionalFederation.name).all()
 
     if request.method == 'POST':
         role = request.form.get('role', user.role)
@@ -1242,7 +1246,7 @@ def users_edit(user_id):
             flash('Недопустимая роль.', 'error')
             return render_template(
                 'admin/user_form.html', active='users', user=user,
-                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES, regions=regions,
             )
 
         if is_last_active_admin(user) and (role != 'admin' or not is_active):
@@ -1252,10 +1256,11 @@ def users_edit(user_id):
             )
             return render_template(
                 'admin/user_form.html', active='users', user=user,
-                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+                role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES, regions=regions,
             )
 
         user.role = role
+        user.region = request.form.get('region', '').strip() or None if role == 'region_rep' else None
         user.is_active = is_active
         user.allowed_sections = _sections_from_form()
 
@@ -1269,7 +1274,7 @@ def users_edit(user_id):
 
     return render_template(
         'admin/user_form.html', active='users', user=user,
-        role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES,
+        role_choices=ROLE_CHOICES, section_choices=SECTION_CHOICES, regions=regions,
     )
 
 

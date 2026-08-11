@@ -21,10 +21,16 @@
                 </tr>
             </thead>
             <tbody>
+                {% set role_labels = {'admin': 'admin', 'editor': 'editor', 'viewer': 'viewer', 'region_rep': 'представитель региона'} %}
                 {% for user in users %}
                     <tr>
                         <td>{{ user.username }}</td>
-                        <td>{{ user.role }}</td>
+                        <td>
+                            {{ role_labels.get(user.role, user.role) }}
+                            {% if user.role == 'region_rep' and user.region %}
+                                <span class="text-muted">({{ user.region }})</span>
+                            {% endif %}
+                        </td>
                         <td>
                             {% if user.role == 'admin' %}
                                 <span class="text-muted">все</span>

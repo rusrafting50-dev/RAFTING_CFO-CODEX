@@ -167,7 +167,8 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.String(20), default='viewer', nullable=False)  # admin / editor / viewer
+    role = db.Column(db.String(20), default='viewer', nullable=False)  # admin / editor / viewer / region_rep
+    region = db.Column(db.String(255))  # для role=region_rep — какой регион представляет пользователь
     is_active = db.Column(db.Boolean, default=True, nullable=False)
     # Разделы панели администратора, доступные пользователю (через запятую,
     # см. admin.SECTION_CHOICES) — только для role=editor/viewer, у admin

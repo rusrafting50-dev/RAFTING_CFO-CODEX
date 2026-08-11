@@ -19,18 +19,29 @@
             </label>
             <input type="password" class="form-control" id="password" name="password" {{ 'required' if not user }}>
         </div>
+        {% set role_labels = {'admin': 'admin', 'editor': 'editor', 'viewer': 'viewer', 'region_rep': 'представитель региона'} %}
         <div class="mb-3">
             <label for="role" class="form-label">Роль</label>
             <select class="form-select" id="role" name="role">
                 {% for choice in role_choices %}
                     <option value="{{ choice }}"
                             {{ 'selected' if (user and user.role == choice) or (not user and choice == 'viewer') }}>
-                        {{ choice }}
+                        {{ role_labels.get(choice, choice) }}
                     </option>
                 {% endfor %}
             </select>
             <div class="form-text">admin — полный доступ ко всем разделам. editor — может редактировать
-                контент только в отмеченных ниже разделах. viewer — может только просматривать отмеченные разделы.</div>
+                контент только в отмеченных ниже разделах. viewer — может только просматривать отмеченные разделы.
+                представитель региона — может подавать заявки на участие в семинарах на сайте.</div>
+        </div>
+        <div class="mb-3">
+            <label for="region" class="form-label">Регион (для роли «представитель региона»)</label>
+            <select class="form-select" id="region" name="region">
+                <option value="">—</option>
+                {% for r in regions %}
+                    <option value="{{ r.name }}" {{ 'selected' if user and user.region == r.name }}>{{ r.name }}</option>
+                {% endfor %}
+            </select>
         </div>
         {% if user %}
             <div class="form-check mb-3">
