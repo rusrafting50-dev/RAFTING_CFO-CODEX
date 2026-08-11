@@ -67,7 +67,49 @@
             </div>
 
             <div class="tab-pane fade" id="tab-news" role="tabpanel"></div>
-            <div class="tab-pane fade" id="tab-participants" role="tabpanel"></div>
+            <div class="tab-pane fade" id="tab-participants" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small">
+                        {% if applications %}Заявок подано: {{ applications|length }}{% endif %}
+                    </span>
+                    {% if can_submit_application %}
+                        <a href="{{ url_for('events.application_new', event_id=event.id) }}" class="btn btn-sm btn-primary">Подать заявку</a>
+                    {% elif not current_user.is_authenticated %}
+                        <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-sm btn-outline-secondary">Войти, чтобы подать заявку</a>
+                    {% endif %}
+                </div>
+                {% if applications_error %}
+                    <p class="text-muted">{{ applications_error }}</p>
+                {% elif not applications %}
+                    <p class="text-muted">Заявок пока нет.</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle">
+                            <thead>
+                                <tr class="site-table-header text-center">
+                                    <th>Направляющая организация</th>
+                                    <th>Субъект РФ</th>
+                                    <th>Участников</th>
+                                    <th>Подана</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                    <tr>
+                                        <td>{{ application.sending_org_name or application.organization_name or '—' }}</td>
+                                        <td class="text-center">{{ application.region or '—' }}</td>
+                                        <td class="text-center">{{ application.participants|length }}</td>
+                                        <td class="text-center text-nowrap">
+                                            {{ application.created_at[:16].replace('T', ' ') if application.created_at else '—' }}
+                                            <span class="badge {{ 'bg-primary' if application.source == 'сайт' else 'bg-secondary' }}">{{ application.source }}</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
             <div class="tab-pane fade" id="tab-results" role="tabpanel"></div>
             <div class="tab-pane fade" id="tab-media" role="tabpanel"></div>
         </div>

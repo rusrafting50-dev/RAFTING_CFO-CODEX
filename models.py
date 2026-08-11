@@ -280,3 +280,51 @@ class SyncLog(db.Model):
     status = db.Column(db.String(20), default='success')  # success / error
     message = db.Column(db.String(500))
     synced_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class SeminarApplicationSubmission(db.Model):
+    """Заявка на участие в семинаре, поданная представителем региона на
+    сайте — локальная копия (created_at — дата и время подачи), которая
+    сразу же отправляется в SPORTS_REFEREE (см. sync_to_referee.py).
+    SPORTS_REFEREE — единственный источник истины для протоколов; эта
+    запись нужна как история подачи с сайта и на случай, если отправка
+    не удалась (send_status/send_message)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
+    submitted_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    region = db.Column(db.String(150))
+    organization_name = db.Column(db.String(300))
+    sending_org_name = db.Column(db.String(300))
+    sending_org_leader_name = db.Column(db.String(200))
+    sending_org_leader_position = db.Column(db.String(150))
+    sending_org_leader_phone = db.Column(db.String(100))
+    sending_org_leader_email = db.Column(db.String(150))
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    send_status = db.Column(db.String(20), default='pending', nullable=False)  # pending / sent / failed
+    send_message = db.Column(db.String(500))
+    referee_application_id = db.Column(db.Integer)  # id заявки в базе SPORTS_REFEREE после успешной отправки
+
+    event = db.relationship('Event', backref=db.backref('application_submissions', cascade='all, delete-orphan'))
+    submitted_by = db.relationship('User')
+
+
+class SeminarApplicationSubmissionParticipant(db.Model):
+    """Участник заявки, поданной на сайте — те же поля, что в SPORTS_REFEREE."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    submission_id = db.Column(db.Integer, db.ForeignKey('seminar_application_submission.id'), nullable=False)
+
+    full_name = db.Column(db.String(200), nullable=False)
+    gender = db.Column(db.String(10))
+    birth_date = db.Column(db.Date)
+    judge_qualification = db.Column(db.String(100))
+    assigned_category = db.Column(db.String(100))
+    specialization = db.Column(db.String(300))
+
+    submission = db.relationship(
+        'SeminarApplicationSubmission', backref=db.backref('participants', cascade='all, delete-orphan'),
+    )

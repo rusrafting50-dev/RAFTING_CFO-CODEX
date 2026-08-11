@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Заявка на участие — {{ event.name }} — Федерация рафтинга ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h4 mb-4">Заявка на участие: {{ event.name }}</h1>
+
+        <form method="post">
+            <h2 class="h6 mb-3">Основные данные</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Субъект Российской Федерации</label>
+                    <input type="text" name="region" class="form-control"
+                           value="{{ current_user.region or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Наименование региональной спортивной федерации</label>
+                    <input type="text" name="organization_name" class="form-control">
+                </div>
+            </div>
+
+            <h2 class="h6 mb-3">Данные организации, направляющей для участия в семинаре</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label">Наименование организации</label>
+                    <input type="text" name="sending_org_name" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">ФИО руководителя</label>
+                    <input type="text" name="sending_org_leader_name" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Должность руководителя</label>
+                    <input type="text" name="sending_org_leader_position" class="form-control">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Телефон</label>
+                    <input type="text" name="sending_org_leader_phone" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">E-mail</label>
+                    <input type="text" name="sending_org_leader_email" class="form-control">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h6 mb-0">Список участников</h2>
+                <button type="button" id="add-participant-row" class="btn btn-sm btn-primary">+ Добавить</button>
+            </div>
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-bordered align-middle">
+                    <thead>
+                        <tr class="text-center align-middle">
+                            <th style="width: 40px;">№</th>
+                            <th>Фамилия, Имя, Отчество</th>
+                            <th style="width: 70px;">Пол</th>
+                            <th style="width: 150px;">Дата рождения</th>
+                            <th style="width: 160px;">Квалификация судьи</th>
+                            <th style="width: 200px;">Присваиваемая категория</th>
+                            <th style="width: 200px;">Специализация</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="participants-tbody"></tbody>
+                </table>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Подать заявку</button>
+            <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline-secondary">Отмена</a>
+        </form>
+    </div>
+
+    <template id="participant-row-template">
+        <tr class="participant-row">
+            <td class="text-center row-index"></td>
+            <td><input type="text" name="participant_full_name[]" class="form-control form-control-sm"></td>
+            <td>
+                <select name="participant_gender[]" class="form-select form-select-sm">
+                    <option value=""></option>
+                    <option value="м">м</option>
+                    <option value="ж">ж</option>
+                </select>
+            </td>
+            <td><input type="date" name="participant_birth_date[]" class="form-control form-control-sm"></td>
+            <td>
+                <select name="participant_qualification[]" class="form-select form-select-sm">
+                    <option value=""></option>
+                    {% for q in judge_qualifications %}
+                        <option value="{{ q }}">{{ q }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="participant_category[]" class="form-select form-select-sm">
+                    <option value=""></option>
+                    {% for c in seminar_categories %}
+                        <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="participant_specialization[]" class="form-select form-select-sm">
+                    <option value=""></option>
+                    {% for s in specializations %}
+                        <option value="{{ s }}">{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-participant-row">×</button></td>
+        </tr>
+    </template>
+
+    <script>
+        (function () {
+            var tbody = document.getElementById('participants-tbody');
+            var template = document.getElementById('participant-row-template');
+            var addBtn = document.getElementById('add-participant-row');
+
+            function renumber() {
+                tbody.querySelectorAll('.row-index').forEach(function (cell, i) {
+                    cell.textContent = i + 1;
+                });
+            }
+
+            function addRow() {
+                var row = template.content.firstElementChild.cloneNode(true);
+                row.querySelector('.remove-participant-row').addEventListener('click', function () {
+                    row.remove();
+                    renumber();
+                });
+                tbody.appendChild(row);
+                renumber();
+            }
+
+            addBtn.addEventListener('click', addRow);
+            addRow();
+        })();
+    </script>
+{% endblock %}
