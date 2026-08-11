@@ -79,7 +79,7 @@
     {% block content %}{% endblock %}
 </main>
 
-{% if partner_logos %}
+{% if partner_logos and request.endpoint == 'main.index' %}
     <section class="partners-strip">
         <div class="container partners-strip-inner">
             {% for logo in partner_logos %}
