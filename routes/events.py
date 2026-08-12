@@ -1,11 +1,10 @@
 """Мероприятия: семинары судей, тренеров, руководителей."""
-from datetime import date
+from datetime import date, datetime
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from models import Event, SeminarApplicationSubmission, SeminarApplicationSubmissionParticipant, db
-from sync_to_referee import отправить_заявку, запросить_заявки
 
 bp = Blueprint('events', __name__)
 
@@ -40,19 +39,81 @@ def index():
 @bp.route('/<int:event_id>')
 def detail(event_id):
     event = Event.query.get_or_404(event_id)
-    applications, applications_error = (
-        запросить_заявки(event.source_id) if event.source_id else ([], None)
+    applications = (
+        SeminarApplicationSubmission.query.filter_by(event_id=event.id)
+        .order_by(SeminarApplicationSubmission.created_at.desc())
+        .all()
     )
-    total_participants = sum(len(a.get('participants') or []) for a in applications)
+    total_participants = sum(len(a.participants) for a in applications)
     can_submit_application = (
         current_user.is_authenticated and current_user.role in ('region_rep', 'admin')
     )
     return render_template(
         'events/detail.html', event=event,
-        applications=applications, applications_error=applications_error,
-        total_participants=total_participants,
+        applications=applications, total_participants=total_participants,
         can_submit_application=can_submit_application,
     )
+
+
+def _can_manage(submission):
+    return current_user.is_authenticated and (
+        current_user.role == 'admin' or submission.submitted_by_id == current_user.id
+    )
+
+
+def _apply_participants(submission_id, form):
+    full_names = form.getlist('participant_full_name[]')
+    genders = form.getlist('participant_gender[]')
+    birth_dates = form.getlist('participant_birth_date[]')
+    qualifications = form.getlist('participant_qualification[]')
+    categories = form.getlist('participant_category[]')
+    specializations = form.getlist('participant_specialization[]')
+
+    for i, full_name in enumerate(full_names):
+        full_name = full_name.strip()
+        if not full_name:
+            continue
+        birth_date = None
+        if i < len(birth_dates) and birth_dates[i]:
+            try:
+                birth_date = date.fromisoformat(birth_dates[i])
+            except ValueError:
+                birth_date = None
+        db.session.add(SeminarApplicationSubmissionParticipant(
+            submission_id=submission_id,
+            full_name=full_name,
+            gender=(genders[i].strip() or None) if i < len(genders) else None,
+            birth_date=birth_date,
+            judge_qualification=(qualifications[i].strip() or None) if i < len(qualifications) else None,
+            assigned_category=(categories[i].strip() or None) if i < len(categories) else None,
+            specialization=(specializations[i].strip() or None) if i < len(specializations) else None,
+        ))
+
+
+def _participants_payload(submission):
+    if not submission:
+        return []
+    return [
+        {
+            'full_name': p.full_name,
+            'gender': p.gender,
+            'birth_date': p.birth_date.isoformat() if p.birth_date else '',
+            'judge_qualification': p.judge_qualification,
+            'assigned_category': p.assigned_category,
+            'specialization': p.specialization,
+        }
+        for p in submission.participants
+    ]
+
+
+def _fill_submission_fields(submission, form):
+    submission.region = form.get('region', '').strip() or None
+    submission.organization_name = form.get('organization_name', '').strip() or None
+    submission.sending_org_name = form.get('sending_org_name', '').strip() or None
+    submission.sending_org_leader_name = form.get('sending_org_leader_name', '').strip() or None
+    submission.sending_org_leader_position = form.get('sending_org_leader_position', '').strip() or None
+    submission.sending_org_leader_phone = form.get('sending_org_leader_phone', '').strip() or None
+    submission.sending_org_leader_email = form.get('sending_org_leader_email', '').strip() or None
 
 
 @bp.route('/<int:event_id>/applications/new', methods=['GET', 'POST'])
@@ -61,71 +122,86 @@ def application_new(event_id):
     event = Event.query.get_or_404(event_id)
     if current_user.role not in ('region_rep', 'admin'):
         abort(403)
-    if not event.source_id:
-        flash('Это мероприятие не синхронизировано с SPORTS_REFEREE — заявку подать нельзя.', 'error')
-        return redirect(url_for('events.detail', event_id=event.id))
 
     if request.method == 'POST':
         full_names = request.form.getlist('participant_full_name[]')
         if not any(name.strip() for name in full_names):
             flash('Добавьте хотя бы одного участника.', 'error')
             return render_template(
-                'events/application_form.html', event=event,
+                'events/application_form.html', event=event, submission=None,
+                existing_participants=[],
                 judge_qualifications=JUDGE_QUALIFICATIONS, seminar_categories=SEMINAR_CATEGORIES,
                 specializations=SEMINAR_PARTICIPANT_SPECIALIZATIONS,
             )
 
         submission = SeminarApplicationSubmission(
-            event_id=event.id,
-            submitted_by_id=current_user.id,
-            region=request.form.get('region', '').strip() or None,
-            organization_name=request.form.get('organization_name', '').strip() or None,
-            sending_org_name=request.form.get('sending_org_name', '').strip() or None,
-            sending_org_leader_name=request.form.get('sending_org_leader_name', '').strip() or None,
-            sending_org_leader_position=request.form.get('sending_org_leader_position', '').strip() or None,
-            sending_org_leader_phone=request.form.get('sending_org_leader_phone', '').strip() or None,
-            sending_org_leader_email=request.form.get('sending_org_leader_email', '').strip() or None,
+            event_id=event.id, submitted_by_id=current_user.id, origin='site',
         )
+        _fill_submission_fields(submission, request.form)
         db.session.add(submission)
         db.session.flush()
-
-        genders = request.form.getlist('participant_gender[]')
-        birth_dates = request.form.getlist('participant_birth_date[]')
-        qualifications = request.form.getlist('participant_qualification[]')
-        categories = request.form.getlist('participant_category[]')
-        specializations = request.form.getlist('participant_specialization[]')
-        for i, full_name in enumerate(full_names):
-            full_name = full_name.strip()
-            if not full_name:
-                continue
-            birth_date = None
-            if i < len(birth_dates) and birth_dates[i]:
-                try:
-                    birth_date = date.fromisoformat(birth_dates[i])
-                except ValueError:
-                    birth_date = None
-            db.session.add(SeminarApplicationSubmissionParticipant(
-                submission_id=submission.id,
-                full_name=full_name,
-                gender=(genders[i].strip() or None) if i < len(genders) else None,
-                birth_date=birth_date,
-                judge_qualification=(qualifications[i].strip() or None) if i < len(qualifications) else None,
-                assigned_category=(categories[i].strip() or None) if i < len(categories) else None,
-                specialization=(specializations[i].strip() or None) if i < len(specializations) else None,
-            ))
+        _apply_participants(submission.id, request.form)
         db.session.commit()
 
-        success, message, referee_application_id = отправить_заявку(submission, event.source_id)
-        submission.send_status = 'sent' if success else 'failed'
-        submission.send_message = message
-        submission.referee_application_id = referee_application_id
-        db.session.commit()
-
-        flash('Заявка сохранена. ' + message, 'success' if success else 'danger')
+        flash('Заявка сохранена.', 'success')
         return redirect(url_for('events.detail', event_id=event.id))
 
     return render_template(
-        'events/application_form.html', event=event,
+        'events/application_form.html', event=event, submission=None,
+        existing_participants=[],
         judge_qualifications=JUDGE_QUALIFICATIONS, seminar_categories=SEMINAR_CATEGORIES,
         specializations=SEMINAR_PARTICIPANT_SPECIALIZATIONS,
     )
+
+
+@bp.route('/<int:event_id>/applications/<int:submission_id>/edit', methods=['GET', 'POST'])
+@login_required
+def application_edit(event_id, submission_id):
+    event = Event.query.get_or_404(event_id)
+    submission = SeminarApplicationSubmission.query.get_or_404(submission_id)
+    if submission.event_id != event.id:
+        abort(404)
+    if not _can_manage(submission):
+        abort(403)
+
+    if request.method == 'POST':
+        full_names = request.form.getlist('participant_full_name[]')
+        if not any(name.strip() for name in full_names):
+            flash('Добавьте хотя бы одного участника.', 'error')
+            return render_template(
+                'events/application_form.html', event=event, submission=submission,
+                existing_participants=_participants_payload(submission),
+                judge_qualifications=JUDGE_QUALIFICATIONS, seminar_categories=SEMINAR_CATEGORIES,
+                specializations=SEMINAR_PARTICIPANT_SPECIALIZATIONS,
+            )
+
+        _fill_submission_fields(submission, request.form)
+        submission.updated_at = datetime.utcnow()
+        SeminarApplicationSubmissionParticipant.query.filter_by(submission_id=submission.id).delete()
+        _apply_participants(submission.id, request.form)
+        db.session.commit()
+
+        flash('Заявка обновлена.', 'success')
+        return redirect(url_for('events.detail', event_id=event.id))
+
+    return render_template(
+        'events/application_form.html', event=event, submission=submission,
+        existing_participants=_participants_payload(submission),
+        judge_qualifications=JUDGE_QUALIFICATIONS, seminar_categories=SEMINAR_CATEGORIES,
+        specializations=SEMINAR_PARTICIPANT_SPECIALIZATIONS,
+    )
+
+
+@bp.route('/<int:event_id>/applications/<int:submission_id>/delete', methods=['POST'])
+@login_required
+def application_delete(event_id, submission_id):
+    submission = SeminarApplicationSubmission.query.get_or_404(submission_id)
+    if submission.event_id != event_id:
+        abort(404)
+    if not _can_manage(submission):
+        abort(403)
+
+    db.session.delete(submission)
+    db.session.commit()
+    flash('Заявка удалена.', 'success')
+    return redirect(url_for('events.detail', event_id=event_id))

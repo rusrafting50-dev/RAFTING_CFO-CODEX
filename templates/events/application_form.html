@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Заявка на участие — {{ event.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block title %}{{ 'Редактирование заявки' if submission else 'Заявка на участие' }} — {{ event.name }} — Федерация рафтинга ЦФО{% endblock %}
 
 {% block content %}
     <div class="container py-5">
-        <h1 class="h4 mb-4">Заявка на участие: {{ event.name }}</h1>
+        <h1 class="h4 mb-4">{{ 'Редактирование заявки' if submission else 'Заявка на участие' }}: {{ event.name }}</h1>
 
         <form method="post">
             <h2 class="h6 mb-3">Основные данные</h2>
@@ -12,11 +12,12 @@
                 <div class="col-md-6">
                     <label class="form-label">Субъект Российской Федерации</label>
                     <input type="text" name="region" class="form-control"
-                           value="{{ current_user.region or '' }}">
+                           value="{{ submission.region if submission else (current_user.region or '') }}">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Наименование региональной спортивной федерации</label>
-                    <input type="text" name="organization_name" class="form-control">
+                    <input type="text" name="organization_name" class="form-control"
+                           value="{{ submission.organization_name or '' if submission else '' }}">
                 </div>
             </div>
 
@@ -24,23 +25,28 @@
             <div class="row g-3 mb-4">
                 <div class="col-12">
                     <label class="form-label">Наименование организации</label>
-                    <input type="text" name="sending_org_name" class="form-control" required>
+                    <input type="text" name="sending_org_name" class="form-control" required
+                           value="{{ submission.sending_org_name or '' if submission else '' }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">ФИО руководителя</label>
-                    <input type="text" name="sending_org_leader_name" class="form-control">
+                    <input type="text" name="sending_org_leader_name" class="form-control"
+                           value="{{ submission.sending_org_leader_name or '' if submission else '' }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Должность руководителя</label>
-                    <input type="text" name="sending_org_leader_position" class="form-control">
+                    <input type="text" name="sending_org_leader_position" class="form-control"
+                           value="{{ submission.sending_org_leader_position or '' if submission else '' }}">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Телефон</label>
-                    <input type="text" name="sending_org_leader_phone" class="form-control">
+                    <input type="text" name="sending_org_leader_phone" class="form-control"
+                           value="{{ submission.sending_org_leader_phone or '' if submission else '' }}">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">E-mail</label>
-                    <input type="text" name="sending_org_leader_email" class="form-control">
+                    <input type="text" name="sending_org_leader_email" class="form-control"
+                           value="{{ submission.sending_org_leader_email or '' if submission else '' }}">
                 </div>
             </div>
 
@@ -66,7 +72,7 @@
                 </table>
             </div>
 
-            <button type="submit" class="btn btn-primary">Подать заявку</button>
+            <button type="submit" class="btn btn-primary">{{ 'Сохранить изменения' if submission else 'Подать заявку' }}</button>
             <a href="{{ url_for('events.detail', event_id=event.id) }}" class="btn btn-outline-secondary">Отмена</a>
         </form>
     </div>
@@ -116,6 +122,7 @@
             var tbody = document.getElementById('participants-tbody');
             var template = document.getElementById('participant-row-template');
             var addBtn = document.getElementById('add-participant-row');
+            var existingParticipants = {{ existing_participants|tojson }};
 
             function renumber() {
                 tbody.querySelectorAll('.row-index').forEach(function (cell, i) {
@@ -123,8 +130,16 @@
                 });
             }
 
-            function addRow() {
+            function addRow(data) {
                 var row = template.content.firstElementChild.cloneNode(true);
+                if (data) {
+                    row.querySelector('[name="participant_full_name[]"]').value = data.full_name;
+                    row.querySelector('[name="participant_gender[]"]').value = data.gender;
+                    row.querySelector('[name="participant_birth_date[]"]').value = data.birth_date;
+                    row.querySelector('[name="participant_qualification[]"]').value = data.judge_qualification;
+                    row.querySelector('[name="participant_category[]"]').value = data.assigned_category;
+                    row.querySelector('[name="participant_specialization[]"]').value = data.specialization;
+                }
                 row.querySelector('.remove-participant-row').addEventListener('click', function () {
                     row.remove();
                     renumber();
@@ -133,8 +148,13 @@
                 renumber();
             }
 
-            addBtn.addEventListener('click', addRow);
-            addRow();
+            addBtn.addEventListener('click', function () { addRow(null); });
+
+            if (existingParticipants.length) {
+                existingParticipants.forEach(addRow);
+            } else {
+                addRow(null);
+            }
         })();
     </script>
 {% endblock %}

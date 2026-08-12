@@ -14,7 +14,10 @@ from functools import wraps
 from flask import Blueprint, current_app, jsonify, request
 from werkzeug.utils import secure_filename
 
-from models import Athlete, Competition, CompetitionDocument, Event, Referee, SyncLog, db
+from models import (
+    Athlete, Competition, CompetitionDocument, Event, Referee,
+    SeminarApplicationSubmission, SeminarApplicationSubmissionParticipant, SyncLog, db,
+)
 
 bp = Blueprint('api', __name__)
 
@@ -23,6 +26,7 @@ SOURCE_BY_SYNC_TYPE = {
     'athletes': 'REGTEAM_RAFTING',
     'referees': 'SPORTS_REFEREE',
     'events': 'SPORTS_REFEREE',
+    'seminar_applications': 'SPORTS_REFEREE',
     'protocols': 'COREZ',
 }
 
@@ -318,6 +322,96 @@ def sync_events():
 
     db.session.commit()
     log_sync('events', created + updated,
+             message=f'создано: {created}, обновлено: {updated}, пропущено: {skipped}')
+
+    return jsonify({
+        'status': 'ok', 'received': len(items),
+        'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors,
+    })
+
+
+@bp.route('/sync/seminar-applications', methods=['POST'])
+@require_api_key
+def sync_seminar_applications():
+    """Принимает заявку, отправленную из SPORTS_REFEREE кнопкой «Отправить
+    на сайт» (заявка, внесённая непосредственно там, не с сайта). Матчинг —
+    по referee_application_id (id этой же заявки в базе SPORTS_REFEREE):
+    повторная отправка той же заявки обновляет уже существующую запись,
+    а не создаёт дубликат."""
+    items = get_items_from_request()
+    if items is None:
+        return jsonify({'error': 'Тело запроса должно быть JSON вида {"items": [...]}.'}), 400
+
+    created = updated = skipped = 0
+    errors = []
+
+    for item in items:
+        seminar_source_id = item.get('seminar_source_id')
+        referee_application_id = item.get('referee_application_id')
+        participants_raw = item.get('participants')
+
+        if seminar_source_id is None or referee_application_id is None or not isinstance(participants_raw, list):
+            skipped += 1
+            errors.append(
+                f'referee_application_id={referee_application_id}: '
+                'нужны seminar_source_id, referee_application_id и participants (список)'
+            )
+            continue
+
+        event = Event.query.filter_by(source_id=seminar_source_id).first()
+        if event is None:
+            skipped += 1
+            errors.append(f'seminar_source_id={seminar_source_id}: мероприятие не найдено на сайте')
+            continue
+
+        submission = SeminarApplicationSubmission.query.filter_by(
+            referee_application_id=referee_application_id,
+        ).first()
+        if submission is None:
+            submission = SeminarApplicationSubmission(
+                event_id=event.id, origin='referee', referee_application_id=referee_application_id,
+            )
+            submitted_at = item.get('submitted_at')
+            try:
+                submission.created_at = datetime.fromisoformat(submitted_at) if submitted_at else datetime.utcnow()
+            except ValueError:
+                submission.created_at = datetime.utcnow()
+            db.session.add(submission)
+            created += 1
+        else:
+            submission.updated_at = datetime.utcnow()
+            updated += 1
+
+        submission.region = (item.get('region') or '').strip() or None
+        submission.organization_name = (item.get('organization_name') or '').strip() or None
+        submission.sending_org_name = (item.get('sending_org_name') or '').strip() or None
+        submission.sending_org_leader_name = (item.get('sending_org_leader_name') or '').strip() or None
+        submission.sending_org_leader_position = (item.get('sending_org_leader_position') or '').strip() or None
+        submission.sending_org_leader_phone = (item.get('sending_org_leader_phone') or '').strip() or None
+        submission.sending_org_leader_email = (item.get('sending_org_leader_email') or '').strip() or None
+        db.session.flush()
+
+        SeminarApplicationSubmissionParticipant.query.filter_by(submission_id=submission.id).delete()
+        for p in participants_raw:
+            full_name = (p.get('full_name') or '').strip()
+            if not full_name:
+                continue
+            try:
+                birth_date = parse_date(p.get('birth_date'))
+            except ValueError:
+                birth_date = None
+            db.session.add(SeminarApplicationSubmissionParticipant(
+                submission_id=submission.id,
+                full_name=full_name,
+                gender=(p.get('gender') or '').strip() or None,
+                birth_date=birth_date,
+                judge_qualification=(p.get('judge_qualification') or '').strip() or None,
+                assigned_category=(p.get('assigned_category') or '').strip() or None,
+                specialization=(p.get('specialization') or '').strip() or None,
+            ))
+
+    db.session.commit()
+    log_sync('seminar_applications', created + updated,
              message=f'создано: {created}, обновлено: {updated}, пропущено: {skipped}')
 
     return jsonify({

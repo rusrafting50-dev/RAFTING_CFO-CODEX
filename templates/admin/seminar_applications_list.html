@@ -1,0 +1,61 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'seminar_applications' %}
+
+{% block title %}Заявки на семинары — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">Заявки на семинары</h1>
+
+    {% if not applications %}
+        <p class="text-muted">Заявок пока нет.</p>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Мероприятие</th>
+                        <th>Направляющая организация</th>
+                        <th>Субъект РФ</th>
+                        <th>Участников</th>
+                        <th>Подана</th>
+                        <th>Статус отправки</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in applications %}
+                        <tr>
+                            <td><a href="{{ url_for('events.detail', event_id=application.event_id) }}" target="_blank">{{ application.event.name }}</a></td>
+                            <td>{{ application.sending_org_name or application.organization_name or '—' }}</td>
+                            <td>{{ application.region or '—' }}</td>
+                            <td class="text-center">{{ application.participants|length }}</td>
+                            <td class="text-nowrap">
+                                {{ application.created_at.strftime('%d.%m.%Y %H:%M') }}
+                                <span class="badge {{ 'bg-primary' if application.origin == 'site' else 'bg-secondary' }}">{{ 'сайт' if application.origin == 'site' else 'SPORTS_REFEREE' }}</span>
+                            </td>
+                            <td>
+                                {% if application.send_status == 'sent' %}
+                                    <span class="badge bg-success">отправлено</span>
+                                {% elif application.send_status == 'failed' %}
+                                    <span class="badge bg-danger" title="{{ application.send_message }}">ошибка</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">не отправлено</span>
+                                {% endif %}
+                                {% if application.send_message and application.send_status == 'failed' %}
+                                    <div class="text-muted small">{{ application.send_message }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap">
+                                <form method="post" action="{{ url_for('admin.seminar_application_send', submission_id=application.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        {{ 'Обновить в считалку' if application.referee_application_id else 'Отправить в считалку' }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

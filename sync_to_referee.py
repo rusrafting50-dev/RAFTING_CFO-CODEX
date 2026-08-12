@@ -1,10 +1,12 @@
 # sync_to_referee.py — отправка заявки на семинар в проект SPORTS_REFEREE
 #
-# Заявку на участие в семинаре можно подать прямо на сайте (представителем
-# региона) — она сразу сохраняется здесь (SeminarApplicationSubmission,
-# см. models.py) и одновременно отправляется в SPORTS_REFEREE через
-# POST /api/seminars/<id>/applications (см. его routes/api.py), потому что
-# именно SPORTS_REFEREE — источник истины для протоколов семинара.
+# Заявки подаются на сайте через форму (SeminarApplicationSubmission,
+# см. models.py) и хранятся локально — сайт сам является источником для
+# отображения на вкладке «Участники». В SPORTS_REFEREE (источник истины
+# для протоколов семинара) заявка попадает не автоматически, а только
+# когда admin сайта нажмёт «Отправить в считалку» в панели управления
+# (см. routes/admin.py) — через POST при первой отправке или PUT при
+# повторной (обновление уже отправленной заявки).
 # Адрес и ключ — SPORTS_REFEREE_URL / SPORTS_REFEREE_API_KEY в .env; ключ
 # должен совпадать с API_KEY в .env самого SPORTS_REFEREE.
 #
@@ -49,8 +51,8 @@ def _собрать_данные(submission):
 
 
 def отправить_заявку(submission, seminar_source_id):
-    """Отправляет заявку в SPORTS_REFEREE. Возвращает (успех, сообщение,
-    referee_application_id)."""
+    """Отправляет НОВУЮ заявку в SPORTS_REFEREE (первая отправка). Возвращает
+    (успех, сообщение, referee_application_id)."""
     ключ = _ключ()
     if not ключ:
         return False, 'SPORTS_REFEREE_API_KEY не задан в .env — см. .env.example', None
@@ -77,31 +79,30 @@ def отправить_заявку(submission, seminar_source_id):
     return True, 'Заявка отправлена в SPORTS_REFEREE.', данные.get('application_id')
 
 
-def запросить_заявки(seminar_source_id):
-    """Запрашивает у SPORTS_REFEREE список уже поданных заявок по семинару
-    (для отображения на вкладке «Участники»). Возвращает (список, ошибка) —
-    при недоступности SPORTS_REFEREE список пуст, а ошибка — текст для
-    показа вместо списка."""
+def обновить_заявку(submission, seminar_source_id, referee_application_id):
+    """Обновляет уже отправленную ранее заявку в SPORTS_REFEREE (повторное
+    нажатие «Отправить в считалку» после редактирования). Возвращает
+    (успех, сообщение)."""
     ключ = _ключ()
     if not ключ:
-        return [], 'SPORTS_REFEREE_API_KEY не задан в .env — см. .env.example'
+        return False, 'SPORTS_REFEREE_API_KEY не задан в .env — см. .env.example'
 
     адрес = _адрес()
     try:
-        ответ = requests.get(
-            f'{адрес}/api/seminars/{seminar_source_id}/applications',
+        ответ = requests.put(
+            f'{адрес}/api/seminars/{seminar_source_id}/applications/{referee_application_id}',
+            json=_собрать_данные(submission),
             headers={'X-API-Key': ключ},
-            timeout=5,
+            timeout=10,
         )
     except requests.RequestException as exc:
-        return [], f'Не удалось соединиться с SPORTS_REFEREE ({адрес}): {exc}'
+        return False, f'Не удалось соединиться с SPORTS_REFEREE ({адрес}): {exc}'
 
     if ответ.status_code == 404:
-        return [], f'Семинар не найден на SPORTS_REFEREE (source_id={seminar_source_id}) — заявки не отображаются.'
+        return False, 'Заявка не найдена на SPORTS_REFEREE (возможно, была удалена там) — отправьте как новую.'
     if ответ.status_code == 401:
-        return [], 'SPORTS_REFEREE отклонил запрос: неверный SPORTS_REFEREE_API_KEY.'
+        return False, 'SPORTS_REFEREE отклонил запрос: неверный SPORTS_REFEREE_API_KEY.'
     if ответ.status_code != 200:
-        return [], f'SPORTS_REFEREE ответил ошибкой {ответ.status_code} — список заявок временно недоступен.'
+        return False, f'SPORTS_REFEREE ответил ошибкой {ответ.status_code}: {ответ.text[:200]}'
 
-    данные = ответ.json()
-    return данные.get('items', []), None
+    return True, 'Заявка обновлена в SPORTS_REFEREE.'

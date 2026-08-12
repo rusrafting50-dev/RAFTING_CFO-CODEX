@@ -283,16 +283,25 @@ class SyncLog(db.Model):
 
 
 class SeminarApplicationSubmission(db.Model):
-    """Заявка на участие в семинаре, поданная представителем региона на
-    сайте — локальная копия (created_at — дата и время подачи), которая
-    сразу же отправляется в SPORTS_REFEREE (см. sync_to_referee.py).
-    SPORTS_REFEREE — единственный источник истины для протоколов; эта
-    запись нужна как история подачи с сайта и на случай, если отправка
-    не удалась (send_status/send_message)."""
+    """Заявка на участие в семинаре — локальная база сайта, источник для
+    отображения на вкладке «Участники» страницы мероприятия.
+
+    origin='site' — подана представителем региона через форму на сайте;
+    может редактироваться/удаляться автором (submitted_by) или admin.
+    origin='referee' — прислана из SPORTS_REFEREE (заявка, внесённая там
+    напрямую) кнопкой «Отправить на сайт»; submitted_by_id тогда пуст.
+
+    В SPORTS_REFEREE заявка попадает не автоматически, а только когда
+    admin сайта нажмёт «Отправить в считалку» в панели управления (см.
+    routes/admin.py, sync_to_referee.py) — до этого send_status='pending'.
+    referee_application_id — id этой же заявки в базе SPORTS_REFEREE,
+    используется для матчинга при повторной отправке/обновлении в обе
+    стороны (и site→referee, и referee→site)."""
 
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
-    submitted_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    submitted_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    origin = db.Column(db.String(20), default='site', nullable=False)  # site / referee
 
     region = db.Column(db.String(150))
     organization_name = db.Column(db.String(300))
@@ -303,10 +312,11 @@ class SeminarApplicationSubmission(db.Model):
     sending_org_leader_email = db.Column(db.String(150))
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime)
 
     send_status = db.Column(db.String(20), default='pending', nullable=False)  # pending / sent / failed
     send_message = db.Column(db.String(500))
-    referee_application_id = db.Column(db.Integer)  # id заявки в базе SPORTS_REFEREE после успешной отправки
+    referee_application_id = db.Column(db.Integer)  # id этой же заявки в базе SPORTS_REFEREE
 
     event = db.relationship('Event', backref=db.backref('application_submissions', cascade='all, delete-orphan'))
     submitted_by = db.relationship('User')

@@ -42,6 +42,8 @@
                     {% if current_user.role == 'admin' %}
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'users' }}"
                            href="{{ url_for('admin.users_list') }}">Пользователи</a>
+                        <a class="list-group-item list-group-item-action {{ 'active' if active == 'seminar_applications' }}"
+                           href="{{ url_for('admin.seminar_applications_list') }}">Заявки на семинары</a>
                     {% endif %}
                     {% if current_user.can_access('sync') %}
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'sync' }}"

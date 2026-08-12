@@ -13,10 +13,11 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from models import (
-    Athlete, Banner, Competition, CompetitionDocument, Document, FederationMember,
+    Athlete, Banner, Competition, CompetitionDocument, Document, Event, FederationMember,
     MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel,
-    PartnerLogo, Referee, RegionalFederation, SyncLog, User, db,
+    PartnerLogo, Referee, RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
 )
+from sync_to_referee import отправить_заявку, обновить_заявку
 
 bp = Blueprint('admin', __name__)
 
@@ -1284,3 +1285,45 @@ def users_edit(user_id):
 @section_required('sync')
 def sync_status():
     return render_template('admin/sync_status.html', active='sync', latest_syncs=latest_sync_by_source())
+
+
+# ---------- Заявки на семинары (отправка в SPORTS_REFEREE) ----------
+
+@bp.route('/seminar-applications')
+@roles_required('admin')
+def seminar_applications_list():
+    applications = (
+        SeminarApplicationSubmission.query
+        .join(Event)
+        .order_by(SeminarApplicationSubmission.created_at.desc())
+        .all()
+    )
+    return render_template(
+        'admin/seminar_applications_list.html', active='seminar_applications',
+        applications=applications,
+    )
+
+
+@bp.route('/seminar-applications/<int:submission_id>/send', methods=['POST'])
+@roles_required('admin')
+def seminar_application_send(submission_id):
+    submission = SeminarApplicationSubmission.query.get_or_404(submission_id)
+    event = submission.event
+
+    if not event.source_id:
+        flash('Мероприятие не синхронизировано с SPORTS_REFEREE — отправить нельзя.', 'error')
+        return redirect(url_for('admin.seminar_applications_list'))
+
+    if submission.referee_application_id:
+        success, message = обновить_заявку(submission, event.source_id, submission.referee_application_id)
+    else:
+        success, message, referee_application_id = отправить_заявку(submission, event.source_id)
+        if success:
+            submission.referee_application_id = referee_application_id
+
+    submission.send_status = 'sent' if success else 'failed'
+    submission.send_message = message
+    db.session.commit()
+
+    flash(message, 'success' if success else 'danger')
+    return redirect(url_for('admin.seminar_applications_list'))
