@@ -29,6 +29,37 @@ def _ensure_column(inspector, table, column, ddl_type):
         print(f'[auth] В таблицу {table} добавлена колонка {column}.')
 
 
+def _ensure_nullable(inspector, table, column):
+    """Снимает ограничение NOT NULL с колонки на уже существующей базе.
+
+    SQLite не поддерживает ALTER COLUMN — таблица пересоздаётся заново по
+    текущей модели (штатный для SQLite приём) с переносом всех данных;
+    вызывать после того, как _ensure_column догнал остальные колонки этой
+    же таблицы, иначе список колонок старой и новой таблицы разойдётся."""
+    from sqlalchemy import inspect, text
+
+    if table not in inspector.get_table_names():
+        return
+
+    # Свежий inspector, а не переданный: SQLAlchemy кэширует get_columns()
+    # по таблице, а колонки этой же таблицы могли только что добавиться
+    # через _ensure_column — с кэшем INSERT ниже потерял бы их.
+    columns = inspect(db.engine).get_columns(table)
+    col = next((c for c in columns if c['name'] == column), None)
+    if col is None or col['nullable']:
+        return
+
+    column_names = ', '.join(c['name'] for c in columns)
+    with db.engine.begin() as conn:
+        conn.execute(text('PRAGMA foreign_keys=OFF'))
+        conn.execute(text(f'ALTER TABLE {table} RENAME TO {table}_old'))
+        db.metadata.tables[table].create(bind=conn)
+        conn.execute(text(f'INSERT INTO {table} ({column_names}) SELECT {column_names} FROM {table}_old'))
+        conn.execute(text(f'DROP TABLE {table}_old'))
+        conn.execute(text('PRAGMA foreign_keys=ON'))
+    print(f'[auth] В таблице {table} снято ограничение NOT NULL с колонки {column}.')
+
+
 def ensure_schema():
     """Догоняет схему уже существующей базы под текущие модели.
 
@@ -56,6 +87,9 @@ def ensure_schema():
     _ensure_column(inspector, 'event', 'program_hours', 'VARCHAR(20)')
     _ensure_column(inspector, 'event', 'qualification_exam', 'VARCHAR(10)')
     _ensure_column(inspector, 'event', 'leader_full_name', 'VARCHAR(255)')
+    _ensure_column(inspector, 'seminar_application_submission', 'origin', "VARCHAR(20) NOT NULL DEFAULT 'site'")
+    _ensure_column(inspector, 'seminar_application_submission', 'updated_at', 'DATETIME')
+    _ensure_nullable(inspector, 'seminar_application_submission', 'submitted_by_id')
 
 
 def seed_news_taxonomy():
