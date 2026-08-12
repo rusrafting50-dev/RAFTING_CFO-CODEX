@@ -43,12 +43,14 @@ def detail(event_id):
     applications, applications_error = (
         запросить_заявки(event.source_id) if event.source_id else ([], None)
     )
+    total_participants = sum(len(a.get('participants') or []) for a in applications)
     can_submit_application = (
         current_user.is_authenticated and current_user.role in ('region_rep', 'admin')
     )
     return render_template(
         'events/detail.html', event=event,
         applications=applications, applications_error=applications_error,
+        total_participants=total_participants,
         can_submit_application=can_submit_application,
     )
 

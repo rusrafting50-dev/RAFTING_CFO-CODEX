@@ -7,12 +7,21 @@
 # именно SPORTS_REFEREE — источник истины для протоколов семинара.
 # Адрес и ключ — SPORTS_REFEREE_URL / SPORTS_REFEREE_API_KEY в .env; ключ
 # должен совпадать с API_KEY в .env самого SPORTS_REFEREE.
+#
+# Значения читаются из os.environ при каждом вызове (не на уровне модуля),
+# чтобы правка .env не требовала полного перезапуска процесса —
+# Flask-автоперезагрузчик следит только за .py-файлами.
 import os
 
 import requests
 
-SPORTS_REFEREE_URL = os.environ.get('SPORTS_REFEREE_URL', 'http://127.0.0.1:5002').rstrip('/')
-SPORTS_REFEREE_API_KEY = os.environ.get('SPORTS_REFEREE_API_KEY', '')
+
+def _адрес():
+    return os.environ.get('SPORTS_REFEREE_URL', 'http://127.0.0.1:5002').rstrip('/')
+
+
+def _ключ():
+    return os.environ.get('SPORTS_REFEREE_API_KEY', '')
 
 
 def _собрать_данные(submission):
@@ -42,19 +51,25 @@ def _собрать_данные(submission):
 def отправить_заявку(submission, seminar_source_id):
     """Отправляет заявку в SPORTS_REFEREE. Возвращает (успех, сообщение,
     referee_application_id)."""
-    if not SPORTS_REFEREE_API_KEY:
+    ключ = _ключ()
+    if not ключ:
         return False, 'SPORTS_REFEREE_API_KEY не задан в .env — см. .env.example', None
 
+    адрес = _адрес()
     try:
         ответ = requests.post(
-            f'{SPORTS_REFEREE_URL}/api/seminars/{seminar_source_id}/applications',
+            f'{адрес}/api/seminars/{seminar_source_id}/applications',
             json=_собрать_данные(submission),
-            headers={'X-API-Key': SPORTS_REFEREE_API_KEY},
+            headers={'X-API-Key': ключ},
             timeout=10,
         )
     except requests.RequestException as exc:
-        return False, f'Не удалось соединиться с SPORTS_REFEREE ({SPORTS_REFEREE_URL}): {exc}', None
+        return False, f'Не удалось соединиться с SPORTS_REFEREE ({адрес}): {exc}', None
 
+    if ответ.status_code == 404:
+        return False, f'Семинар не найден на SPORTS_REFEREE (source_id={seminar_source_id}).', None
+    if ответ.status_code == 401:
+        return False, 'SPORTS_REFEREE отклонил запрос: неверный SPORTS_REFEREE_API_KEY.', None
     if ответ.status_code != 200:
         return False, f'SPORTS_REFEREE ответил ошибкой {ответ.status_code}: {ответ.text[:200]}', None
 
@@ -67,20 +82,26 @@ def запросить_заявки(seminar_source_id):
     (для отображения на вкладке «Участники»). Возвращает (список, ошибка) —
     при недоступности SPORTS_REFEREE список пуст, а ошибка — текст для
     показа вместо списка."""
-    if not SPORTS_REFEREE_API_KEY:
+    ключ = _ключ()
+    if not ключ:
         return [], 'SPORTS_REFEREE_API_KEY не задан в .env — см. .env.example'
 
+    адрес = _адрес()
     try:
         ответ = requests.get(
-            f'{SPORTS_REFEREE_URL}/api/seminars/{seminar_source_id}/applications',
-            headers={'X-API-Key': SPORTS_REFEREE_API_KEY},
+            f'{адрес}/api/seminars/{seminar_source_id}/applications',
+            headers={'X-API-Key': ключ},
             timeout=5,
         )
-    except requests.RequestException:
-        return [], 'Не удалось соединиться с SPORTS_REFEREE — список заявок временно недоступен.'
+    except requests.RequestException as exc:
+        return [], f'Не удалось соединиться с SPORTS_REFEREE ({адрес}): {exc}'
 
+    if ответ.status_code == 404:
+        return [], f'Семинар не найден на SPORTS_REFEREE (source_id={seminar_source_id}) — заявки не отображаются.'
+    if ответ.status_code == 401:
+        return [], 'SPORTS_REFEREE отклонил запрос: неверный SPORTS_REFEREE_API_KEY.'
     if ответ.status_code != 200:
-        return [], 'SPORTS_REFEREE ответил ошибкой — список заявок временно недоступен.'
+        return [], f'SPORTS_REFEREE ответил ошибкой {ответ.status_code} — список заявок временно недоступен.'
 
     данные = ответ.json()
     return данные.get('items', []), None
