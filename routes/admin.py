@@ -14,8 +14,9 @@ from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Banner, Competition, CompetitionDocument, Document, Event, FederationMember,
-    MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel,
-    PartnerLogo, Referee, RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
+    FederationRegistrationRequest, MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory,
+    NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee, RegionalFederation,
+    SeminarApplicationSubmission, SyncLog, User, db,
 )
 from sync_to_referee import отправить_заявку, обновить_заявку
 
@@ -194,6 +195,74 @@ def logout():
     logout_user()
     flash('Вы вышли из системы.', 'success')
     return redirect(url_for('admin.login'))
+
+
+@bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('admin.dashboard'))
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        short_name = request.form.get('short_name', '').strip()
+        leader_full_name = request.form.get('leader_full_name', '').strip()
+        leader_position = request.form.get('leader_position', '').strip()
+        phone = request.form.get('phone', '').strip()
+        email = request.form.get('email', '').strip().lower()
+        password = request.form.get('password', '')
+        password2 = request.form.get('password2', '')
+
+        if not full_name or not leader_full_name or not email or not password:
+            flash('Заполните все обязательные поля.', 'error')
+            return render_template('admin/register.html', form=request.form)
+
+        if password != password2:
+            flash('Пароли не совпадают.', 'error')
+            return render_template('admin/register.html', form=request.form)
+
+        if User.query.filter_by(username=email).first():
+            flash('Пользователь с таким email уже зарегистрирован.', 'error')
+            return render_template('admin/register.html', form=request.form)
+
+        if FederationRegistrationRequest.query.filter_by(email=email, status='pending').first():
+            flash('Заявка с таким email уже подана и ожидает проверки.', 'error')
+            return render_template('admin/register.html', form=request.form)
+
+        db.session.add(FederationRegistrationRequest(
+            full_name=full_name,
+            short_name=short_name or None,
+            leader_full_name=leader_full_name,
+            leader_position=leader_position or None,
+            phone=phone or None,
+            email=email,
+            password_hash=generate_password_hash(password),
+        ))
+        db.session.commit()
+
+        flash('Заявка отправлена. После проверки данных на почту придёт пароль для входа на сайт.', 'success')
+        return redirect(url_for('admin.login'))
+
+    return render_template('admin/register.html', form=None)
+
+
+@bp.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if current_user.is_authenticated:
+        return redirect(url_for('admin.dashboard'))
+
+    if request.method == 'POST':
+        username_or_email = request.form.get('username_or_email', '').strip()
+        if not username_or_email:
+            flash('Укажите логин или email.', 'error')
+            return render_template('admin/forgot_password.html')
+
+        db.session.add(PasswordResetRequest(username_or_email=username_or_email))
+        db.session.commit()
+
+        flash('Заявка принята. Администратор свяжется с вами и сообщит новый пароль.', 'success')
+        return redirect(url_for('admin.login'))
+
+    return render_template('admin/forgot_password.html')
 
 
 # ---------- Дашборд ----------
@@ -1327,3 +1396,88 @@ def seminar_application_send(submission_id):
 
     flash(message, 'success' if success else 'danger')
     return redirect(url_for('admin.seminar_applications_list'))
+
+
+# ---------- Заявки на регистрацию федераций ----------
+
+@bp.route('/federation-requests')
+@roles_required('admin')
+def federation_requests_list():
+    requests_ = (
+        FederationRegistrationRequest.query
+        .order_by(FederationRegistrationRequest.created_at.desc())
+        .all()
+    )
+    return render_template(
+        'admin/federation_requests_list.html', active='federation_requests', requests=requests_,
+    )
+
+
+@bp.route('/federation-requests/<int:request_id>/approve', methods=['POST'])
+@roles_required('admin')
+def federation_request_approve(request_id):
+    req = FederationRegistrationRequest.query.get_or_404(request_id)
+    if req.status != 'pending':
+        flash('Заявка уже обработана.', 'error')
+        return redirect(url_for('admin.federation_requests_list'))
+
+    if User.query.filter_by(username=req.email).first():
+        flash('Пользователь с таким email уже существует — заявка не может быть одобрена повторно.', 'error')
+        return redirect(url_for('admin.federation_requests_list'))
+
+    user = User(
+        username=req.email,
+        password_hash=req.password_hash,
+        role='region_rep',
+        region=req.full_name,
+        is_active=True,
+    )
+    db.session.add(user)
+    req.status = 'approved'
+    req.reviewed_at = datetime.utcnow()
+    db.session.commit()
+
+    flash(f'Заявка одобрена, создан вход для {req.email}.', 'success')
+    return redirect(url_for('admin.federation_requests_list'))
+
+
+@bp.route('/federation-requests/<int:request_id>/reject', methods=['POST'])
+@roles_required('admin')
+def federation_request_reject(request_id):
+    req = FederationRegistrationRequest.query.get_or_404(request_id)
+    if req.status != 'pending':
+        flash('Заявка уже обработана.', 'error')
+        return redirect(url_for('admin.federation_requests_list'))
+
+    req.status = 'rejected'
+    req.reviewed_at = datetime.utcnow()
+    db.session.commit()
+
+    flash('Заявка отклонена.', 'success')
+    return redirect(url_for('admin.federation_requests_list'))
+
+
+# ---------- Заявки на сброс пароля ----------
+
+@bp.route('/password-reset-requests')
+@roles_required('admin')
+def password_reset_requests_list():
+    requests_ = (
+        PasswordResetRequest.query
+        .order_by(PasswordResetRequest.created_at.desc())
+        .all()
+    )
+    return render_template(
+        'admin/password_reset_requests_list.html', active='password_reset_requests', requests=requests_,
+    )
+
+
+@bp.route('/password-reset-requests/<int:request_id>/resolve', methods=['POST'])
+@roles_required('admin')
+def password_reset_request_resolve(request_id):
+    req = PasswordResetRequest.query.get_or_404(request_id)
+    req.status = 'resolved'
+    req.resolved_at = datetime.utcnow()
+    db.session.commit()
+    flash('Заявка отмечена как обработанная.', 'success')
+    return redirect(url_for('admin.password_reset_requests_list'))

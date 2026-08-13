@@ -17,6 +17,10 @@
                         <input type="password" class="form-control" id="password" name="password" required>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Войти</button>
+                    <div class="d-flex justify-content-between mt-3 small">
+                        <a href="{{ url_for('admin.forgot_password') }}">Забыли пароль?</a>
+                        <a href="{{ url_for('admin.register') }}">Зарегистрироваться</a>
+                    </div>
                 </form>
             </div>
         </div>

@@ -282,6 +282,39 @@ class SyncLog(db.Model):
     synced_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class FederationRegistrationRequest(db.Model):
+    """Заявка на регистрацию региональной федерации — со страницы входа
+    («Вход для региональных федераций» в футере), кнопка «Зарегистрироваться».
+    Модерируется в панели управления: admin одобряет — тогда создаётся
+    User (role=region_rep, username=email, пароль — тот, что ввёл заявитель
+    в форме) — либо отклоняет заявку."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    full_name = db.Column(db.String(255), nullable=False)  # полное наименование федерации
+    short_name = db.Column(db.String(255))  # краткое наименование
+    leader_full_name = db.Column(db.String(255), nullable=False)
+    leader_position = db.Column(db.String(255))
+    phone = db.Column(db.String(100))
+    email = db.Column(db.String(150), nullable=False)  # логин для входа
+    password_hash = db.Column(db.String(255), nullable=False)
+
+    status = db.Column(db.String(20), default='pending', nullable=False)  # pending / approved / rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    reviewed_at = db.Column(db.DateTime)
+
+
+class PasswordResetRequest(db.Model):
+    """Заявка «Забыли пароль?» со страницы входа — попадает в панель
+    управления, admin вручную назначает новый пароль (через редактирование
+    пользователя) и отмечает заявку решённой."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    username_or_email = db.Column(db.String(150), nullable=False)
+    status = db.Column(db.String(20), default='pending', nullable=False)  # pending / resolved
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    resolved_at = db.Column(db.DateTime)
+
+
 class SeminarApplicationSubmission(db.Model):
     """Заявка на участие в семинаре — локальная база сайта, источник для
     отображения на вкладке «Участники» страницы мероприятия.

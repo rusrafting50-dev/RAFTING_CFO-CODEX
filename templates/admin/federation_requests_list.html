@@ -1,0 +1,66 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'federation_requests' %}
+
+{% block title %}Заявки на регистрацию федераций — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">Заявки на регистрацию федераций</h1>
+
+    {% if not requests %}
+        <p class="text-muted">Заявок пока нет.</p>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Федерация</th>
+                        <th>Руководитель</th>
+                        <th>Контакты</th>
+                        <th>Подана</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in requests %}
+                        <tr>
+                            <td>
+                                {{ req.full_name }}
+                                {% if req.short_name %}<div class="text-muted small">{{ req.short_name }}</div>{% endif %}
+                            </td>
+                            <td>
+                                {{ req.leader_full_name }}
+                                {% if req.leader_position %}<div class="text-muted small">{{ req.leader_position }}</div>{% endif %}
+                            </td>
+                            <td>
+                                <div>{{ req.email }}</div>
+                                {% if req.phone %}<div class="text-muted small">{{ req.phone }}</div>{% endif %}
+                            </td>
+                            <td class="text-nowrap">{{ req.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                            <td>
+                                {% if req.status == 'pending' %}
+                                    <span class="badge bg-secondary">на проверке</span>
+                                {% elif req.status == 'approved' %}
+                                    <span class="badge bg-success">одобрена</span>
+                                {% else %}
+                                    <span class="badge bg-danger">отклонена</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-nowrap">
+                                {% if req.status == 'pending' %}
+                                    <form method="post" action="{{ url_for('admin.federation_request_approve', request_id=req.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-success">Одобрить</button>
+                                    </form>
+                                    <form method="post" action="{{ url_for('admin.federation_request_reject', request_id=req.id) }}" class="d-inline"
+                                          onsubmit="return confirm('Отклонить заявку?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Отклонить</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}
