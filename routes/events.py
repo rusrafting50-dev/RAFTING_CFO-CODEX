@@ -141,6 +141,10 @@ def _participants_payload(submission):
     ]
 
 
+def _regional_federations():
+    return RegionalFederation.query.order_by(RegionalFederation.name).all()
+
+
 def _fill_submission_fields(submission, form):
     submission.region = form.get('region', '').strip() or None
     submission.organization_name = form.get('organization_name', '').strip() or None
@@ -164,7 +168,7 @@ def application_new(event_id):
             flash('Добавьте хотя бы одного участника.', 'error')
             return render_template(
                 'events/application_form.html', event=event, submission=None,
-                existing_participants=[],
+                existing_participants=[], regional_federations=_regional_federations(),
                 judge_qualifications=JUDGE_QUALIFICATIONS, seminar_categories=SEMINAR_CATEGORIES,
                 specializations=SEMINAR_PARTICIPANT_SPECIALIZATIONS,
             )
@@ -183,7 +187,7 @@ def application_new(event_id):
 
     return render_template(
         'events/application_form.html', event=event, submission=None,
-        existing_participants=[],
+        existing_participants=[], regional_federations=_regional_federations(),
         judge_qualifications=JUDGE_QUALIFICATIONS, seminar_categories=SEMINAR_CATEGORIES,
         specializations=SEMINAR_PARTICIPANT_SPECIALIZATIONS,
     )
@@ -205,7 +209,7 @@ def application_edit(event_id, submission_id):
             flash('Добавьте хотя бы одного участника.', 'error')
             return render_template(
                 'events/application_form.html', event=event, submission=submission,
-                existing_participants=_participants_payload(submission),
+                existing_participants=_participants_payload(submission), regional_federations=_regional_federations(),
                 judge_qualifications=JUDGE_QUALIFICATIONS, seminar_categories=SEMINAR_CATEGORIES,
                 specializations=SEMINAR_PARTICIPANT_SPECIALIZATIONS,
             )
@@ -221,7 +225,7 @@ def application_edit(event_id, submission_id):
 
     return render_template(
         'events/application_form.html', event=event, submission=submission,
-        existing_participants=_participants_payload(submission),
+        existing_participants=_participants_payload(submission), regional_federations=_regional_federations(),
         judge_qualifications=JUDGE_QUALIFICATIONS, seminar_categories=SEMINAR_CATEGORIES,
         specializations=SEMINAR_PARTICIPANT_SPECIALIZATIONS,
     )

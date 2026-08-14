@@ -16,8 +16,13 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Наименование региональной спортивной федерации</label>
-                    <input type="text" name="organization_name" class="form-control"
-                           value="{{ submission.organization_name or '' if submission else '' }}">
+                    <select name="organization_name" class="form-select">
+                        <option value="">— не выбрано —</option>
+                        {% set current_org = submission.organization_name if submission else '' %}
+                        {% for rf in regional_federations %}
+                            <option value="{{ rf.name }}" {{ 'selected' if rf.name == current_org }}>{{ rf.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
 
