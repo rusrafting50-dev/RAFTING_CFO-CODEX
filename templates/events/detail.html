@@ -81,76 +81,21 @@
                 {% if not applications %}
                     <p class="text-muted">Заявок пока нет.</p>
                 {% else %}
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered align-middle">
-                            <thead>
-                                <tr class="site-table-header text-center">
-                                    <th style="width: 40px;"></th>
-                                    <th>Направляющая организация</th>
-                                    <th>Субъект РФ</th>
-                                    <th>Участников</th>
-                                    <th>Подана</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for application in applications %}
-                                    {% set can_manage = current_user.is_authenticated and (current_user.role == 'admin' or application.submitted_by_id == current_user.id) %}
-                                    <tr>
-                                        <td class="text-center">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse"
-                                                    data-bs-target="#app-participants-{{ application.id }}" aria-expanded="false">+</button>
-                                        </td>
-                                        <td>{{ application.sending_org_name or application.organization_name or '—' }}</td>
-                                        <td class="text-center">{{ application.region or '—' }}</td>
-                                        <td class="text-center">{{ application.participants|length }}</td>
-                                        <td class="text-center text-nowrap">
-                                            {{ application.created_at.strftime('%d.%m.%Y %H:%M') }}
-                                            <span class="badge {{ 'bg-primary' if application.origin == 'site' else 'bg-secondary' }}">{{ 'сайт' if application.origin == 'site' else 'SPORTS_REFEREE' }}</span>
-                                        </td>
-                                        <td class="text-center text-nowrap">
-                                            {% if can_manage %}
-                                                <a href="{{ url_for('events.application_edit', event_id=event.id, submission_id=application.id) }}" class="btn btn-sm btn-outline-secondary">Изменить</a>
-                                                <form method="post" action="{{ url_for('events.application_delete', event_id=event.id, submission_id=application.id) }}"
-                                                      class="d-inline" onsubmit="return confirm('Удалить заявку?');">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-                                                </form>
-                                            {% endif %}
-                                        </td>
-                                    </tr>
-                                    <tr class="collapse" id="app-participants-{{ application.id }}">
-                                        <td colspan="6" class="p-0 border-0">
-                                            <table class="table table-sm table-striped mb-0">
-                                                <thead>
-                                                    <tr class="text-center align-middle">
-                                                        <th>ФИО</th>
-                                                        <th>Пол</th>
-                                                        <th>Дата рождения</th>
-                                                        <th>Квалификация судьи</th>
-                                                        <th>Присваиваемая категория</th>
-                                                        <th>Специализация</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for p in application.participants %}
-                                                        <tr>
-                                                            <td>{{ p.full_name }}</td>
-                                                            <td class="text-center">{{ p.gender or '—' }}</td>
-                                                            <td class="text-center">{{ p.birth_date.strftime('%d.%m.%Y') if p.birth_date else '—' }}</td>
-                                                            <td class="text-center">{{ p.judge_qualification or '—' }}</td>
-                                                            <td class="text-center">{{ p.assigned_category or '—' }}</td>
-                                                            <td class="text-center">{{ p.specialization or '—' }}</td>
-                                                        </tr>
-                                                    {% else %}
-                                                        <tr><td colspan="6" class="text-center text-muted">Участники не добавлены</td></tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="org-card-list">
+                        {% for application in applications %}
+                            {% set org_name = application.sending_org_name or application.organization_name or 'Без названия' %}
+                            <a class="org-card" href="{{ url_for('events.application_view', event_id=event.id, submission_id=application.id) }}">
+                                <span class="org-avatar">{{ org_name[0]|upper }}</span>
+                                <span class="org-card-info">
+                                    <span class="org-card-name">{{ org_name }}</span>
+                                    {% if application.region %}<span class="org-card-region">{{ application.region }}</span>{% endif %}
+                                </span>
+                                <span class="org-card-meta">
+                                    <span class="badge {{ 'bg-primary' if application.origin == 'site' else 'bg-secondary' }}">{{ 'сайт' if application.origin == 'site' else 'SPORTS_REFEREE' }}</span>
+                                    <span class="org-card-count">{{ application.participants|length }} {{ application.participants|length|ru_plural('участник', 'участника', 'участников') }}</span>
+                                </span>
+                            </a>
+                        {% endfor %}
                     </div>
                 {% endif %}
             </div>

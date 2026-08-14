@@ -117,6 +117,16 @@ def seminar_category_badge(value):
     return _SEMINAR_CATEGORY_BADGE.get(value, 'bg-secondary')
 
 
+def ru_plural(count, one, few, many):
+    """Русское склонение по числу (1 участник / 2 участника / 5 участников)."""
+    count = abs(int(count))
+    if count % 10 == 1 and count % 100 != 11:
+        return one
+    if 2 <= count % 10 <= 4 and not 12 <= count % 100 <= 14:
+        return few
+    return many
+
+
 def cap_first(value):
     """Первая буква прописная, остальной текст не трогаем (в отличие от
     str.capitalize(), который заодно понижает регистр всего остального —
@@ -162,6 +172,7 @@ def create_app():
     app.jinja_env.filters['ru_date_full'] = format_ru_date_full
     app.jinja_env.filters['ru_date_range'] = format_ru_date_range
     app.jinja_env.filters['cap_first'] = cap_first
+    app.jinja_env.filters['ru_plural'] = ru_plural
     app.jinja_env.filters['seminar_category_badge'] = seminar_category_badge
     app.jinja_env.filters['event_status_label'] = event_status_label
     app.jinja_env.filters['media_thumb'] = media_thumb

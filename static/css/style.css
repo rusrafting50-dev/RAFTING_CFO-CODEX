@@ -1032,6 +1032,102 @@ footer hr {
     vertical-align: middle;
 }
 
+/* Вкладка «Участники» страницы мероприятия — список поданных заявок
+   прямоугольными карточками (как список команд на rfs.ru), клик по
+   карточке ведёт на отдельную страницу состава конкретной заявки. */
+.org-card-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+@media (min-width: 768px) {
+    .org-card-list {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.org-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.org-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--color-accent);
+    color: inherit;
+    text-decoration: none;
+}
+
+.org-avatar {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--color-dark);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+}
+
+.org-card-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.org-card-name {
+    font-weight: 600;
+}
+
+.org-card-region {
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.org-card-meta {
+    margin-left: auto;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex: none;
+}
+
+.org-card-count {
+    color: #6c757d;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+/* Страница состава одной заявки (application_detail.html) — крупный
+   аватар с инициалом организации над таблицей участников. */
+.application-detail-avatar {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-dark);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 22px;
+}
+
 .site-table-header-slim th {
     /* Таблица слалома — шапка в две строки ("1/2 попытка" + Время/Штраф/
        Итог под ними), вдвое ниже обычной, иначе с обычным (вдвое

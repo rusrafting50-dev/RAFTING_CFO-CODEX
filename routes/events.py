@@ -61,6 +61,18 @@ def _can_manage(submission):
     )
 
 
+@bp.route('/<int:event_id>/applications/<int:submission_id>/view')
+def application_view(event_id, submission_id):
+    event = Event.query.get_or_404(event_id)
+    submission = SeminarApplicationSubmission.query.get_or_404(submission_id)
+    if submission.event_id != event.id:
+        abort(404)
+    return render_template(
+        'events/application_detail.html', event=event, submission=submission,
+        can_manage=_can_manage(submission),
+    )
+
+
 def _apply_participants(submission_id, form):
     full_names = form.getlist('participant_full_name[]')
     genders = form.getlist('participant_gender[]')

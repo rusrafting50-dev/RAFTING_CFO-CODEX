@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% set org_name = submission.sending_org_name or submission.organization_name or 'Без названия' %}
+
+{% block title %}{{ org_name }} — {{ event.name }} — Федерация рафтинга ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <p class="mb-3">
+            <a href="{{ url_for('events.detail', event_id=event.id) }}#tab-participants">&larr; К списку участников</a>
+        </p>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <span class="application-detail-avatar">{{ org_name[0]|upper }}</span>
+                <div>
+                    <h1 class="h4 mb-0">{{ org_name }}</h1>
+                    {% if submission.region %}<div class="text-muted small">{{ submission.region }}</div>{% endif %}
+                </div>
+            </div>
+            {% if can_manage %}
+                <div class="text-nowrap">
+                    <a href="{{ url_for('events.application_edit', event_id=event.id, submission_id=submission.id) }}" class="btn btn-sm btn-outline-secondary">Изменить</a>
+                    <form method="post" action="{{ url_for('events.application_delete', event_id=event.id, submission_id=submission.id) }}"
+                          class="d-inline" onsubmit="return confirm('Удалить заявку?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered align-middle">
+                <thead>
+                    <tr class="site-table-header text-center">
+                        <th style="width: 40px;">№</th>
+                        <th>ФИО</th>
+                        <th>Пол</th>
+                        <th>Дата рождения</th>
+                        <th>Квалификация судьи</th>
+                        <th>Присваиваемая категория</th>
+                        <th>Специализация</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in submission.participants %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td>{{ p.full_name }}</td>
+                            <td class="text-center">{{ p.gender or '—' }}</td>
+                            <td class="text-center">{{ p.birth_date.strftime('%d.%m.%Y') if p.birth_date else '—' }}</td>
+                            <td class="text-center">{{ p.judge_qualification or '—' }}</td>
+                            <td class="text-center">{{ p.assigned_category or '—' }}</td>
+                            <td class="text-center">{{ p.specialization or '—' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7" class="text-center text-muted">Участники не добавлены</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
