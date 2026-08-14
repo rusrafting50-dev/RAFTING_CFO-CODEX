@@ -1068,24 +1068,29 @@ footer hr {
 }
 
 .org-card-logo {
+    /* padding подобран так, чтобы даже квадратный логотип, растянутый
+       object-fit: contain впритык к границам поля, не обрезался круглой
+       маской (border-radius: 50% срезает углы охватывающего квадрата) —
+       видимая область логотипа должна укладываться в круг, вписанный в
+       квадрат поля, то есть быть не больше ~71% его стороны. */
     flex: none;
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     background: #fff;
     border: 1px solid #e5e5e5;
-    padding: 4px;
+    padding: 10px;
     object-fit: contain;
 }
 
 .application-detail-logo {
     flex: none;
-    width: 76px;
-    height: 76px;
+    width: 88px;
+    height: 88px;
     border-radius: 50%;
     background: #fff;
     border: 1px solid #e5e5e5;
-    padding: 5px;
+    padding: 14px;
     object-fit: contain;
 }
 
