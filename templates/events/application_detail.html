@@ -11,9 +11,14 @@
         </p>
 
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
-            <div>
-                <h1 class="h4 mb-0">{{ org_name }}</h1>
-                {% if submission.region %}<div class="text-muted small">{{ submission.region }}</div>{% endif %}
+            <div class="d-flex align-items-center gap-3">
+                {% if logo_path %}
+                    <img class="application-detail-logo" src="{{ url_for('static', filename=logo_path) }}" alt="">
+                {% endif %}
+                <div>
+                    <h1 class="h4 mb-0">{{ org_name }}</h1>
+                    {% if submission.region %}<div class="text-muted small">{{ submission.region }}</div>{% endif %}
+                </div>
             </div>
             {% if can_manage %}
                 <div class="text-nowrap">

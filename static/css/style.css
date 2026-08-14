@@ -1067,6 +1067,22 @@ footer hr {
     text-decoration: none;
 }
 
+.org-card-logo {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.application-detail-logo {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 .org-card-info {
     display: flex;
     flex-direction: column;

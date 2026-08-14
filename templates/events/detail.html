@@ -85,6 +85,9 @@
                         {% for application in applications %}
                             {% set org_name = application.sending_org_name or application.organization_name or 'Без названия' %}
                             <a class="org-card" href="{{ url_for('events.application_view', event_id=event.id, submission_id=application.id) }}">
+                                {% if application_logos.get(application.id) %}
+                                    <img class="org-card-logo" src="{{ url_for('static', filename=application_logos[application.id]) }}" alt="">
+                                {% endif %}
                                 <span class="org-card-info">
                                     <span class="org-card-name">{{ org_name }}</span>
                                     {% if application.region %}<span class="org-card-region">{{ application.region }}</span>{% endif %}

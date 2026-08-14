@@ -4,7 +4,10 @@ from datetime import date, datetime
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from models import Event, SeminarApplicationSubmission, SeminarApplicationSubmissionParticipant, db
+from models import (
+    Event, RegionalFederation, SeminarApplicationSubmission,
+    SeminarApplicationSubmissionParticipant, db,
+)
 
 bp = Blueprint('events', __name__)
 
@@ -36,6 +39,23 @@ def index():
     )
 
 
+def _federation_logo_lookup():
+    """Логотип направляющей организации на «Участники» берём из логотипа
+    региональной федерации с тем же названием (RegionalFederation.name —
+    то же самое поле, что «Наименование региональной спортивной федерации»
+    в форме заявки) — своего логотипа у заявки нет."""
+    return {
+        rf.name.strip().lower(): rf.logo_path
+        for rf in RegionalFederation.query.filter(RegionalFederation.logo_path.isnot(None)).all()
+    }
+
+
+def _match_logo(lookup, organization_name):
+    if not organization_name:
+        return None
+    return lookup.get(organization_name.strip().lower())
+
+
 @bp.route('/<int:event_id>')
 def detail(event_id):
     event = Event.query.get_or_404(event_id)
@@ -48,10 +68,12 @@ def detail(event_id):
     can_submit_application = (
         current_user.is_authenticated and current_user.role in ('region_rep', 'admin')
     )
+    logo_lookup = _federation_logo_lookup()
+    application_logos = {a.id: _match_logo(logo_lookup, a.organization_name) for a in applications}
     return render_template(
         'events/detail.html', event=event,
         applications=applications, total_participants=total_participants,
-        can_submit_application=can_submit_application,
+        can_submit_application=can_submit_application, application_logos=application_logos,
     )
 
 
@@ -67,9 +89,10 @@ def application_view(event_id, submission_id):
     submission = SeminarApplicationSubmission.query.get_or_404(submission_id)
     if submission.event_id != event.id:
         abort(404)
+    logo_path = _match_logo(_federation_logo_lookup(), submission.organization_name)
     return render_template(
         'events/application_detail.html', event=event, submission=submission,
-        can_manage=_can_manage(submission),
+        can_manage=_can_manage(submission), logo_path=logo_path,
     )
 
 
