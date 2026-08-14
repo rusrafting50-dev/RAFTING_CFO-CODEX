@@ -1096,6 +1096,45 @@ footer hr {
     object-fit: contain;
 }
 
+/* Страница «Рафтинг ЦФО» (документы) — боковое меню категорий, как на
+   странице документов rfs.ru: клик по категории ведёт на ?category=...
+   (фильтрует список в основном поле) и разворачивает список документов
+   этой категории прямо под её пунктом в меню. */
+.doc-category-item {
+    border-bottom: 1px solid #eee;
+}
+
+.doc-category-item:last-child {
+    border-bottom: none;
+}
+
+.doc-category-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 10px;
+    color: var(--color-dark);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.doc-category-toggle:hover {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.doc-category-toggle.active {
+    background: var(--color-accent);
+    color: #fff;
+    border-radius: 4px;
+}
+
+.doc-category-toggle::after {
+    content: '\25be';
+    font-size: 12px;
+    margin-left: 8px;
+}
+
 .org-card-info {
     display: flex;
     flex-direction: column;

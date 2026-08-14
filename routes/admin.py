@@ -13,10 +13,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from models import (
-    Athlete, Banner, Competition, CompetitionDocument, Document, Event, FederationMember,
-    FederationRegistrationRequest, MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory,
-    NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee, RegionalFederation,
-    SeminarApplicationSubmission, SyncLog, User, db,
+    Athlete, Banner, Competition, CompetitionDocument, Document, DocumentCategory, Event,
+    FederationMember, FederationRegistrationRequest, MediaAlbum, MediaAlbumPhoto, MediaVideo,
+    News, NewsCategory, NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee,
+    RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
 )
 from sync_to_referee import отправить_заявку, обновить_заявку
 
@@ -38,7 +38,6 @@ ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 SYNC_SOURCES = ['COREZ', 'REGTEAM_RAFTING', 'SPORTS_REFEREE']
 
 BODY_CHOICES = ['исполком', 'коллегия_судей', 'тренерский_совет', 'комитет_представителей']
-DOC_CATEGORY_CHOICES = ['федеральный', 'региональный', 'wrf', 'фрр', 'федерация']
 ROLE_CHOICES = ['admin', 'editor', 'viewer', 'region_rep']
 
 YOUTUBE_ID_RE = re.compile(
@@ -496,11 +495,49 @@ def news_level_delete(level_id):
 
 # ---------- Документы ----------
 
+def document_category_choices():
+    return [c.name for c in DocumentCategory.query.order_by(DocumentCategory.name).all()]
+
+
 @bp.route('/documents')
 @section_required('documents')
 def documents_list():
     items = Document.query.order_by(Document.doc_category, Document.title).all()
     return render_template('admin/documents_list.html', active='documents', documents=items)
+
+
+@bp.route('/documents/taxonomy')
+@section_required('documents')
+def document_taxonomy():
+    categories = DocumentCategory.query.order_by(DocumentCategory.name).all()
+    return render_template('admin/document_taxonomy.html', active='documents', categories=categories)
+
+
+@bp.route('/documents/taxonomy/categories/new', methods=['POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def document_category_new():
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название категории обязательно.', 'error')
+    elif any(c.name.lower() == name.lower() for c in DocumentCategory.query.all()):
+        flash('Такая категория уже есть.', 'error')
+    else:
+        db.session.add(DocumentCategory(name=name))
+        db.session.commit()
+        flash('Категория добавлена.', 'success')
+    return redirect(url_for('admin.document_taxonomy'))
+
+
+@bp.route('/documents/taxonomy/categories/<int:category_id>/delete', methods=['POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def document_category_delete(category_id):
+    category = DocumentCategory.query.get_or_404(category_id)
+    db.session.delete(category)
+    db.session.commit()
+    flash('Категория удалена. Уже загруженные документы с этим значением не изменятся.', 'success')
+    return redirect(url_for('admin.document_taxonomy'))
 
 
 @bp.route('/documents/new', methods=['GET', 'POST'])
@@ -514,13 +551,13 @@ def documents_new():
         if not title or not file or file.filename == '':
             flash('Название и файл документа обязательны.', 'error')
             return render_template(
-                'admin/document_form.html', active='documents', category_choices=DOC_CATEGORY_CHOICES,
+                'admin/document_form.html', active='documents', category_choices=document_category_choices(),
             )
 
         if not allowed_document(file.filename):
             flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
             return render_template(
-                'admin/document_form.html', active='documents', category_choices=DOC_CATEGORY_CHOICES,
+                'admin/document_form.html', active='documents', category_choices=document_category_choices(),
             )
 
         filename = secure_filename(file.filename)
@@ -541,7 +578,7 @@ def documents_new():
         return redirect(url_for('admin.documents_list'))
 
     return render_template(
-        'admin/document_form.html', active='documents', category_choices=DOC_CATEGORY_CHOICES,
+        'admin/document_form.html', active='documents', category_choices=document_category_choices(),
     )
 
 

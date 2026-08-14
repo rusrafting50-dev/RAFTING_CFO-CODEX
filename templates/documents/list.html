@@ -1,26 +1,87 @@
 {% extends "base.html" %}
 
-{% block title %}Нормативные документы — Федерация рафтинга ЦФО{% endblock %}
+{% block title %}Рафтинг ЦФО — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}Нормативные документы Федерации рафтинга ЦФО{% endblock %}
 
 {% block content %}
     <div class="container py-5">
-        <h1 class="h3 mb-4">Нормативные документы</h1>
+        <h1 class="h3 mb-4">Рафтинг ЦФО</h1>
 
-        {% if documents_by_category %}
-            {% for category, documents in documents_by_category.items() %}
-                <h2 class="h5 mt-4 mb-3">{{ category }}</h2>
-                <ul class="list-group mb-3">
-                    {% for document in documents %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>{{ document.title }}</span>
-                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('static', filename=document.file_path) }}" download>Скачать</a>
-                        </li>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card p-4">
+                    <h2 class="h6 text-uppercase mb-3">{{ selected_category or 'Все документы' }}</h2>
+                    <div class="mb-3">
+                        <input type="text" id="doc-search" class="form-control" placeholder="Поиск...">
+                    </div>
+                    <p class="text-muted small">Найдено документов: <span id="doc-count">{{ documents|length }}</span></p>
+
+                    {% if selected_category %}
+                        <a href="{{ url_for('documents.index') }}" class="d-inline-block mb-3">&larr; Все документы</a>
+                    {% endif %}
+
+                    {% if documents %}
+                        <ul class="list-unstyled mb-0" id="doc-list">
+                            {% for document in documents %}
+                                <li class="doc-list-item py-3 border-bottom" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
+                                    <div class="text-muted small mb-1">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</div>
+                                    <div class="d-flex justify-content-between align-items-center gap-3">
+                                        <span class="fw-semibold">{{ document.title }}</span>
+                                        <a class="btn btn-sm btn-outline-primary text-nowrap" href="{{ url_for('static', filename=document.file_path) }}" download>Скачать</a>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted mb-0">Документы пока не загружены.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card p-3">
+                    {% if not categories %}
+                        <p class="text-muted mb-0 p-2">Категории пока не добавлены.</p>
+                    {% endif %}
+                    {% for category in categories %}
+                        {% set is_open = category.name == selected_category %}
+                        <div class="doc-category-item">
+                            <a class="doc-category-toggle {{ 'active' if is_open }}"
+                               href="{{ url_for('documents.index', category=category.name) }}">
+                                {{ category.name }}
+                            </a>
+                            {% if is_open %}
+                                <ul class="list-unstyled ps-3 small mb-2">
+                                    {% for document in documents_by_category.get(category.name, []) %}
+                                        <li><a href="#doc-{{ document.id }}">{{ document.title }}</a></li>
+                                    {% else %}
+                                        <li class="text-muted">Документов нет</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
                     {% endfor %}
-                </ul>
-            {% endfor %}
-        {% else %}
-            <p class="text-muted">Документы пока не загружены.</p>
-        {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
+
+    <script>
+        (function () {
+            var input = document.getElementById('doc-search');
+            var countEl = document.getElementById('doc-count');
+            if (!input) return;
+            var items = document.querySelectorAll('#doc-list .doc-list-item');
+            input.addEventListener('input', function () {
+                var q = input.value.trim().toLowerCase();
+                var visible = 0;
+                items.forEach(function (item) {
+                    var match = item.dataset.title.indexOf(q) !== -1;
+                    item.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                countEl.textContent = visible;
+            });
+        })();
+    </script>
 {% endblock %}

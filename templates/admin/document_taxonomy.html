@@ -1,0 +1,40 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'documents' %}
+
+{% block title %}Категории документов — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">Категории документов</h1>
+    <p class="text-muted">
+        Эти категории определяют пункты бокового меню на странице «Рафтинг ЦФО» (список документов на сайте).
+    </p>
+
+    <div class="card p-4" style="max-width: 500px;">
+        {% if categories %}
+            <ul class="list-group mb-3">
+                {% for category in categories %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ category.name }}
+                        {% if current_user.role in ('admin', 'editor') %}
+                            <form method="post"
+                                  action="{{ url_for('admin.document_category_delete', category_id=category.id) }}"
+                                  onsubmit="return confirm('Удалить категорию?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-muted">Категорий пока нет.</p>
+        {% endif %}
+        {% if current_user.role in ('admin', 'editor') %}
+            <form method="post" action="{{ url_for('admin.document_category_new') }}" class="d-flex gap-2">
+                <input type="text" name="name" class="form-control" placeholder="Новая категория" required>
+                <button type="submit" class="btn btn-primary">Добавить</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <a class="btn btn-outline-secondary mt-4" href="{{ url_for('admin.documents_list') }}">К списку документов</a>
+{% endblock %}

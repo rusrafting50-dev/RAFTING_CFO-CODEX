@@ -1,17 +1,31 @@
-"""Нормативные документы, разбитые по категориям."""
-from flask import Blueprint, render_template
+"""Рафтинг ЦФО: нормативные документы, разбитые по категориям."""
+from flask import Blueprint, render_template, request
 
-from models import Document
+from models import Document, DocumentCategory
 
 bp = Blueprint('documents', __name__)
 
 
 @bp.route('/')
 def index():
-    documents = Document.query.order_by(Document.doc_category, Document.title).all()
+    categories = DocumentCategory.query.order_by(DocumentCategory.name).all()
+    selected_category = request.args.get('category', '')
 
-    documents_by_category = {}
-    for document in documents:
-        documents_by_category.setdefault(document.doc_category or 'Прочее', []).append(document)
+    documents_by_category = {
+        category.name: (
+            Document.query.filter_by(doc_category=category.name)
+            .order_by(Document.uploaded_at.desc(), Document.title)
+            .all()
+        )
+        for category in categories
+    }
 
-    return render_template('documents/list.html', documents_by_category=documents_by_category)
+    if selected_category:
+        documents = documents_by_category.get(selected_category, [])
+    else:
+        documents = Document.query.order_by(Document.uploaded_at.desc(), Document.title).all()
+
+    return render_template(
+        'documents/list.html', documents=documents, categories=categories,
+        documents_by_category=documents_by_category, selected_category=selected_category,
+    )

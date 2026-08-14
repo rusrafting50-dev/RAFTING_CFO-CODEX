@@ -150,12 +150,24 @@ class Event(db.Model):
     source_id = db.Column(db.Integer)  # ID в базе SPORTS_REFEREE
 
 
+class DocumentCategory(db.Model):
+    """Категории нормативных документов — определяют пункты бокового меню
+    на странице «Рафтинг ЦФО» (список документов), редактируются в панели
+    управления. Document.doc_category хранит название категории строкой
+    (как News.category у NewsCategory) — привязки по внешнему ключу нет,
+    поэтому переименование/удаление категории не трогает уже загруженные
+    документы, только отвязывает их от соответствующего пункта меню."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+
+
 class Document(db.Model):
     """Нормативные документы."""
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
-    doc_category = db.Column(db.String(50))  # федеральный / региональный / wrf / фрр / федерация
+    doc_category = db.Column(db.String(50))  # см. DocumentCategory — список редактируется в админке
     file_path = db.Column(db.String(500))
     level = db.Column(db.String(50))  # цфо / регион
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
