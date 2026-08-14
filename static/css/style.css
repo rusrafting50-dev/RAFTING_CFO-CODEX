@@ -1067,20 +1067,6 @@ footer hr {
     text-decoration: none;
 }
 
-.org-avatar {
-    flex: none;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: var(--color-dark);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 18px;
-}
-
 .org-card-info {
     display: flex;
     flex-direction: column;
@@ -1110,22 +1096,6 @@ footer hr {
     color: #6c757d;
     font-size: 13px;
     white-space: nowrap;
-}
-
-/* Страница состава одной заявки (application_detail.html) — крупный
-   аватар с инициалом организации над таблицей участников. */
-.application-detail-avatar {
-    flex: none;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--color-dark);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 22px;
 }
 
 .site-table-header-slim th {

@@ -85,13 +85,11 @@
                         {% for application in applications %}
                             {% set org_name = application.sending_org_name or application.organization_name or 'Без названия' %}
                             <a class="org-card" href="{{ url_for('events.application_view', event_id=event.id, submission_id=application.id) }}">
-                                <span class="org-avatar">{{ org_name[0]|upper }}</span>
                                 <span class="org-card-info">
                                     <span class="org-card-name">{{ org_name }}</span>
                                     {% if application.region %}<span class="org-card-region">{{ application.region }}</span>{% endif %}
                                 </span>
                                 <span class="org-card-meta">
-                                    <span class="badge {{ 'bg-primary' if application.origin == 'site' else 'bg-secondary' }}">{{ 'сайт' if application.origin == 'site' else 'SPORTS_REFEREE' }}</span>
                                     <span class="org-card-count">{{ application.participants|length }} {{ application.participants|length|ru_plural('участник', 'участника', 'участников') }}</span>
                                 </span>
                             </a>
