@@ -17,7 +17,7 @@
             {% if region and region.logo_path %}
                 <div class="mb-2">
                     <img src="{{ url_for('static', filename=region.logo_path) }}" alt=""
-                         style="width: 200px; height: 200px; object-fit: contain; border-radius: 50%; background: #f5f5f5;" class="border">
+                         style="width: 200px; height: 200px; object-fit: contain; border-radius: 50%; background: #f5f5f5; padding: 34px; box-sizing: border-box;" class="border">
                 </div>
             {% endif %}
             <input type="file" class="form-control" id="logo" name="logo" accept=".jpg,.jpeg,.png,.webp">

@@ -1068,12 +1068,19 @@ footer hr {
 }
 
 .org-card-logo {
+    /* padding, чтобы прямоугольный/квадратный логотип, растянутый
+       object-fit: contain впритык к границам поля, помещался в круг
+       целиком — иначе border-radius: 50% срезает углы охватывающего
+       его квадрата (видимая область логотипа не должна превышать
+       ~71% стороны поля — столько занимает круг, вписанный в квадрат). */
     flex: none;
     width: 64px;
     height: 64px;
     border-radius: 50%;
     background: #fff;
     border: 1px solid #e5e5e5;
+    padding: 10px;
+    box-sizing: border-box;
     object-fit: contain;
 }
 
@@ -1084,6 +1091,8 @@ footer hr {
     border-radius: 50%;
     background: #fff;
     border: 1px solid #e5e5e5;
+    padding: 14px;
+    box-sizing: border-box;
     object-fit: contain;
 }
 
