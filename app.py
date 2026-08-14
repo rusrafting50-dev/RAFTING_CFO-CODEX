@@ -155,6 +155,19 @@ def media_thumb(path):
     return url_for('static', filename=path)
 
 
+def asset_url(filename):
+    """Ссылка на static/ с ?v=<время изменения файла> — правки CSS/JS
+    иначе не долетают до браузера, пока пользователь не сбросит кэш
+    вручную (URL файла не меняется, значит браузер годами отдаёт из
+    кэша старую версию)."""
+    path = os.path.join(BASE_DIR, 'static', filename)
+    try:
+        version = int(os.path.getmtime(path))
+    except OSError:
+        version = 0
+    return f"{url_for('static', filename=filename)}?v={version}"
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -178,6 +191,7 @@ def create_app():
     app.jinja_env.filters['media_thumb'] = media_thumb
     app.jinja_env.filters['video_embed_url'] = video_embed_url
     app.jinja_env.tests['time_or_roman'] = is_time_or_roman
+    app.jinja_env.globals['asset_url'] = asset_url
 
     register_blueprints(app)
 
