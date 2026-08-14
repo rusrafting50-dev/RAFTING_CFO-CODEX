@@ -1074,24 +1074,24 @@ footer hr {
        его квадрата (видимая область логотипа не должна превышать
        ~71% стороны поля — столько занимает круг, вписанный в квадрат). */
     flex: none;
-    width: 64px;
-    height: 64px;
+    width: 70.4px;
+    height: 70.4px;
     border-radius: 50%;
     background: #fff;
     border: 1px solid #e5e5e5;
-    padding: 10px;
+    padding: 13.2px;
     box-sizing: border-box;
     object-fit: contain;
 }
 
 .application-detail-logo {
     flex: none;
-    width: 88px;
-    height: 88px;
+    width: 96.8px;
+    height: 96.8px;
     border-radius: 50%;
     background: #fff;
     border: 1px solid #e5e5e5;
-    padding: 14px;
+    padding: 18.4px;
     box-sizing: border-box;
     object-fit: contain;
 }
