@@ -1965,9 +1965,9 @@ footer hr {
 }
 
 .region-card-logo {
-    width: 55%;
+    width: 60.5%;
     aspect-ratio: 1 / 1;
-    max-width: 180px;
+    max-width: 198px;
     border-radius: 50%;
     background: #fff;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
@@ -1978,8 +1978,8 @@ footer hr {
 }
 
 .region-card-logo img {
-    width: 78%;
-    height: 78%;
+    width: 71%;
+    height: 71%;
     object-fit: contain;
 }
 
