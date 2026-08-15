@@ -92,6 +92,7 @@ def ensure_schema():
     _ensure_nullable(inspector, 'seminar_application_submission', 'submitted_by_id')
     _ensure_column(inspector, 'document', 'section_id', 'INTEGER')
     _ensure_column(inspector, 'competition_application', 'logo_path', 'VARCHAR(500)')
+    _ensure_column(inspector, 'competition_document', 'is_published', 'BOOLEAN NOT NULL DEFAULT 1')
 
 
 def seed_news_taxonomy():

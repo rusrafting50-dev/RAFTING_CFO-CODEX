@@ -763,6 +763,18 @@ def competition_document_delete(competition_id, document_id):
     return redirect(url_for('admin.competition_documents', competition_id=competition_id))
 
 
+@bp.route('/competitions/<int:competition_id>/documents/<int:document_id>/toggle-publish', methods=['POST'])
+@section_required('competitions')
+@roles_required('admin', 'editor')
+def competition_document_toggle_publish(competition_id, document_id):
+    document = CompetitionDocument.query.filter_by(
+        id=document_id, competition_id=competition_id,
+    ).first_or_404()
+    document.is_published = not document.is_published
+    db.session.commit()
+    return ('', 204)
+
+
 # ---------- Члены органов федерации ----------
 
 @bp.route('/members')

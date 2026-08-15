@@ -153,7 +153,7 @@ def detail(competition_id):
         a.id: a.logo_path or _match_logo(logo_lookup, a.org_name) for a in applications
     }
     documents = (
-        CompetitionDocument.query.filter_by(competition_id=competition_id)
+        CompetitionDocument.query.filter_by(competition_id=competition_id, is_published=True)
         .order_by(CompetitionDocument.doc_type)
         .all()
     )
