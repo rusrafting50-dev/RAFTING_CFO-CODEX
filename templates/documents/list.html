@@ -36,7 +36,7 @@
                                                 <div class="fw-semibold mb-2">{{ document.title }}</div>
                                                 <button type="button" class="btn btn-sm btn-primary doc-copy-link"
                                                         data-url="{{ url_for('static', filename=document.file_path, _external=True) }}">
-                                                    <span aria-hidden="true">&#10697;</span> Скопировать ссылку
+                                                    Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
                                                 </button>
                                             </div>
                                             <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=document.file_path) }}"

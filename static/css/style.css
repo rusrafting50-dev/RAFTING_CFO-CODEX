@@ -1148,7 +1148,45 @@ footer hr {
 }
 
 .doc-copy-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     font-size: 13px;
+}
+
+/* Значок на кнопке «Скопировать ссылку» — тот же приём, что у бейджа
+   количества фото на обложке альбома (.media-teaser-badge: плашка +
+   уголок-«галочка» позади неё), но с одним уголком вместо двух и
+   развёрнутый на 90° против часовой стрелки. */
+.doc-copy-icon {
+    position: relative;
+    display: inline-block;
+    flex: none;
+    width: 10px;
+    height: 8px;
+    transform: rotate(-90deg);
+}
+
+.doc-copy-icon::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 8px;
+    height: 6px;
+    background: currentColor;
+    border-radius: 1px;
+}
+
+.doc-copy-icon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 6px;
+    border-top: 1.3px solid currentColor;
+    border-right: 1.3px solid currentColor;
 }
 
 .doc-open-link {
