@@ -7,24 +7,23 @@
     <div class="container py-5">
         <h1 class="h3 mb-4">Рафтинг ЦФО</h1>
 
-        <div class="news-search-row mb-5">
-            <form method="get" action="{{ url_for('documents.index') }}" class="news-search-input-form">
-                {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
-                <label class="news-search-input">
-                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M13.5 12h-.8l-.3-.3c1-1.1 1.6-2.6 1.6-4.2C14 3.9 11.6 1.5 8.5 1.5S3 3.9 3 7s2.4 5.5 5.5 5.5c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l4.2 4.2 1.3-1.3-4.2-4.2ZM8.5 11C6.6 11 5 9.4 5 7.5S6.6 4 8.5 4 12 5.6 12 7.5 10.4 11 8.5 11Z"/></svg>
-                    <input type="text" id="doc-search" placeholder="Поиск...">
-                </label>
-            </form>
-        </div>
-
         <div class="row g-4">
             <div class="col-lg-9">
-                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                    <h2 class="h5 mb-0">{{ selected_category or 'Все документы' }}</h2>
-                    <span class="text-muted small">Найдено документов: <span id="doc-count">{{ documents|length }}</span></span>
+                <h2 class="h5 mb-3">{{ selected_section.name if selected_section else 'Все документы' }}</h2>
+
+                <div class="news-search-row mb-0">
+                    <form method="get" action="{{ url_for('documents.index') }}" class="news-search-input-form">
+                        {% if selected_section %}<input type="hidden" name="section" value="{{ selected_section.id }}">{% endif %}
+                        <label class="news-search-input">
+                            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M13.5 12h-.8l-.3-.3c1-1.1 1.6-2.6 1.6-4.2C14 3.9 11.6 1.5 8.5 1.5S3 3.9 3 7s2.4 5.5 5.5 5.5c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l4.2 4.2 1.3-1.3-4.2-4.2ZM8.5 11C6.6 11 5 9.4 5 7.5S6.6 4 8.5 4 12 5.6 12 7.5 10.4 11 8.5 11Z"/></svg>
+                            <input type="text" id="doc-search" placeholder="Поиск...">
+                        </label>
+                    </form>
                 </div>
 
-                {% if selected_category %}
+                <p class="doc-count-bar">Найдено документов: <span id="doc-count">{{ documents|length }}</span></p>
+
+                {% if selected_section %}
                     <a href="{{ url_for('documents.index') }}" class="d-inline-block mb-3">&larr; Все документы</a>
                 {% endif %}
 
@@ -62,30 +61,29 @@
             </div>
 
             <div class="col-lg-3">
-                <div class="official-panel">
-                    <h2 class="official-panel-title">Разделы</h2>
-                    <div class="official-list" style="overflow: visible;">
-                        {% if not categories %}
-                            <p class="official-empty">Категории пока не добавлены.</p>
-                        {% endif %}
-                        {% for category in categories %}
-                            {% set is_open = category.name == selected_category %}
-                            <div class="official-item">
-                                <a class="doc-category-link {{ 'active' if is_open }}"
-                                   href="{{ url_for('documents.index', category=category.name) }}">{{ category.name }}</a>
-                                {% if is_open %}
-                                    <ul class="list-unstyled small mb-0 mt-2">
-                                        {% for document in documents_by_category.get(category.name, []) %}
-                                            <li><a href="#doc-{{ document.id }}">{{ document.title }}</a></li>
-                                        {% else %}
-                                            <li class="text-muted">Документов нет</li>
-                                        {% endfor %}
-                                    </ul>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
+                {% if not categories %}
+                    <p class="text-muted">Категории пока не добавлены.</p>
+                {% endif %}
+                {% for category in categories %}
+                    {% set has_active = selected_section and selected_section.category_id == category.id %}
+                    <div class="doc-category-item">
+                        <button type="button" class="doc-category-toggle {{ 'has-active' if has_active }}"
+                                data-target="doc-cat-{{ category.id }}" aria-expanded="{{ 'true' if has_active else 'false' }}">
+                            {{ category.name }}
+                            <svg class="doc-category-chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                        </button>
+                        <ul class="doc-section-list {{ 'is-open' if has_active }}" id="doc-cat-{{ category.id }}">
+                            {% for section in category.sections %}
+                                <li>
+                                    <a class="{{ 'active' if selected_section and selected_section.id == section.id }}"
+                                       href="{{ url_for('documents.index', section=section.id) }}">{{ section.name }}</a>
+                                </li>
+                            {% else %}
+                                <li class="text-muted">Разделов нет</li>
+                            {% endfor %}
+                        </ul>
                     </div>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -116,6 +114,17 @@
                         btn.innerHTML = 'Скопировано';
                         setTimeout(function () { btn.innerHTML = original; }, 1500);
                     });
+                });
+            });
+        })();
+
+        (function () {
+            document.querySelectorAll('.doc-category-toggle').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var list = document.getElementById(btn.dataset.target);
+                    var expanded = btn.getAttribute('aria-expanded') === 'true';
+                    btn.setAttribute('aria-expanded', String(!expanded));
+                    list.classList.toggle('is-open', !expanded);
                 });
             });
         })();

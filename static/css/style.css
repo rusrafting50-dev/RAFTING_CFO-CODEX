@@ -1108,28 +1108,102 @@ footer hr {
     margin: 0 0 8px;
 }
 
-/* Боковое меню категорий в правом столбце, оформлено как колонка
-   "Официально" на странице новостей (.official-panel/.official-item),
-   выделение выбранной категории — как активный пункт .news-submenu
-   (тёмная плашка, белый текст). */
-.doc-category-link {
-    display: block;
+/* Полоса «Найдено документов» под полем поиска — во всю ширину
+   основной колонки, разрывает белый фон серой полосой (как на
+   странице документов rfs.ru). */
+.doc-count-bar {
+    background: #f0f0f0;
+    color: #6c757d;
+    padding: 10px 16px;
+    font-size: 14px;
+    margin: 12px 0 20px;
+}
+
+/* Боковое меню категорий в правом столбце — как на странице документов
+   rfs.ru: пункт категории кликом (без перехода) раскрывает список
+   разделов под собой, разворот отмечен галочкой-шевроном. Раздел —
+   обычная ссылка с фильтром (?section=...); при выбранном разделе его
+   категория выделяется цветом, а сам раздел — жирным шрифтом. */
+.doc-category-item {
+    border-bottom: 1px solid #eee;
+}
+
+.doc-category-item:last-child {
+    border-bottom: none;
+}
+
+.doc-category-toggle {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 14px 10px;
     color: var(--color-dark);
     font-weight: 600;
-    text-decoration: none;
-    padding: 6px 10px;
+    font-size: 15px;
     border-radius: 4px;
+    cursor: pointer;
 }
 
-.doc-category-link:hover {
-    background: rgba(0, 0, 0, 0.08);
+.doc-category-toggle:hover {
+    color: var(--color-accent);
+}
+
+.doc-category-toggle.has-active {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.doc-category-toggle.has-active:hover {
+    color: #fff;
+}
+
+.doc-category-chevron {
+    flex: none;
+    width: 10px;
+    height: 6px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.2s ease;
+}
+
+.doc-category-toggle[aria-expanded="true"] .doc-category-chevron {
+    transform: rotate(180deg);
+}
+
+.doc-section-list {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 0 10px 12px;
+}
+
+.doc-section-list.is-open {
+    display: block;
+}
+
+.doc-section-list li {
+    padding: 4px 0;
+}
+
+.doc-section-list a {
     color: var(--color-dark);
     text-decoration: none;
+    font-size: 14px;
 }
 
-.doc-category-link.active {
-    background: #4a4a5a;
-    color: #fff;
+.doc-section-list a:hover {
+    color: var(--color-accent);
+}
+
+.doc-section-list a.active {
     font-weight: 700;
 }
 
