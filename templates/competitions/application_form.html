@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Редактирование заявки' if application else 'Заявка команды' }} — {{ competition.name }} — Федерация рафтинга ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h4 mb-4">{{ 'Редактирование заявки' if application else 'Заявка команды' }}: {{ competition.name }}</h1>
+
+        <form method="post">
+            <h2 class="h6 mb-3">Основные данные</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Субъект Российской Федерации</label>
+                    <input type="text" name="region" class="form-control"
+                           value="{{ application.region if application else (current_user.region or '') }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Наименование команды</label>
+                    <input type="text" name="team_name" class="form-control"
+                           value="{{ application.team_name or '' if application else '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Класс судна</label>
+                    <select name="boat_class" class="form-select">
+                        <option value="">— не выбрано —</option>
+                        {% set current_boat_class = application.boat_class if application else '' %}
+                        {% for bc in boat_classes %}
+                            <option value="{{ bc }}" {{ 'selected' if bc == current_boat_class }}>{{ bc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Дисциплина</label>
+                    <select name="discipline" class="form-select">
+                        <option value="">— не выбрано —</option>
+                        {% set current_discipline = application.discipline if application else '' %}
+                        {% for d in disciplines %}
+                            <option value="{{ d }}" {{ 'selected' if d == current_discipline }}>{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <h2 class="h6 mb-3">Данные организации, направляющей команду</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label class="form-label">Наименование организации</label>
+                    <select name="org_name" class="form-select">
+                        <option value="">— не выбрано —</option>
+                        {% set current_org = application.org_name if application else '' %}
+                        {% for rf in regional_federations %}
+                            <option value="{{ rf.name }}" {{ 'selected' if rf.name == current_org }}>{{ rf.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">ФИО руководителя</label>
+                    <input type="text" name="org_leader_name" class="form-control"
+                           value="{{ application.org_leader_name or '' if application else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Должность руководителя</label>
+                    <input type="text" name="org_leader_position" class="form-control"
+                           value="{{ application.org_leader_position or '' if application else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Телефон</label>
+                    <input type="text" name="org_leader_phone" class="form-control"
+                           value="{{ application.org_leader_phone or '' if application else '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">E-mail</label>
+                    <input type="text" name="org_leader_email" class="form-control"
+                           value="{{ application.org_leader_email or '' if application else '' }}">
+                </div>
+            </div>
+
+            <h2 class="h6 mb-3">Тренер команды</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">ФИО тренера</label>
+                    <input type="text" name="coach_full_name" class="form-control"
+                           value="{{ application.coach_full_name or '' if application else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Телефон</label>
+                    <input type="text" name="coach_phone" class="form-control"
+                           value="{{ application.coach_phone or '' if application else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">E-mail</label>
+                    <input type="text" name="coach_email" class="form-control"
+                           value="{{ application.coach_email or '' if application else '' }}">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h6 mb-0">Состав экипажа</h2>
+                <button type="button" id="add-athlete-row" class="btn btn-sm btn-primary">+ Добавить</button>
+            </div>
+            <div class="table-responsive mb-4">
+                <table class="table table-sm table-bordered align-middle">
+                    <thead>
+                        <tr class="text-center align-middle">
+                            <th style="width: 40px;">№</th>
+                            <th>Фамилия</th>
+                            <th>Имя</th>
+                            <th>Отчество</th>
+                            <th style="width: 70px;">Пол</th>
+                            <th style="width: 150px;">Дата рождения</th>
+                            <th style="width: 140px;">Разряд</th>
+                            <th style="width: 160px;">Возрастная группа</th>
+                            <th style="width: 130px;">№ приказа</th>
+                            <th style="width: 130px;">№ страховки</th>
+                            <th style="width: 40px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="athletes-tbody"></tbody>
+                </table>
+            </div>
+
+            <button type="submit" class="btn btn-primary">{{ 'Сохранить изменения' if application else 'Подать заявку' }}</button>
+            <a href="{{ url_for('competitions.detail', competition_id=competition.id) }}#tab-entries" class="btn btn-outline-secondary">Отмена</a>
+        </form>
+    </div>
+
+    <template id="athlete-row-template">
+        <tr class="athlete-row">
+            <td class="text-center row-index"></td>
+            <td><input type="text" name="athlete_last_name[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="athlete_first_name[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="athlete_middle_name[]" class="form-control form-control-sm"></td>
+            <td>
+                <select name="athlete_gender[]" class="form-select form-select-sm">
+                    <option value=""></option>
+                    <option value="м">м</option>
+                    <option value="ж">ж</option>
+                </select>
+            </td>
+            <td><input type="date" name="athlete_birth_date[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="athlete_qualification[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="athlete_age_group[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="athlete_order_number[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="athlete_insurance_number[]" class="form-control form-control-sm"></td>
+            <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-athlete-row">×</button></td>
+        </tr>
+    </template>
+
+    <script>
+        (function () {
+            var tbody = document.getElementById('athletes-tbody');
+            var template = document.getElementById('athlete-row-template');
+            var addBtn = document.getElementById('add-athlete-row');
+            var existingAthletes = {{ existing_athletes|tojson }};
+
+            function renumber() {
+                tbody.querySelectorAll('.row-index').forEach(function (cell, i) {
+                    cell.textContent = i + 1;
+                });
+            }
+
+            function addRow(data) {
+                var row = template.content.firstElementChild.cloneNode(true);
+                if (data) {
+                    row.querySelector('[name="athlete_last_name[]"]').value = data.last_name;
+                    row.querySelector('[name="athlete_first_name[]"]').value = data.first_name;
+                    row.querySelector('[name="athlete_middle_name[]"]').value = data.middle_name;
+                    row.querySelector('[name="athlete_gender[]"]').value = data.gender;
+                    row.querySelector('[name="athlete_birth_date[]"]').value = data.birth_date;
+                    row.querySelector('[name="athlete_qualification[]"]').value = data.qualification;
+                    row.querySelector('[name="athlete_age_group[]"]').value = data.age_group;
+                    row.querySelector('[name="athlete_order_number[]"]').value = data.order_number;
+                    row.querySelector('[name="athlete_insurance_number[]"]').value = data.insurance_number;
+                }
+                row.querySelector('.remove-athlete-row').addEventListener('click', function () {
+                    row.remove();
+                    renumber();
+                });
+                tbody.appendChild(row);
+                renumber();
+            }
+
+            addBtn.addEventListener('click', function () { addRow(null); });
+
+            if (existingAthletes.length) {
+                existingAthletes.forEach(addRow);
+            } else {
+                addRow(null);
+            }
+        })();
+    </script>
+{% endblock %}

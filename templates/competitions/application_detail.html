@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% set org_name = application.org_name or application.team_name or 'Без названия' %}
+
+{% block title %}{{ org_name }} — {{ competition.name }} — Федерация рафтинга ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <p class="mb-3">
+            <a href="{{ url_for('competitions.detail', competition_id=competition.id) }}#tab-entries">&larr; К списку команд</a>
+        </p>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+            <div class="d-flex align-items-center gap-3">
+                {% if logo_path %}
+                    <img class="application-detail-logo" src="{{ url_for('static', filename=logo_path) }}" alt="">
+                {% endif %}
+                <div>
+                    <h1 class="h4 mb-0">{{ application.team_name or org_name }}</h1>
+                    {% if application.region %}<div class="text-muted small">{{ application.region }}</div>{% endif %}
+                    <div class="text-muted small">
+                        {% if application.boat_class %}{{ application.boat_class }}{% endif %}
+                        {% if application.discipline %}{{ ' · ' if application.boat_class }}{{ application.discipline }}{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% if can_manage %}
+                <div class="text-nowrap">
+                    <a href="{{ url_for('competitions.application_edit', competition_id=competition.id, application_id=application.id) }}" class="btn btn-sm btn-outline-secondary">Изменить</a>
+                    <form method="post" action="{{ url_for('competitions.application_delete', competition_id=competition.id, application_id=application.id) }}"
+                          class="d-inline" onsubmit="return confirm('Удалить заявку?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if application.coach_full_name %}
+            <p class="text-muted small mb-3">Тренер: {{ application.coach_full_name }}
+                {%- if application.coach_phone %}, {{ application.coach_phone }}{% endif -%}
+                {%- if application.coach_email %}, {{ application.coach_email }}{% endif -%}
+            </p>
+        {% endif %}
+
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered align-middle">
+                <thead>
+                    <tr class="site-table-header text-center">
+                        <th style="width: 40px;">№</th>
+                        <th>Фамилия, Имя, Отчество</th>
+                        <th>Пол</th>
+                        <th>Дата рождения</th>
+                        <th>Разряд</th>
+                        <th>Возрастная группа</th>
+                        <th>№ приказа</th>
+                        <th>№ страховки</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in application.athletes %}
+                        <tr>
+                            <td class="text-center">{{ loop.index }}</td>
+                            <td>{{ [a.last_name, a.first_name, a.middle_name]|select|join(' ') }}</td>
+                            <td class="text-center">{{ a.gender or '—' }}</td>
+                            <td class="text-center">{{ a.birth_date.strftime('%d.%m.%Y') if a.birth_date else '—' }}</td>
+                            <td class="text-center">{{ a.qualification or '—' }}</td>
+                            <td class="text-center">{{ a.age_group or '—' }}</td>
+                            <td class="text-center">{{ a.order_number or '—' }}</td>
+                            <td class="text-center">{{ a.insurance_number or '—' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="8" class="text-center text-muted">Спортсмены не добавлены</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

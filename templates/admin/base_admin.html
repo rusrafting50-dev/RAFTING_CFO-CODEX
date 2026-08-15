@@ -44,6 +44,8 @@
                            href="{{ url_for('admin.users_list') }}">Пользователи</a>
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'seminar_applications' }}"
                            href="{{ url_for('admin.seminar_applications_list') }}">Заявки на семинары</a>
+                        <a class="list-group-item list-group-item-action {{ 'active' if active == 'competition_applications' }}"
+                           href="{{ url_for('admin.competition_applications_list') }}">Заявки команд</a>
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'federation_requests' }}"
                            href="{{ url_for('admin.federation_requests_list') }}">Заявки на регистрацию</a>
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'password_reset_requests' }}"

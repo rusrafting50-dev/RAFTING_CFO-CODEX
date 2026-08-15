@@ -13,12 +13,13 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from models import (
-    Athlete, Banner, Competition, CompetitionDocument, Document, DocumentCategory, DocumentSection,
-    Event, FederationMember, FederationRegistrationRequest, MediaAlbum, MediaAlbumPhoto, MediaVideo,
-    News, NewsCategory, NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee,
-    RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
+    Athlete, Banner, Competition, CompetitionApplication, CompetitionDocument, Document,
+    DocumentCategory, DocumentSection, Event, FederationMember, FederationRegistrationRequest,
+    MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel, PartnerLogo,
+    PasswordResetRequest, Referee, RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
 )
 from sync_to_referee import отправить_заявку, обновить_заявку
+from sync_to_corez import отправить_заявку_команды, обновить_заявку_команды
 
 bp = Blueprint('admin', __name__)
 
@@ -1520,6 +1521,48 @@ def seminar_application_send(submission_id):
 
     flash(message, 'success' if success else 'danger')
     return redirect(url_for('admin.seminar_applications_list'))
+
+
+# ---------- Заявки команд на соревнования (отправка в COREZ) ----------
+
+@bp.route('/competition-applications')
+@roles_required('admin')
+def competition_applications_list():
+    applications = (
+        CompetitionApplication.query
+        .join(Competition)
+        .order_by(CompetitionApplication.created_at.desc())
+        .all()
+    )
+    return render_template(
+        'admin/competition_applications_list.html', active='competition_applications',
+        applications=applications,
+    )
+
+
+@bp.route('/competition-applications/<int:application_id>/send', methods=['POST'])
+@roles_required('admin')
+def competition_application_send(application_id):
+    application = CompetitionApplication.query.get_or_404(application_id)
+    competition = application.competition
+
+    if not competition.source_id:
+        flash('Соревнование не синхронизировано с COREZ — отправить нельзя.', 'error')
+        return redirect(url_for('admin.competition_applications_list'))
+
+    if application.corez_application_id:
+        success, message = обновить_заявку_команды(application, competition.source_id, application.corez_application_id)
+    else:
+        success, message, corez_application_id = отправить_заявку_команды(application, competition.source_id)
+        if success:
+            application.corez_application_id = corez_application_id
+
+    application.send_status = 'sent' if success else 'failed'
+    application.send_message = message
+    db.session.commit()
+
+    flash(message, 'success' if success else 'danger')
+    return redirect(url_for('admin.competition_applications_list'))
 
 
 # ---------- Заявки на регистрацию федераций ----------

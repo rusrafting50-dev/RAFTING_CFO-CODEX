@@ -400,3 +400,81 @@ class SeminarApplicationSubmissionParticipant(db.Model):
     submission = db.relationship(
         'SeminarApplicationSubmission', backref=db.backref('participants', cascade='all, delete-orphan'),
     )
+
+
+class CompetitionApplication(db.Model):
+    """Заявка команды на участие в соревновании — локальная база сайта,
+    источник для отображения на вкладке «Команды» страницы соревнования.
+    По структуре — аналог SeminarApplicationSubmission, но поля названы
+    и организованы так, чтобы совпадать с моделью ПредварительнаяЗаявка
+    в COREZ (там же и живут спортивные разряды и т.п. — сайт лишь
+    зеркалирует ввод).
+
+    origin='site' — подана представителем региона через форму на сайте;
+    может редактироваться/удаляться автором (submitted_by) или admin.
+
+    В COREZ заявка попадает не автоматически, а только когда admin сайта
+    нажмёт «Отправить в COREZ» в панели управления (см. routes/admin.py,
+    sync_to_corez.py) — до этого send_status='pending'.
+    corez_application_id — id этой же заявки в базе COREZ
+    (ПредварительнаяЗаявка.id), используется для матчинга при повторной
+    отправке/обновлении."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    competition_id = db.Column(db.Integer, db.ForeignKey('competition.id'), nullable=False)
+    submitted_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    origin = db.Column(db.String(20), default='site', nullable=False)  # site
+
+    region = db.Column(db.String(150))  # субъект_рф
+    team_name = db.Column(db.String(300))  # наименование_команды
+    # Класс судна и дисциплина — только для отображения на сайте (одно
+    # соревнование может проводиться сразу в R4 и R6/по нескольким
+    # дисциплинам); в самой ПредварительнаяЗаявка COREZ такого поля нет,
+    # при отправке в COREZ не передаются.
+    boat_class = db.Column(db.String(20))
+    discipline = db.Column(db.String(100))
+
+    org_name = db.Column(db.String(300))  # орг_наименование
+    org_leader_name = db.Column(db.String(200))  # орг_фио_руководителя
+    org_leader_position = db.Column(db.String(150))  # орг_должность_руководителя
+    org_leader_phone = db.Column(db.String(100))  # орг_телефон
+    org_leader_email = db.Column(db.String(150))  # орг_email
+
+    coach_full_name = db.Column(db.String(200))  # тренер_фио
+    coach_phone = db.Column(db.String(100))  # тренер_телефон
+    coach_email = db.Column(db.String(150))  # тренер_email
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime)
+
+    send_status = db.Column(db.String(20), default='pending', nullable=False)  # pending / sent / failed
+    send_message = db.Column(db.String(500))
+    corez_application_id = db.Column(db.Integer)  # id этой же заявки в базе COREZ
+
+    competition = db.relationship(
+        'Competition', backref=db.backref('team_applications', cascade='all, delete-orphan'),
+    )
+    submitted_by = db.relationship('User')
+
+
+class CompetitionApplicationAthlete(db.Model):
+    """Спортсмен в заявке команды — поля соответствуют модели
+    СпортсменЗаявки в COREZ (ФИО раздельно, а не одной строкой, в
+    отличие от участника заявки на семинар)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(db.Integer, db.ForeignKey('competition_application.id'), nullable=False)
+
+    last_name = db.Column(db.String(100), nullable=False)  # фамилия
+    first_name = db.Column(db.String(100), nullable=False)  # имя
+    middle_name = db.Column(db.String(100))  # отчество
+    gender = db.Column(db.String(10))  # пол: м/ж
+    birth_date = db.Column(db.Date)  # дата_рождения
+    qualification = db.Column(db.String(100))  # квалификация (разряд)
+    order_number = db.Column(db.String(100))  # номер_приказа
+    insurance_number = db.Column(db.String(100))  # номер_страховки
+    age_group = db.Column(db.String(100))  # возрастная_группа
+
+    application = db.relationship(
+        'CompetitionApplication', backref=db.backref('athletes', cascade='all, delete-orphan'),
+    )

@@ -138,7 +138,39 @@
             </div>
 
             <div class="tab-pane fade" id="tab-news" role="tabpanel"></div>
-            <div class="tab-pane fade" id="tab-entries" role="tabpanel"></div>
+            <div class="tab-pane fade" id="tab-entries" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="text-muted small">
+                        {% if applications %}Заявок подано: {{ applications|length }}, спортсменов: {{ total_athletes }}{% endif %}
+                    </span>
+                    {% if can_submit_application %}
+                        <a href="{{ url_for('competitions.application_new', competition_id=competition.id) }}" class="btn btn-sm btn-primary">Подать заявку команды</a>
+                    {% elif not current_user.is_authenticated %}
+                        <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-sm btn-outline-secondary">Войти, чтобы подать заявку</a>
+                    {% endif %}
+                </div>
+                {% if not applications %}
+                    <p class="text-muted">Заявок пока нет.</p>
+                {% else %}
+                    <div class="org-card-list">
+                        {% for application in applications %}
+                            {% set org_name = application.org_name or application.team_name or 'Без названия' %}
+                            <a class="org-card" href="{{ url_for('competitions.application_view', competition_id=competition.id, application_id=application.id) }}">
+                                {% if application_logos.get(application.id) %}
+                                    <img class="org-card-logo" src="{{ url_for('static', filename=application_logos[application.id]) }}" alt="">
+                                {% endif %}
+                                <span class="org-card-info">
+                                    <span class="org-card-name">{{ org_name }}</span>
+                                    {% if application.region %}<span class="org-card-region">{{ application.region }}</span>{% endif %}
+                                </span>
+                                <span class="org-card-meta">
+                                    <span class="org-card-count">{{ application.athletes|length }} {{ application.athletes|length|ru_plural('спортсмен', 'спортсмена', 'спортсменов') }}</span>
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
 
             <div class="tab-pane fade" id="tab-protocols" role="tabpanel">
                 {% if documents_by_type %}
