@@ -1489,11 +1489,18 @@ footer hr {
 }
 
 /* Формат лупы как на rfs.ru — контурный значок (кольцо + ручка вместо
-   закрашенного силуэта), тёмный, с заметной толщиной линии. */
+   закрашенного силуэта). Цвет — тот же, что у плейсхолдера "Поиск..."
+   (браузерный серый #757575 текста input, отдельно нигде не заданный),
+   размер — на 10% меньше стандартного удвоенного (36px → 32.4px). */
 .news-search-input-icon-outline svg {
     fill: none;
-    stroke: var(--color-dark);
+    stroke: #757575;
     stroke-width: 1.6;
+}
+
+.news-search-input-icon-outline.news-search-input-icon-lg svg {
+    width: 32.4px;
+    height: 32.4px;
 }
 
 .news-search-input input {
