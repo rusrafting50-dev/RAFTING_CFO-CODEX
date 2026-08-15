@@ -30,6 +30,19 @@ AGE_GROUPS = [
     'Юноши (до 16 лет)', 'Девушки (до 16 лет)',
 ]
 
+# Карточки документов в блоке «Информация» на вкладке «О соревнованиях» —
+# фиксированный набор, показывается всегда (даже если файл ещё не
+# загружен), чтобы было видно, что именно нужно загрузить. doc_type
+# должен быть среди COMPETITION_DOC_TYPE_CHOICES в routes/admin.py —
+# ровно оттуда админ и загружает файл под конкретную карточку.
+INFO_DOCUMENT_TYPES = [
+    ('регламент', 'Регламент спортивных соревнований'),
+    ('программа', 'Программа соревнований'),
+    ('состав_гск', 'Состав главной судейской коллегии'),
+    ('график_допуска', 'График прохождения комиссии по допуску'),
+    ('расписание', 'Расписание тренировок'),
+]
+
 # Порядок и подписи дисциплин на вкладке "Результаты" (второй ряд меню).
 # Список фиксированный — пункт появляется, только если для него реально
 # пришли данные от COREZ (многоборье пересчитывается инкрементально по мере
@@ -169,11 +182,17 @@ def detail(competition_id):
         if doc_type in results_by_type
     ]
 
+    info_documents = [
+        {'doc_type': doc_type, 'label': label, 'docs': documents_by_type.get(doc_type, [])}
+        for doc_type, label in INFO_DOCUMENT_TYPES
+    ]
+
     return render_template(
         'competitions/detail.html',
         competition=competition,
         documents_by_type=documents_by_type,
         results_groups=results_groups,
+        info_documents=info_documents,
         applications=applications, total_athletes=total_athletes,
         can_submit_application=can_submit_application, application_logos=application_logos,
     )

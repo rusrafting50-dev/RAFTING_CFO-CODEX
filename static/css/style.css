@@ -995,6 +995,75 @@ footer hr {
     font-weight: 700;
 }
 
+/* ===== Страница соревнования: баннер на вкладке «О соревнованиях» =====
+   Круг с логотипом/названием по центру, под ним даты и место, ещё ниже —
+   статус и № ЕКП/КП (по образцу баннера турнира на rfs.ru, но в
+   собственной цветовой схеме сайта вместо голубого градиента РФС). */
+.comp-banner {
+    background: linear-gradient(135deg, var(--color-dark), var(--color-accent));
+    border-radius: 12px;
+    padding: 40px 24px 32px;
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: #fff;
+}
+
+.comp-banner-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    margin-bottom: 20px;
+}
+
+.comp-banner-circle img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.comp-banner-circle-name {
+    color: var(--color-dark);
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.25;
+}
+
+.comp-banner-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 24px;
+}
+
+.comp-banner-meta-secondary {
+    margin-top: 8px;
+    opacity: 0.85;
+    font-size: 14px;
+}
+
+.comp-banner-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Карточка-заглушка в блоке «Информация», когда файл под конкретный
+   тип документа ещё не загружен — тот же .doc-list-item, но без тени
+   документа (чтобы не выглядело кликабельным) и приглушённым текстом. */
+.doc-list-item-empty {
+    box-shadow: none;
+    border: 1px dashed #ccc;
+}
+
 /* ===== Страница соревнования: вкладки Информация/Новости/.../Результаты ===== */
 .comp-tabs-row {
     /* Вдвое меньше исходного mb-4 (24px) — черта подчёркивания активной
