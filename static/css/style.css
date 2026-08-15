@@ -1210,8 +1210,9 @@ footer hr {
 .doc-copy-link {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
+    gap: 8.8px;
+    font-size: 14.3px;
+    padding: 4.4px 8.8px;
 }
 
 /* Значок на кнопке «Скопировать ссылку» — тот же приём, что у бейджа
@@ -1222,8 +1223,8 @@ footer hr {
     position: relative;
     display: inline-block;
     flex: none;
-    width: 10px;
-    height: 8px;
+    width: 11px;
+    height: 8.8px;
     transform: rotate(-90deg);
 }
 
@@ -1232,10 +1233,10 @@ footer hr {
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 8px;
-    height: 6px;
+    width: 8.8px;
+    height: 6.6px;
     background: transparent;
-    border: 1.3px solid currentColor;
+    border: 1.4px solid currentColor;
     border-radius: 1px;
     box-sizing: border-box;
 }
@@ -1245,10 +1246,10 @@ footer hr {
     position: absolute;
     top: 0;
     right: 0;
-    width: 8px;
-    height: 6px;
-    border-top: 1.3px solid currentColor;
-    border-right: 1.3px solid currentColor;
+    width: 8.8px;
+    height: 6.6px;
+    border-top: 1.4px solid currentColor;
+    border-right: 1.4px solid currentColor;
 }
 
 .doc-open-link {
