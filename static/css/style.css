@@ -1183,7 +1183,7 @@ footer hr {
 }
 
 .doc-category-toggle.has-active {
-    background: var(--color-accent);
+    background: #5b7c99;
     color: #fff;
 }
 
@@ -1236,14 +1236,16 @@ footer hr {
     font-weight: 700;
 }
 
-/* Пункт «Все» внизу меню категорий — сбрасывает фильтр по разделу,
-   всегда залит приглушённым серо-синим (как на странице документов
-   rfs.ru), в отличие от яркого акцента у выбранной категории. */
+/* Пункт «Все» внизу меню категорий — сбрасывает фильтр по разделу.
+   Залит приглушённым серо-синим, только когда активен (документы не
+   отфильтрованы по разделу); иначе — белый, как остальные пункты
+   меню. При выборе раздела та же заливка переходит на его категорию
+   (.doc-category-toggle.has-active). */
 .doc-category-all {
     display: block;
     text-align: center;
-    background: #5b7c99;
-    color: #fff;
+    background: #fff;
+    color: var(--color-dark);
     text-decoration: none;
     font-weight: 600;
     font-size: 15px;
@@ -1252,9 +1254,16 @@ footer hr {
     border-radius: 2px;
 }
 
-.doc-category-all:hover,
+.doc-category-all:hover {
+    color: var(--color-accent);
+}
+
 .doc-category-all.has-active {
-    background: #4c6a84;
+    background: #5b7c99;
+    color: #fff;
+}
+
+.doc-category-all.has-active:hover {
     color: #fff;
 }
 
