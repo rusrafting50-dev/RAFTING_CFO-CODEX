@@ -21,9 +21,8 @@
                     <tr class="table-dark">
                         <th>Название</th>
                         <th>Категория</th>
-                        <th>Уровень</th>
+                        <th>Раздел</th>
                         <th>Загружен</th>
-                        <th>Файл</th>
                         {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
                     </tr>
                 </thead>
@@ -32,9 +31,8 @@
                         <tr>
                             <td>{{ document.title }}</td>
                             <td>{{ document.doc_category }}</td>
-                            <td>{{ document.level }}</td>
+                            <td>{{ document.section.name if document.section else '' }}</td>
                             <td>{{ document.uploaded_at.strftime('%d.%m.%Y') if document.uploaded_at else '' }}</td>
-                            <td><a href="{{ url_for('static', filename=document.file_path) }}" download>Скачать</a></td>
                             {% if current_user.role in ('admin', 'editor') %}
                                 <td>
                                     <form method="post" action="{{ url_for('admin.documents_delete', document_id=document.id) }}"

@@ -22,12 +22,11 @@
                 </select>
             </div>
             <div class="col-md-6">
-                <label for="level" class="form-label">Уровень</label>
-                <select class="form-select" id="level" name="level">
+                <label for="section_id" class="form-label">Раздел</label>
+                <select class="form-select" id="section_id" name="section_id">
                     <option value="">—</option>
-                    <option value="цфо">цфо</option>
-                    <option value="регион">регион</option>
                 </select>
+                <div class="form-text">Список зависит от выбранной категории.</div>
             </div>
         </div>
         <div class="mb-3">
@@ -39,4 +38,29 @@
             <a class="btn btn-outline-secondary" href="{{ url_for('admin.documents_list') }}">Отмена</a>
         </div>
     </form>
+
+    <script>
+        (function () {
+            var sectionsByCategory = {{ sections_by_category|tojson }};
+            var categorySelect = document.getElementById('doc_category');
+            var sectionSelect = document.getElementById('section_id');
+
+            function rebuildSections() {
+                sectionSelect.innerHTML = '';
+                var blank = document.createElement('option');
+                blank.value = '';
+                blank.textContent = '—';
+                sectionSelect.appendChild(blank);
+                (sectionsByCategory[categorySelect.value] || []).forEach(function (s) {
+                    var opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name;
+                    sectionSelect.appendChild(opt);
+                });
+            }
+
+            categorySelect.addEventListener('change', rebuildSections);
+            rebuildSections();
+        })();
+    </script>
 {% endblock %}

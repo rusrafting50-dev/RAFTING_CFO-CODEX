@@ -90,6 +90,7 @@ def ensure_schema():
     _ensure_column(inspector, 'seminar_application_submission', 'origin', "VARCHAR(20) NOT NULL DEFAULT 'site'")
     _ensure_column(inspector, 'seminar_application_submission', 'updated_at', 'DATETIME')
     _ensure_nullable(inspector, 'seminar_application_submission', 'submitted_by_id')
+    _ensure_column(inspector, 'document', 'section_id', 'INTEGER')
 
 
 def seed_news_taxonomy():

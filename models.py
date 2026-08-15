@@ -162,6 +162,21 @@ class DocumentCategory(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False)
 
 
+class DocumentSection(db.Model):
+    """Раздел внутри категории документов — привязан к конкретной
+    DocumentCategory, редактируется в панели управления вместе с
+    категориями (страница «Категории документов»)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('document_category.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+
+    category = db.relationship(
+        'DocumentCategory',
+        backref=db.backref('sections', cascade='all, delete-orphan', order_by='DocumentSection.name'),
+    )
+
+
 class Document(db.Model):
     """Нормативные документы."""
 
@@ -169,8 +184,10 @@ class Document(db.Model):
     title = db.Column(db.String(255), nullable=False)
     doc_category = db.Column(db.String(50))  # см. DocumentCategory — список редактируется в админке
     file_path = db.Column(db.String(500))
-    level = db.Column(db.String(50))  # цфо / регион
+    section_id = db.Column(db.Integer, db.ForeignKey('document_section.id'))  # см. DocumentSection, привязан к doc_category
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    section = db.relationship('DocumentSection')
 
 
 class User(UserMixin, db.Model):

@@ -13,8 +13,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from models import (
-    Athlete, Banner, Competition, CompetitionDocument, Document, DocumentCategory, Event,
-    FederationMember, FederationRegistrationRequest, MediaAlbum, MediaAlbumPhoto, MediaVideo,
+    Athlete, Banner, Competition, CompetitionDocument, Document, DocumentCategory, DocumentSection,
+    Event, FederationMember, FederationRegistrationRequest, MediaAlbum, MediaAlbumPhoto, MediaVideo,
     News, NewsCategory, NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee,
     RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
 )
@@ -499,6 +499,13 @@ def document_category_choices():
     return [c.name for c in DocumentCategory.query.order_by(DocumentCategory.name).all()]
 
 
+def document_sections_by_category():
+    return {
+        category.name: [{'id': s.id, 'name': s.name} for s in category.sections]
+        for category in DocumentCategory.query.order_by(DocumentCategory.name).all()
+    }
+
+
 @bp.route('/documents')
 @section_required('documents')
 def documents_list():
@@ -540,6 +547,34 @@ def document_category_delete(category_id):
     return redirect(url_for('admin.document_taxonomy'))
 
 
+@bp.route('/documents/taxonomy/categories/<int:category_id>/sections/new', methods=['POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def document_section_new(category_id):
+    category = DocumentCategory.query.get_or_404(category_id)
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название раздела обязательно.', 'error')
+    elif any(s.name.lower() == name.lower() for s in category.sections):
+        flash('Такой раздел в этой категории уже есть.', 'error')
+    else:
+        db.session.add(DocumentSection(category_id=category.id, name=name))
+        db.session.commit()
+        flash('Раздел добавлен.', 'success')
+    return redirect(url_for('admin.document_taxonomy'))
+
+
+@bp.route('/documents/taxonomy/sections/<int:section_id>/delete', methods=['POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def document_section_delete(section_id):
+    section = DocumentSection.query.get_or_404(section_id)
+    db.session.delete(section)
+    db.session.commit()
+    flash('Раздел удалён. Уже загруженные документы с этим значением не изменятся.', 'success')
+    return redirect(url_for('admin.document_taxonomy'))
+
+
 @bp.route('/documents/new', methods=['GET', 'POST'])
 @section_required('documents')
 @roles_required('admin', 'editor')
@@ -551,13 +586,15 @@ def documents_new():
         if not title or not file or file.filename == '':
             flash('Название и файл документа обязательны.', 'error')
             return render_template(
-                'admin/document_form.html', active='documents', category_choices=document_category_choices(),
+                'admin/document_form.html', active='documents',
+                category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
             )
 
         if not allowed_document(file.filename):
             flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
             return render_template(
-                'admin/document_form.html', active='documents', category_choices=document_category_choices(),
+                'admin/document_form.html', active='documents',
+                category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
             )
 
         filename = secure_filename(file.filename)
@@ -569,7 +606,7 @@ def documents_new():
         document = Document(
             title=title,
             doc_category=request.form.get('doc_category') or None,
-            level=request.form.get('level') or None,
+            section_id=request.form.get('section_id', type=int),
             file_path=f"uploads/{unique_name}",
         )
         db.session.add(document)
@@ -578,7 +615,8 @@ def documents_new():
         return redirect(url_for('admin.documents_list'))
 
     return render_template(
-        'admin/document_form.html', active='documents', category_choices=document_category_choices(),
+        'admin/document_form.html', active='documents',
+        category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
     )
 
 
