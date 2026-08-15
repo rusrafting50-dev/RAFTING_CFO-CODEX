@@ -1200,20 +1200,15 @@ footer hr {
     text-transform: uppercase;
 }
 
-.doc-icon-pdf {
-    background: #d93025;
-}
-
-.doc-icon-word {
-    background: #2b579a;
-}
-
-.doc-icon-excel {
-    background: #1d6f42;
-}
-
 .doc-icon-file {
     background: #6c757d;
+}
+
+.doc-file-icon-img {
+    display: block;
+    width: 46px;
+    height: 46px;
+    object-fit: contain;
 }
 
 .org-card-info {

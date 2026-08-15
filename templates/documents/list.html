@@ -32,7 +32,7 @@
                     <div id="doc-list">
                         {% for document in documents %}
                             {% set ext = document.file_path|file_extension %}
-                            {% set icon_class = 'doc-icon-pdf' if ext == 'pdf' else ('doc-icon-word' if ext in ('doc', 'docx') else ('doc-icon-excel' if ext in ('xls', 'xlsx') else 'doc-icon-file')) %}
+                            {% set icon_file = 'pdf_icon_48.png' if ext == 'pdf' else ('word_icon_48.png' if ext in ('doc', 'docx') else ('excel_icon_48.png' if ext in ('xls', 'xlsx') else None)) %}
                             <div class="doc-list-item py-3 border-bottom" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
                                 <p class="news-row-date">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</p>
                                 <div class="d-flex justify-content-between align-items-start gap-3">
@@ -45,7 +45,11 @@
                                     </div>
                                     <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=document.file_path) }}"
                                        target="_blank" rel="noopener">
-                                        <span class="doc-file-icon {{ icon_class }}">.{{ ext }}</span>
+                                        {% if icon_file %}
+                                            <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt=".{{ ext }}">
+                                        {% else %}
+                                            <span class="doc-file-icon doc-icon-file">.{{ ext }}</span>
+                                        {% endif %}
                                         <span class="d-block small">Открыть</span>
                                     </a>
                                 </div>
