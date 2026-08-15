@@ -9,9 +9,8 @@
 
         <div class="row g-4">
             <div class="col-lg-9">
-                <h2 class="h5 mb-3">{{ selected_section.name if selected_section else 'Все документы' }}</h2>
-
-                <div class="news-search-row mb-0">
+                <div class="news-search-row doc-search-panel mb-0">
+                    <h2 class="h5 mb-3">{{ selected_section.name if selected_section else 'Все документы' }}</h2>
                     <form method="get" action="{{ url_for('documents.index') }}" class="news-search-input-form">
                         {% if selected_section %}<input type="hidden" name="section" value="{{ selected_section.id }}">{% endif %}
                         <label class="news-search-input">
