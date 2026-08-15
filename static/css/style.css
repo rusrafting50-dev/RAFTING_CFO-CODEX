@@ -1479,6 +1479,14 @@ footer hr {
     height: 36px;
 }
 
+/* Формат лупы как на rfs.ru — контурный значок (кольцо + ручка вместо
+   закрашенного силуэта), тёмный, с заметной толщиной линии. */
+.news-search-input-icon-outline svg {
+    fill: none;
+    stroke: var(--color-dark);
+    stroke-width: 1.6;
+}
+
 .news-search-input input {
     flex: 1 1 auto;
     border: none;
