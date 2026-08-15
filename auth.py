@@ -91,6 +91,7 @@ def ensure_schema():
     _ensure_column(inspector, 'seminar_application_submission', 'updated_at', 'DATETIME')
     _ensure_nullable(inspector, 'seminar_application_submission', 'submitted_by_id')
     _ensure_column(inspector, 'document', 'section_id', 'INTEGER')
+    _ensure_column(inspector, 'competition_application', 'logo_path', 'VARCHAR(500)')
 
 
 def seed_news_taxonomy():

@@ -433,6 +433,12 @@ class CompetitionApplication(db.Model):
     # при отправке в COREZ не передаются.
     boat_class = db.Column(db.String(20))
     discipline = db.Column(db.String(100))
+    # Логотип команды, загруженный вместе с заявкой (в отличие от
+    # заявок на семинар, где логотип берётся только из совпадения по
+    # названию с RegionalFederation — здесь заявитель может указать
+    # логотип команды напрямую). В COREZ не передаётся — ПредварительнаяЗаявка
+    # такого поля не хранит.
+    logo_path = db.Column(db.String(500))
 
     org_name = db.Column(db.String(300))  # орг_наименование
     org_leader_name = db.Column(db.String(200))  # орг_фио_руководителя

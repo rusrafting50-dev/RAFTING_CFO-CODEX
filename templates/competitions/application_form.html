@@ -6,7 +6,7 @@
     <div class="container py-5">
         <h1 class="h4 mb-4">{{ 'Редактирование заявки' if application else 'Заявка команды' }}: {{ competition.name }}</h1>
 
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             <h2 class="h6 mb-3">Основные данные</h2>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
@@ -18,6 +18,16 @@
                     <label class="form-label">Наименование команды</label>
                     <input type="text" name="team_name" class="form-control"
                            value="{{ application.team_name or '' if application else '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Логотип команды</label>
+                    {% if application and application.logo_path %}
+                        <div class="mb-2">
+                            <img src="{{ url_for('static', filename=application.logo_path) }}" alt="" style="height: 48px; width: 48px; object-fit: contain; border-radius: 50%;">
+                        </div>
+                    {% endif %}
+                    <input type="file" name="logo" class="form-control" accept=".jpg,.jpeg,.png,.webp">
+                    <div class="form-text">JPG, PNG или WEBP{% if application and application.logo_path %} — оставьте пустым, чтобы не менять{% endif %}.</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Класс судна</label>

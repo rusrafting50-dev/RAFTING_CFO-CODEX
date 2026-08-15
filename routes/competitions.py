@@ -1,10 +1,12 @@
 """Соревнования: календарный план, текущие, архив, страница соревнования."""
 import json
+import os
 from datetime import date, datetime
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import extract
+from werkzeug.utils import secure_filename
 
 from models import (
     Competition, CompetitionApplication, CompetitionApplicationAthlete,
@@ -12,6 +14,8 @@ from models import (
 )
 
 bp = Blueprint('competitions', __name__)
+
+ALLOWED_LOGO_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 
 BOAT_CLASSES = ['R4', 'R6']
 DISCIPLINES = ['Спринт', 'Параллельный спринт', 'Слалом', 'Длинная гонка', 'Многоборье']
@@ -124,7 +128,9 @@ def detail(competition_id):
         current_user.is_authenticated and current_user.role in ('region_rep', 'admin')
     )
     logo_lookup = _federation_logo_lookup()
-    application_logos = {a.id: _match_logo(logo_lookup, a.org_name) for a in applications}
+    application_logos = {
+        a.id: a.logo_path or _match_logo(logo_lookup, a.org_name) for a in applications
+    }
     documents = (
         CompetitionDocument.query.filter_by(competition_id=competition_id)
         .order_by(CompetitionDocument.doc_type)
@@ -185,7 +191,7 @@ def application_view(competition_id, application_id):
     application = CompetitionApplication.query.get_or_404(application_id)
     if application.competition_id != competition.id:
         abort(404)
-    logo_path = _match_logo(_federation_logo_lookup(), application.org_name)
+    logo_path = application.logo_path or _match_logo(_federation_logo_lookup(), application.org_name)
     return render_template(
         'competitions/application_detail.html', competition=competition, application=application,
         can_manage=_can_manage(application), logo_path=logo_path,
@@ -276,6 +282,40 @@ def _fill_application_fields(application, form):
     application.coach_email = form.get('coach_email', '').strip() or None
 
 
+def _allowed_logo(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_LOGO_EXTENSIONS
+
+
+def _remove_logo_file(application):
+    if not application.logo_path:
+        return
+    path = os.path.join(current_app.root_path, 'static', application.logo_path)
+    if os.path.exists(path):
+        os.remove(path)
+
+
+def _apply_logo_upload(application, files):
+    """Сохраняет новый логотип команды, если он выбран в форме — заменяя
+    прежний, если был. Ошибка формата не прерывает сохранение остальной
+    заявки, только логотип остаётся прежним."""
+    file = files.get('logo')
+    if not file or not file.filename:
+        return True
+    if not _allowed_logo(file.filename):
+        flash('Логотип: допустимые форматы файлов — JPG, PNG, WEBP.', 'error')
+        return False
+
+    filename = secure_filename(file.filename)
+    unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
+    upload_dir = current_app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_dir, exist_ok=True)
+    file.save(os.path.join(upload_dir, unique_name))
+
+    _remove_logo_file(application)
+    application.logo_path = f"uploads/{unique_name}"
+    return True
+
+
 @bp.route('/<int:competition_id>/applications/new', methods=['GET', 'POST'])
 @login_required
 def application_new(competition_id):
@@ -298,6 +338,7 @@ def application_new(competition_id):
             competition_id=competition.id, submitted_by_id=current_user.id, origin='site',
         )
         _fill_application_fields(application, request.form)
+        _apply_logo_upload(application, request.files)
         db.session.add(application)
         db.session.flush()
         _apply_athletes(application.id, request.form)
@@ -336,6 +377,7 @@ def application_edit(competition_id, application_id):
             )
 
         _fill_application_fields(application, request.form)
+        _apply_logo_upload(application, request.files)
         application.updated_at = datetime.utcnow()
         CompetitionApplicationAthlete.query.filter_by(application_id=application.id).delete()
         _apply_athletes(application.id, request.form)
@@ -361,6 +403,7 @@ def application_delete(competition_id, application_id):
     if not _can_manage(application):
         abort(403)
 
+    _remove_logo_file(application)
     db.session.delete(application)
     db.session.commit()
     flash('Заявка удалена.', 'success')
