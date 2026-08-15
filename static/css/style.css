@@ -1174,8 +1174,10 @@ footer hr {
     bottom: 0;
     width: 8px;
     height: 6px;
-    background: currentColor;
+    background: transparent;
+    border: 1.3px solid currentColor;
     border-radius: 1px;
+    box-sizing: border-box;
 }
 
 .doc-copy-icon::after {
