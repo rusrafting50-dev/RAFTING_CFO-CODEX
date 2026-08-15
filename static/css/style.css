@@ -1108,6 +1108,16 @@ footer hr {
     margin: 0 0 8px;
 }
 
+/* Каждый документ в списке — отдельная белая карточка с тенью (как на
+   странице документов rfs.ru), а не общий блок с разделительными
+   линиями. */
+.doc-list-item {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
 /* Полоса «Найдено документов» под полем поиска — во всю ширину
    основной колонки, разрывает белый фон серой полосой (как на
    странице документов rfs.ru). */
@@ -1211,6 +1221,28 @@ footer hr {
 
 .doc-section-list a.active {
     font-weight: 700;
+}
+
+/* Пункт «Все» внизу меню категорий — сбрасывает фильтр по разделу,
+   всегда залит приглушённым серо-синим (как на странице документов
+   rfs.ru), в отличие от яркого акцента у выбранной категории. */
+.doc-category-all {
+    display: block;
+    text-align: center;
+    background: #5b7c99;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 14px 10px;
+    margin: 6px 0 2px;
+    border-radius: 2px;
+}
+
+.doc-category-all:hover,
+.doc-category-all.has-active {
+    background: #4c6a84;
+    color: #fff;
 }
 
 .doc-copy-link {

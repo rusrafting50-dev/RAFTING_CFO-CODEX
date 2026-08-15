@@ -32,7 +32,7 @@
                         {% for document in documents %}
                             {% set ext = document.file_path|file_extension %}
                             {% set icon_file = 'pdf_icon_48.png' if ext == 'pdf' else ('word_icon_48.png' if ext in ('doc', 'docx') else ('excel_icon_48.png' if ext in ('xls', 'xlsx') else None)) %}
-                            <div class="doc-list-item py-3 border-bottom" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
+                            <div class="doc-list-item" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
                                 <p class="news-row-date">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</p>
                                 <div class="d-flex justify-content-between align-items-start gap-3">
                                     <div>
@@ -85,6 +85,7 @@
                         </ul>
                     </div>
                 {% endfor %}
+                    <a class="doc-category-all {{ 'has-active' if not selected_section }}" href="{{ url_for('documents.index') }}">Все</a>
                 </div>
             </div>
         </div>
