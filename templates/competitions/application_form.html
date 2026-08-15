@@ -103,13 +103,11 @@
                     <thead>
                         <tr class="text-center align-middle">
                             <th style="width: 40px;">№</th>
-                            <th>Фамилия</th>
-                            <th>Имя</th>
-                            <th>Отчество</th>
+                            <th>Фамилия, имя, отчество</th>
                             <th style="width: 70px;">Пол</th>
                             <th style="width: 150px;">Дата рождения</th>
-                            <th style="width: 140px;">Разряд</th>
-                            <th style="width: 160px;">Возрастная группа</th>
+                            <th style="width: 130px;">Разряд</th>
+                            <th style="width: 200px;">Возрастная группа</th>
                             <th style="width: 130px;">№ приказа</th>
                             <th style="width: 130px;">№ страховки</th>
                             <th style="width: 40px;"></th>
@@ -127,9 +125,7 @@
     <template id="athlete-row-template">
         <tr class="athlete-row">
             <td class="text-center row-index"></td>
-            <td><input type="text" name="athlete_last_name[]" class="form-control form-control-sm"></td>
-            <td><input type="text" name="athlete_first_name[]" class="form-control form-control-sm"></td>
-            <td><input type="text" name="athlete_middle_name[]" class="form-control form-control-sm"></td>
+            <td><input type="text" name="athlete_full_name[]" class="form-control form-control-sm"></td>
             <td>
                 <select name="athlete_gender[]" class="form-select form-select-sm">
                     <option value=""></option>
@@ -138,8 +134,22 @@
                 </select>
             </td>
             <td><input type="date" name="athlete_birth_date[]" class="form-control form-control-sm"></td>
-            <td><input type="text" name="athlete_qualification[]" class="form-control form-control-sm"></td>
-            <td><input type="text" name="athlete_age_group[]" class="form-control form-control-sm"></td>
+            <td>
+                <select name="athlete_qualification[]" class="form-select form-select-sm">
+                    <option value=""></option>
+                    {% for q in qualifications %}
+                        <option value="{{ q }}">{{ q }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td>
+                <select name="athlete_age_group[]" class="form-select form-select-sm">
+                    <option value=""></option>
+                    {% for g in age_groups %}
+                        <option value="{{ g }}">{{ g }}</option>
+                    {% endfor %}
+                </select>
+            </td>
             <td><input type="text" name="athlete_order_number[]" class="form-control form-control-sm"></td>
             <td><input type="text" name="athlete_insurance_number[]" class="form-control form-control-sm"></td>
             <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-athlete-row">×</button></td>
@@ -162,9 +172,7 @@
             function addRow(data) {
                 var row = template.content.firstElementChild.cloneNode(true);
                 if (data) {
-                    row.querySelector('[name="athlete_last_name[]"]').value = data.last_name;
-                    row.querySelector('[name="athlete_first_name[]"]').value = data.first_name;
-                    row.querySelector('[name="athlete_middle_name[]"]').value = data.middle_name;
+                    row.querySelector('[name="athlete_full_name[]"]').value = data.full_name;
                     row.querySelector('[name="athlete_gender[]"]').value = data.gender;
                     row.querySelector('[name="athlete_birth_date[]"]').value = data.birth_date;
                     row.querySelector('[name="athlete_qualification[]"]').value = data.qualification;

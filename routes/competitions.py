@@ -15,6 +15,16 @@ bp = Blueprint('competitions', __name__)
 
 BOAT_CLASSES = ['R4', 'R6']
 DISCIPLINES = ['Спринт', 'Параллельный спринт', 'Слалом', 'Длинная гонка', 'Многоборье']
+QUALIFICATIONS = ['МСМК', 'МС', 'КМС', 'I', 'II', 'III', 'б/р']
+# Тот же список, что ВОЗРАСТНЫЕ_ГРУППЫ в COREZ (routes/заявка.py) — единый
+# словарь значений на обеих сторонах.
+AGE_GROUPS = [
+    'Мужчины', 'Женщины',
+    'Юниоры (до 26 лет)', 'Юниорки (до 26 лет)',
+    'Юниоры (до 24 лет)', 'Юниорки (до 24 лет)',
+    'Юниоры (до 20 лет)', 'Юниорки (до 20 лет)',
+    'Юноши (до 16 лет)', 'Девушки (до 16 лет)',
+]
 
 # Порядок и подписи дисциплин на вкладке "Результаты" (второй ряд меню).
 # Список фиксированный — пункт появляется, только если для него реально
@@ -182,10 +192,20 @@ def application_view(competition_id, application_id):
     )
 
 
+def _split_full_name(full_name):
+    """Фамилия/имя/отчество отдельными полями в модели (совместимость со
+    схемой COREZ), но в форме — одно поле «Фамилия, имя, отчество», как в
+    заявке на семинар. Разбиваем по пробелам на 3 части — тот же приём,
+    что использует сама форма COREZ (routes/заявка.py, `фио.split(None, 2)`)."""
+    parts = full_name.split(None, 2)
+    last_name = parts[0] if len(parts) > 0 else ''
+    first_name = parts[1] if len(parts) > 1 else ''
+    middle_name = parts[2] if len(parts) > 2 else ''
+    return last_name, first_name, middle_name
+
+
 def _apply_athletes(application_id, form):
-    last_names = form.getlist('athlete_last_name[]')
-    first_names = form.getlist('athlete_first_name[]')
-    middle_names = form.getlist('athlete_middle_name[]')
+    full_names = form.getlist('athlete_full_name[]')
     genders = form.getlist('athlete_gender[]')
     birth_dates = form.getlist('athlete_birth_date[]')
     qualifications = form.getlist('athlete_qualification[]')
@@ -193,10 +213,12 @@ def _apply_athletes(application_id, form):
     order_numbers = form.getlist('athlete_order_number[]')
     insurance_numbers = form.getlist('athlete_insurance_number[]')
 
-    for i, last_name in enumerate(last_names):
-        last_name = last_name.strip()
-        first_name = (first_names[i].strip() if i < len(first_names) else '')
-        if not last_name or not first_name:
+    for i, full_name in enumerate(full_names):
+        full_name = full_name.strip()
+        if not full_name:
+            continue
+        last_name, first_name, middle_name = _split_full_name(full_name)
+        if not last_name:
             continue
         birth_date = None
         if i < len(birth_dates) and birth_dates[i]:
@@ -208,7 +230,7 @@ def _apply_athletes(application_id, form):
             application_id=application_id,
             last_name=last_name,
             first_name=first_name,
-            middle_name=(middle_names[i].strip() or None) if i < len(middle_names) else None,
+            middle_name=middle_name or None,
             gender=(genders[i].strip() or None) if i < len(genders) else None,
             birth_date=birth_date,
             qualification=(qualifications[i].strip() or None) if i < len(qualifications) else None,
@@ -223,9 +245,7 @@ def _athletes_payload(application):
         return []
     return [
         {
-            'last_name': a.last_name,
-            'first_name': a.first_name,
-            'middle_name': a.middle_name,
+            'full_name': ' '.join(filter(None, [a.last_name, a.first_name, a.middle_name])),
             'gender': a.gender,
             'birth_date': a.birth_date.isoformat() if a.birth_date else '',
             'qualification': a.qualification,
@@ -264,13 +284,14 @@ def application_new(competition_id):
         abort(403)
 
     if request.method == 'POST':
-        last_names = request.form.getlist('athlete_last_name[]')
-        if not any(name.strip() for name in last_names):
+        full_names = request.form.getlist('athlete_full_name[]')
+        if not any(name.strip() for name in full_names):
             flash('Добавьте хотя бы одного спортсмена.', 'error')
             return render_template(
                 'competitions/application_form.html', competition=competition, application=None,
                 existing_athletes=[], regional_federations=_regional_federations(),
                 boat_classes=BOAT_CLASSES, disciplines=DISCIPLINES,
+                qualifications=QUALIFICATIONS, age_groups=AGE_GROUPS,
             )
 
         application = CompetitionApplication(
@@ -289,6 +310,7 @@ def application_new(competition_id):
         'competitions/application_form.html', competition=competition, application=None,
         existing_athletes=[], regional_federations=_regional_federations(),
         boat_classes=BOAT_CLASSES, disciplines=DISCIPLINES,
+        qualifications=QUALIFICATIONS, age_groups=AGE_GROUPS,
     )
 
 
@@ -303,13 +325,14 @@ def application_edit(competition_id, application_id):
         abort(403)
 
     if request.method == 'POST':
-        last_names = request.form.getlist('athlete_last_name[]')
-        if not any(name.strip() for name in last_names):
+        full_names = request.form.getlist('athlete_full_name[]')
+        if not any(name.strip() for name in full_names):
             flash('Добавьте хотя бы одного спортсмена.', 'error')
             return render_template(
                 'competitions/application_form.html', competition=competition, application=application,
                 existing_athletes=_athletes_payload(application), regional_federations=_regional_federations(),
                 boat_classes=BOAT_CLASSES, disciplines=DISCIPLINES,
+                qualifications=QUALIFICATIONS, age_groups=AGE_GROUPS,
             )
 
         _fill_application_fields(application, request.form)
@@ -325,6 +348,7 @@ def application_edit(competition_id, application_id):
         'competitions/application_form.html', competition=competition, application=application,
         existing_athletes=_athletes_payload(application), regional_federations=_regional_federations(),
         boat_classes=BOAT_CLASSES, disciplines=DISCIPLINES,
+        qualifications=QUALIFICATIONS, age_groups=AGE_GROUPS,
     )
 
 
