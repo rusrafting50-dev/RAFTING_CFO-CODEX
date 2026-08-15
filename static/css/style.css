@@ -1124,6 +1124,12 @@ footer hr {
    разделов под собой, разворот отмечен галочкой-шевроном. Раздел —
    обычная ссылка с фильтром (?section=...); при выбранном разделе его
    категория выделяется цветом, а сам раздел — жирным шрифтом. */
+.doc-category-panel {
+    background: #fff;
+    padding: 8px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 .doc-category-item {
     border-bottom: 1px solid #eee;
 }
@@ -1143,7 +1149,7 @@ footer hr {
     text-align: left;
     padding: 14px 10px;
     color: var(--color-dark);
-    font-weight: 600;
+    font-weight: 400;
     font-size: 15px;
     border-radius: 4px;
     cursor: pointer;
