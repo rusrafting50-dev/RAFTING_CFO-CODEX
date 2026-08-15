@@ -1257,11 +1257,11 @@ footer hr {
    (.doc-category-toggle.has-active). */
 .doc-category-all {
     display: block;
-    text-align: center;
+    text-align: left;
     background: #fff;
     color: var(--color-dark);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 400;
     font-size: 15px;
     padding: 14px 10px;
     margin: 6px 0 2px;
