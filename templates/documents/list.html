@@ -129,5 +129,34 @@
                 });
             });
         })();
+
+        (function () {
+            /* Центрирование заголовка «Все документы» между верхним краем
+               белой панели и полем поиска через реальные замеры на
+               странице (getBoundingClientRect), а не через CSS-отступы —
+               так результат не зависит от метрик конкретного шрифта
+               (line-height/ascent/descent у разных браузеров и шрифтов
+               распределяют "воздух" вокруг текста по-разному, поэтому
+               одинаковые padding-top/gap не всегда дают одинаковый
+               визуальный отступ). */
+            var panel = document.querySelector('.doc-search-panel');
+            var heading = panel && panel.querySelector('h2');
+            var field = panel && panel.querySelector('.news-search-input');
+            if (!panel || !heading || !field) return;
+
+            function centerHeading() {
+                panel.style.paddingTop = '';
+                panel.style.gap = '';
+                var panelTop = panel.getBoundingClientRect().top;
+                var fieldTop = field.getBoundingClientRect().top;
+                var headingHeight = heading.getBoundingClientRect().height;
+                var space = Math.max(0, (fieldTop - panelTop - headingHeight) / 2);
+                panel.style.paddingTop = space + 'px';
+                panel.style.gap = space + 'px';
+            }
+
+            centerHeading();
+            window.addEventListener('resize', centerHeading);
+        })();
     </script>
 {% endblock %}
