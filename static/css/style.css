@@ -1465,6 +1465,20 @@ footer hr {
     flex: none;
 }
 
+/* Лупа с правого края поля (как на странице документов rfs.ru) — те же
+   элементы (svg затем input) в разметке, просто визуально
+   переставленные местами через reverse направление. */
+.news-search-input-icon-right {
+    flex-direction: row-reverse;
+}
+
+/* Страница «Новости»: та же перестановка лупы вправо, но значок вдвое
+   крупнее обычного (18px → 36px). */
+.news-search-input-icon-lg svg {
+    width: 36px;
+    height: 36px;
+}
+
 .news-search-input input {
     flex: 1 1 auto;
     border: none;
