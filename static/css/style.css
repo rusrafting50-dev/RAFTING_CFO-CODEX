@@ -1114,15 +1114,18 @@ footer hr {
 .news-search-row.doc-search-panel {
     flex-direction: column;
     align-items: stretch;
-    /* Отступ снизу уменьшен вдвое (16px → 8px), чтобы расстояние от поля
-       поиска до полосы «Найдено документов» (8 + 12 margin + 10 padding
-       = 30px) совпадало с расстоянием от неё до первой карточки
-       документа (10 padding + 20 margin = 30px). */
-    padding-bottom: 8px;
+    /* .news-search-row задаёт gap:20px на всех детей строки (флекс-ряд);
+       здесь строка одна, ряд стал колонкой — тот же gap используется как
+       единственный вертикальный отступ между заголовком и полем поиска
+       (взамен margin у заголовка, который просто складывался бы с gap). */
+    gap: 30px;
+    /* Отступ снизу — такой же (30px), чтобы расстояние от поля поиска до
+       полосы «Найдено документов» совпадало с остальными тремя. */
+    padding-bottom: 30px;
 }
 
 .doc-search-panel h2 {
-    margin-bottom: 16px;
+    margin-bottom: 0;
 }
 
 /* .news-search-input-form наследует flex: 1 1 320px, рассчитанный на
@@ -1153,7 +1156,7 @@ footer hr {
     text-align: center;
     padding: 10px 16px;
     font-size: 14px;
-    margin: 12px 0 20px;
+    margin: 20px 0;
 }
 
 /* Боковое меню категорий в правом столбце — как на странице документов
