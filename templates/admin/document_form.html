@@ -1,15 +1,15 @@
 {% extends "admin/base_admin.html" %}
 {% set active = 'documents' %}
 
-{% block title %}Загрузка документа — Панель администратора{% endblock %}
+{% block title %}{{ 'Изменение документа' if document else 'Загрузка документа' }} — Панель администратора{% endblock %}
 
 {% block admin_content %}
-    <h1 class="h4 mb-4">Загрузка документа</h1>
+    <h1 class="h4 mb-4">{{ 'Изменение документа' if document else 'Загрузка документа' }}</h1>
 
     <form method="post" enctype="multipart/form-data" class="card p-4">
         <div class="mb-3">
             <label for="title" class="form-label">Название документа</label>
-            <input type="text" class="form-control" id="title" name="title" required>
+            <input type="text" class="form-control" id="title" name="title" value="{{ document.title if document else '' }}" required>
         </div>
         <div class="row mb-3">
             <div class="col-md-6">
@@ -17,7 +17,7 @@
                 <select class="form-select" id="doc_category" name="doc_category">
                     <option value="">—</option>
                     {% for choice in category_choices %}
-                        <option value="{{ choice }}">{{ choice }}</option>
+                        <option value="{{ choice }}" {{ 'selected' if document and document.doc_category == choice }}>{{ choice }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -30,11 +30,11 @@
             </div>
         </div>
         <div class="mb-3">
-            <label for="file" class="form-label">Файл (PDF, DOCX)</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".pdf,.docx" required>
+            <label for="file" class="form-label">Файл (PDF, DOCX){{ ' — оставьте пустым, чтобы не менять' if document }}</label>
+            <input type="file" class="form-control" id="file" name="file" accept=".pdf,.docx" {{ 'required' if not document }}>
         </div>
         <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-primary">Загрузить</button>
+            <button type="submit" class="btn btn-primary">{{ 'Сохранить' if document else 'Загрузить' }}</button>
             <a class="btn btn-outline-secondary" href="{{ url_for('admin.documents_list') }}">Отмена</a>
         </div>
     </form>
@@ -44,6 +44,7 @@
             var sectionsByCategory = {{ sections_by_category|tojson }};
             var categorySelect = document.getElementById('doc_category');
             var sectionSelect = document.getElementById('section_id');
+            var currentSectionId = {{ document.section_id|tojson if document else 'null' }};
 
             function rebuildSections() {
                 sectionSelect.innerHTML = '';
@@ -55,6 +56,9 @@
                     var opt = document.createElement('option');
                     opt.value = s.id;
                     opt.textContent = s.name;
+                    if (currentSectionId && s.id === currentSectionId) {
+                        opt.selected = true;
+                    }
                     sectionSelect.appendChild(opt);
                 });
             }

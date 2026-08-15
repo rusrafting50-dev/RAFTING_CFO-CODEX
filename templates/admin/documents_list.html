@@ -35,10 +35,13 @@
                             <td>{{ document.uploaded_at.strftime('%d.%m.%Y') if document.uploaded_at else '' }}</td>
                             {% if current_user.role in ('admin', 'editor') %}
                                 <td>
-                                    <form method="post" action="{{ url_for('admin.documents_delete', document_id=document.id) }}"
-                                          onsubmit="return confirm('Удалить документ?');">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-                                    </form>
+                                    <div class="d-flex gap-2">
+                                        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.documents_edit', document_id=document.id) }}">Изменить</a>
+                                        <form method="post" action="{{ url_for('admin.documents_delete', document_id=document.id) }}"
+                                              onsubmit="return confirm('Удалить документ?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                        </form>
+                                    </div>
                                 </td>
                             {% endif %}
                         </tr>

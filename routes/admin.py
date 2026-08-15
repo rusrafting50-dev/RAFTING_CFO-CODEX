@@ -620,6 +620,55 @@ def documents_new():
     )
 
 
+@bp.route('/documents/<int:document_id>/edit', methods=['GET', 'POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def documents_edit(document_id):
+    document = Document.query.get_or_404(document_id)
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        file = request.files.get('file')
+
+        if not title:
+            flash('Название документа обязательно.', 'error')
+            return render_template(
+                'admin/document_form.html', active='documents', document=document,
+                category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
+            )
+
+        if file and file.filename:
+            if not allowed_document(file.filename):
+                flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
+                return render_template(
+                    'admin/document_form.html', active='documents', document=document,
+                    category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
+                )
+
+            filename = secure_filename(file.filename)
+            unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
+            upload_dir = current_app.config['UPLOAD_FOLDER']
+            os.makedirs(upload_dir, exist_ok=True)
+            file.save(os.path.join(upload_dir, unique_name))
+
+            old_path = os.path.join(current_app.root_path, 'static', document.file_path)
+            if os.path.exists(old_path):
+                os.remove(old_path)
+            document.file_path = f"uploads/{unique_name}"
+
+        document.title = title
+        document.doc_category = request.form.get('doc_category') or None
+        document.section_id = request.form.get('section_id', type=int)
+        db.session.commit()
+        flash('Документ изменён.', 'success')
+        return redirect(url_for('admin.documents_list'))
+
+    return render_template(
+        'admin/document_form.html', active='documents', document=document,
+        category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
+    )
+
+
 @bp.route('/documents/<int:document_id>/delete', methods=['POST'])
 @section_required('documents')
 @roles_required('admin', 'editor')
