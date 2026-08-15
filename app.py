@@ -127,6 +127,14 @@ def ru_plural(count, one, few, many):
     return many
 
 
+def file_extension(path):
+    """Расширение файла в нижнем регистре без точки ("pdf", "docx") —
+    для выбора значка типа файла на странице документов."""
+    if not path or '.' not in path:
+        return ''
+    return path.rsplit('.', 1)[1].lower()
+
+
 def cap_first(value):
     """Первая буква прописная, остальной текст не трогаем (в отличие от
     str.capitalize(), который заодно понижает регистр всего остального —
@@ -186,6 +194,7 @@ def create_app():
     app.jinja_env.filters['ru_date_range'] = format_ru_date_range
     app.jinja_env.filters['cap_first'] = cap_first
     app.jinja_env.filters['ru_plural'] = ru_plural
+    app.jinja_env.filters['file_extension'] = file_extension
     app.jinja_env.filters['seminar_category_badge'] = seminar_category_badge
     app.jinja_env.filters['event_status_label'] = event_status_label
     app.jinja_env.filters['media_thumb'] = media_thumb

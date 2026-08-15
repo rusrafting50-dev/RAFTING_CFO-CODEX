@@ -9,32 +9,49 @@
 
         <div class="row g-4">
             <div class="col-lg-8">
-                <div class="card p-4">
-                    <h2 class="h6 text-uppercase mb-3">{{ selected_category or 'Все документы' }}</h2>
-                    <div class="mb-3">
-                        <input type="text" id="doc-search" class="form-control" placeholder="Поиск...">
+                <div class="card">
+                    <div class="p-4 pb-0">
+                        <h2 class="h6 text-uppercase mb-3">{{ selected_category or 'Все документы' }}</h2>
+                        <div class="mb-0">
+                            <input type="text" id="doc-search" class="form-control" placeholder="Поиск...">
+                        </div>
                     </div>
-                    <p class="text-muted small">Найдено документов: <span id="doc-count">{{ documents|length }}</span></p>
 
-                    {% if selected_category %}
-                        <a href="{{ url_for('documents.index') }}" class="d-inline-block mb-3">&larr; Все документы</a>
-                    {% endif %}
+                    <div class="doc-count-bar">Найдено документов: <span id="doc-count">{{ documents|length }}</span></div>
 
-                    {% if documents %}
-                        <ul class="list-unstyled mb-0" id="doc-list">
-                            {% for document in documents %}
-                                <li class="doc-list-item py-3 border-bottom" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
-                                    <div class="text-muted small mb-1">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</div>
-                                    <div class="d-flex justify-content-between align-items-center gap-3">
-                                        <span class="fw-semibold">{{ document.title }}</span>
-                                        <a class="btn btn-sm btn-outline-primary text-nowrap" href="{{ url_for('static', filename=document.file_path) }}" download>Скачать</a>
-                                    </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p class="text-muted mb-0">Документы пока не загружены.</p>
-                    {% endif %}
+                    <div class="p-4 pt-3">
+                        {% if selected_category %}
+                            <a href="{{ url_for('documents.index') }}" class="d-inline-block mb-3">&larr; Все документы</a>
+                        {% endif %}
+
+                        {% if documents %}
+                            <ul class="list-unstyled mb-0" id="doc-list">
+                                {% for document in documents %}
+                                    {% set ext = document.file_path|file_extension %}
+                                    {% set icon_class = 'doc-icon-pdf' if ext == 'pdf' else ('doc-icon-word' if ext in ('doc', 'docx') else ('doc-icon-excel' if ext in ('xls', 'xlsx') else 'doc-icon-file')) %}
+                                    <li class="doc-list-item py-3 border-bottom" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
+                                        <div class="text-muted small mb-1">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</div>
+                                        <div class="d-flex justify-content-between align-items-start gap-3">
+                                            <div>
+                                                <div class="fw-semibold mb-2">{{ document.title }}</div>
+                                                <button type="button" class="btn btn-sm btn-primary doc-copy-link"
+                                                        data-url="{{ url_for('static', filename=document.file_path, _external=True) }}">
+                                                    <span aria-hidden="true">&#10697;</span> Скопировать ссылку
+                                                </button>
+                                            </div>
+                                            <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=document.file_path) }}"
+                                               target="_blank" rel="noopener">
+                                                <span class="doc-file-icon {{ icon_class }}">.{{ ext }}</span>
+                                                <span class="d-block small">Открыть</span>
+                                            </a>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">Документы пока не загружены.</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
@@ -81,6 +98,18 @@
                     if (match) visible++;
                 });
                 countEl.textContent = visible;
+            });
+        })();
+
+        (function () {
+            document.querySelectorAll('.doc-copy-link').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    navigator.clipboard.writeText(btn.dataset.url).then(function () {
+                        var original = btn.innerHTML;
+                        btn.innerHTML = 'Скопировано';
+                        setTimeout(function () { btn.innerHTML = original; }, 1500);
+                    });
+                });
             });
         })();
     </script>

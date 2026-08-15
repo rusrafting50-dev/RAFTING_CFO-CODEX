@@ -1135,6 +1135,61 @@ footer hr {
     margin-left: 8px;
 }
 
+/* Полоса «Найдено документов» — во всю ширину карточки, разрывает белый
+   фон серой полосой (как на странице документов rfs.ru), а не просто
+   строка текста внутри обычного отступа карточки. */
+.doc-count-bar {
+    background: #f0f0f0;
+    color: #6c757d;
+    text-align: center;
+    padding: 12px 16px;
+    font-size: 14px;
+    margin-top: 16px;
+}
+
+.doc-copy-link {
+    font-size: 13px;
+}
+
+.doc-open-link {
+    flex: none;
+    text-decoration: none;
+    color: var(--color-dark);
+}
+
+.doc-open-link:hover {
+    color: var(--color-accent);
+}
+
+.doc-file-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 54px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.doc-icon-pdf {
+    background: #d93025;
+}
+
+.doc-icon-word {
+    background: #2b579a;
+}
+
+.doc-icon-excel {
+    background: #1d6f42;
+}
+
+.doc-icon-file {
+    background: #6c757d;
+}
+
 .org-card-info {
     display: flex;
     flex-direction: column;
