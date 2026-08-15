@@ -137,48 +137,52 @@
 
         <div class="tab-content" id="compTabsContent">
             <div class="tab-pane fade show active" id="tab-info" role="tabpanel">
-                <div class="comp-banner">
-                    <div class="comp-banner-circle">
-                        {% if competition.logo_path %}
-                            <img src="{{ url_for('static', filename=competition.logo_path) }}" alt="{{ competition.name }}">
-                        {% else %}
-                            <span class="comp-banner-circle-name">{{ competition.name }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="comp-banner-meta">
-                        {% if competition.start_date %}
-                            <span class="comp-banner-meta-item">
-                                <span aria-hidden="true">📅</span>
-                                {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} &ndash; {{ competition.end_date|ru_date_full }}{% endif %}
-                            </span>
-                        {% endif %}
-                        {% if competition.location %}
-                            <span class="comp-banner-meta-item">
-                                <span aria-hidden="true">📍</span>
-                                {{ competition.location }}
-                            </span>
-                        {% endif %}
-                    </div>
-                    {% if competition.status or competition.registration_number %}
-                        <div class="comp-banner-meta comp-banner-meta-secondary">
-                            {% if competition.status %}
-                                <span class="comp-banner-meta-item">Статус: {{ competition.status }}</span>
-                            {% endif %}
-                            {% if competition.registration_number %}
-                                <span class="comp-banner-meta-item">№ ЕКП/КП: {{ competition.registration_number }}</span>
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="comp-banner">
+                            <div class="comp-banner-circle">
+                                {% if competition.logo_path %}
+                                    <img src="{{ url_for('static', filename=competition.logo_path) }}" alt="{{ competition.name }}">
+                                {% else %}
+                                    <span class="comp-banner-circle-name">{{ competition.name }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="comp-banner-meta">
+                                {% if competition.start_date %}
+                                    <span class="comp-banner-meta-item">
+                                        <span aria-hidden="true">📅</span>
+                                        {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} &ndash; {{ competition.end_date|ru_date_full }}{% endif %}
+                                    </span>
+                                {% endif %}
+                                {% if competition.location %}
+                                    <span class="comp-banner-meta-item">
+                                        <span aria-hidden="true">📍</span>
+                                        {{ competition.location }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% if competition.status or competition.registration_number %}
+                                <div class="comp-banner-meta comp-banner-meta-secondary">
+                                    {% if competition.status %}
+                                        <span class="comp-banner-meta-item">Статус: {{ competition.status }}</span>
+                                    {% endif %}
+                                    {% if competition.registration_number %}
+                                        <span class="comp-banner-meta-item">№ ЕКП/КП: {{ competition.registration_number }}</span>
+                                    {% endif %}
+                                </div>
                             {% endif %}
                         </div>
-                    {% endif %}
-                </div>
 
-                <div class="row g-4">
-                    <div class="col-lg-6">
-                        <h2 class="h5 mb-3">ИНФОРМАЦИЯ</h2>
-                        {{ document_cards(info_documents) }}
-                    </div>
-                    <div class="col-lg-6">
-                        <h2 class="h5 mb-3">ДОКУМЕНТЫ СОРЕВНОВАНИЙ</h2>
-                        {{ document_cards(competition_documents_docs) }}
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <h2 class="h5 mb-3">ИНФОРМАЦИЯ</h2>
+                                {{ document_cards(info_documents) }}
+                            </div>
+                            <div class="col-lg-6">
+                                <h2 class="h5 mb-3">ДОКУМЕНТЫ СОРЕВНОВАНИЙ</h2>
+                                {{ document_cards(competition_documents_docs) }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
