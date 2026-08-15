@@ -7,77 +7,80 @@
     <div class="container py-5">
         <h1 class="h3 mb-4">Рафтинг ЦФО</h1>
 
+        <div class="news-search-row mb-5">
+            <form method="get" action="{{ url_for('documents.index') }}" class="news-search-input-form">
+                {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                <label class="news-search-input">
+                    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M13.5 12h-.8l-.3-.3c1-1.1 1.6-2.6 1.6-4.2C14 3.9 11.6 1.5 8.5 1.5S3 3.9 3 7s2.4 5.5 5.5 5.5c1.6 0 3.1-.6 4.2-1.6l.3.3v.8l4.2 4.2 1.3-1.3-4.2-4.2ZM8.5 11C6.6 11 5 9.4 5 7.5S6.6 4 8.5 4 12 5.6 12 7.5 10.4 11 8.5 11Z"/></svg>
+                    <input type="text" id="doc-search" placeholder="Поиск...">
+                </label>
+            </form>
+        </div>
+
         <div class="row g-4">
-            <div class="col-lg-8">
-                <div class="card">
-                    <div class="p-4 pb-0">
-                        <h2 class="h6 text-uppercase mb-3">{{ selected_category or 'Все документы' }}</h2>
-                        <div class="mb-0">
-                            <input type="text" id="doc-search" class="form-control" placeholder="Поиск...">
-                        </div>
-                    </div>
-
-                    <div class="doc-count-bar">Найдено документов: <span id="doc-count">{{ documents|length }}</span></div>
-
-                    <div class="p-4 pt-3">
-                        {% if selected_category %}
-                            <a href="{{ url_for('documents.index') }}" class="d-inline-block mb-3">&larr; Все документы</a>
-                        {% endif %}
-
-                        {% if documents %}
-                            <ul class="list-unstyled mb-0" id="doc-list">
-                                {% for document in documents %}
-                                    {% set ext = document.file_path|file_extension %}
-                                    {% set icon_class = 'doc-icon-pdf' if ext == 'pdf' else ('doc-icon-word' if ext in ('doc', 'docx') else ('doc-icon-excel' if ext in ('xls', 'xlsx') else 'doc-icon-file')) %}
-                                    <li class="doc-list-item py-3 border-bottom" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
-                                        <div class="text-muted small mb-1">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</div>
-                                        <div class="d-flex justify-content-between align-items-start gap-3">
-                                            <div>
-                                                <div class="fw-semibold mb-2">{{ document.title }}</div>
-                                                <button type="button" class="btn btn-sm btn-primary doc-copy-link"
-                                                        data-url="{{ url_for('static', filename=document.file_path, _external=True) }}">
-                                                    Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
-                                                </button>
-                                            </div>
-                                            <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=document.file_path) }}"
-                                               target="_blank" rel="noopener">
-                                                <span class="doc-file-icon {{ icon_class }}">.{{ ext }}</span>
-                                                <span class="d-block small">Открыть</span>
-                                            </a>
-                                        </div>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted mb-0">Документы пока не загружены.</p>
-                        {% endif %}
-                    </div>
+            <div class="col-lg-9">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                    <h2 class="h5 mb-0">{{ selected_category or 'Все документы' }}</h2>
+                    <span class="text-muted small">Найдено документов: <span id="doc-count">{{ documents|length }}</span></span>
                 </div>
+
+                {% if selected_category %}
+                    <a href="{{ url_for('documents.index') }}" class="d-inline-block mb-3">&larr; Все документы</a>
+                {% endif %}
+
+                {% if documents %}
+                    <div id="doc-list">
+                        {% for document in documents %}
+                            {% set ext = document.file_path|file_extension %}
+                            {% set icon_class = 'doc-icon-pdf' if ext == 'pdf' else ('doc-icon-word' if ext in ('doc', 'docx') else ('doc-icon-excel' if ext in ('xls', 'xlsx') else 'doc-icon-file')) %}
+                            <div class="doc-list-item py-3 border-bottom" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
+                                <p class="news-row-date">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</p>
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <h3 class="doc-list-title">{{ document.title }}</h3>
+                                        <button type="button" class="btn btn-sm btn-primary doc-copy-link"
+                                                data-url="{{ url_for('static', filename=document.file_path, _external=True) }}">
+                                            Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                    <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=document.file_path) }}"
+                                       target="_blank" rel="noopener">
+                                        <span class="doc-file-icon {{ icon_class }}">.{{ ext }}</span>
+                                        <span class="d-block small">Открыть</span>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Документы пока не загружены.</p>
+                {% endif %}
             </div>
 
-            <div class="col-lg-4">
-                <div class="card p-3">
-                    {% if not categories %}
-                        <p class="text-muted mb-0 p-2">Категории пока не добавлены.</p>
-                    {% endif %}
-                    {% for category in categories %}
-                        {% set is_open = category.name == selected_category %}
-                        <div class="doc-category-item">
-                            <a class="doc-category-toggle {{ 'active' if is_open }}"
-                               href="{{ url_for('documents.index', category=category.name) }}">
-                                {{ category.name }}
-                            </a>
-                            {% if is_open %}
-                                <ul class="list-unstyled ps-3 small mb-2">
-                                    {% for document in documents_by_category.get(category.name, []) %}
-                                        <li><a href="#doc-{{ document.id }}">{{ document.title }}</a></li>
-                                    {% else %}
-                                        <li class="text-muted">Документов нет</li>
-                                    {% endfor %}
-                                </ul>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
+            <div class="col-lg-3">
+                <div class="official-panel">
+                    <h2 class="official-panel-title">Разделы</h2>
+                    <div class="official-list" style="overflow: visible;">
+                        {% if not categories %}
+                            <p class="official-empty">Категории пока не добавлены.</p>
+                        {% endif %}
+                        {% for category in categories %}
+                            {% set is_open = category.name == selected_category %}
+                            <div class="official-item">
+                                <a class="doc-category-link {{ 'active' if is_open }}"
+                                   href="{{ url_for('documents.index', category=category.name) }}">{{ category.name }}</a>
+                                {% if is_open %}
+                                    <ul class="list-unstyled small mb-0 mt-2">
+                                        {% for document in documents_by_category.get(category.name, []) %}
+                                            <li><a href="#doc-{{ document.id }}">{{ document.title }}</a></li>
+                                        {% else %}
+                                            <li class="text-muted">Документов нет</li>
+                                        {% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>

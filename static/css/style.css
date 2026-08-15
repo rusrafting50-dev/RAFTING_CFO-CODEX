@@ -1096,63 +1096,48 @@ footer hr {
     object-fit: contain;
 }
 
-/* Страница «Рафтинг ЦФО» (документы) — боковое меню категорий, как на
-   странице документов rfs.ru: клик по категории ведёт на ?category=...
-   (фильтрует список в основном поле) и разворачивает список документов
-   этой категории прямо под её пунктом в меню. */
-.doc-category-item {
-    border-bottom: 1px solid #eee;
+/* Страница «Рафтинг ЦФО» (документы) — заголовок документа тем же
+   шрифтом, что заголовок новости (.news-row-title), но без обрезки по
+   строкам/min-height — там это нужно для карточек одинаковой высоты,
+   здесь названия документов обычно однострочные. */
+.doc-list-title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 24px;
+    color: #000;
+    margin: 0 0 8px;
 }
 
-.doc-category-item:last-child {
-    border-bottom: none;
-}
-
-.doc-category-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 10px;
+/* Боковое меню категорий в правом столбце, оформлено как колонка
+   "Официально" на странице новостей (.official-panel/.official-item),
+   выделение выбранной категории — как активный пункт .news-submenu
+   (тёмная плашка, белый текст). */
+.doc-category-link {
+    display: block;
     color: var(--color-dark);
     font-weight: 600;
     text-decoration: none;
-}
-
-.doc-category-toggle:hover {
-    color: var(--color-accent);
-    text-decoration: none;
-}
-
-.doc-category-toggle.active {
-    background: var(--color-accent);
-    color: #fff;
+    padding: 6px 10px;
     border-radius: 4px;
 }
 
-.doc-category-toggle::after {
-    content: '\25be';
-    font-size: 12px;
-    margin-left: 8px;
+.doc-category-link:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--color-dark);
+    text-decoration: none;
 }
 
-/* Полоса «Найдено документов» — во всю ширину карточки, разрывает белый
-   фон серой полосой (как на странице документов rfs.ru), а не просто
-   строка текста внутри обычного отступа карточки. */
-.doc-count-bar {
-    background: #f0f0f0;
-    color: #6c757d;
-    text-align: center;
-    padding: 12px 16px;
-    font-size: 14px;
-    margin-top: 16px;
+.doc-category-link.active {
+    background: #4a4a5a;
+    color: #fff;
+    font-weight: 700;
 }
 
 .doc-copy-link {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
-    font-size: 19.5px;
-    padding: 6px 12px;
+    gap: 8px;
+    font-size: 13px;
 }
 
 /* Значок на кнопке «Скопировать ссылку» — тот же приём, что у бейджа
@@ -1163,8 +1148,8 @@ footer hr {
     position: relative;
     display: inline-block;
     flex: none;
-    width: 15px;
-    height: 12px;
+    width: 10px;
+    height: 8px;
     transform: rotate(-90deg);
 }
 
@@ -1173,10 +1158,10 @@ footer hr {
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 12px;
-    height: 9px;
+    width: 8px;
+    height: 6px;
     background: transparent;
-    border: 1.95px solid currentColor;
+    border: 1.3px solid currentColor;
     border-radius: 1px;
     box-sizing: border-box;
 }
@@ -1186,10 +1171,10 @@ footer hr {
     position: absolute;
     top: 0;
     right: 0;
-    width: 12px;
-    height: 9px;
-    border-top: 1.95px solid currentColor;
-    border-right: 1.95px solid currentColor;
+    width: 8px;
+    height: 6px;
+    border-top: 1.3px solid currentColor;
+    border-right: 1.3px solid currentColor;
 }
 
 .doc-open-link {
