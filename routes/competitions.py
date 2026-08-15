@@ -43,6 +43,14 @@ INFO_DOCUMENT_TYPES = [
     ('расписание', 'Расписание тренировок'),
 ]
 
+# Карточки документов в блоке «Документы соревнований» на той же
+# вкладке — тот же приём, что INFO_DOCUMENT_TYPES.
+COMPETITION_DOCUMENTS_TYPES = [
+    ('справка_о_судьях', 'Справка о квалификации и составе судейской коллегии'),
+    ('справка_о_субъектах', 'Справка о количестве регионов, принявших участие в соревнованиях'),
+    ('протокол_совещания_гск', 'Протокол совещания ГСК с представителями команд'),
+]
+
 # Порядок и подписи дисциплин на вкладке "Результаты" (второй ряд меню).
 # Список фиксированный — пункт появляется, только если для него реально
 # пришли данные от COREZ (многоборье пересчитывается инкрементально по мере
@@ -186,6 +194,10 @@ def detail(competition_id):
         {'doc_type': doc_type, 'label': label, 'docs': documents_by_type.get(doc_type, [])}
         for doc_type, label in INFO_DOCUMENT_TYPES
     ]
+    competition_documents_docs = [
+        {'doc_type': doc_type, 'label': label, 'docs': documents_by_type.get(doc_type, [])}
+        for doc_type, label in COMPETITION_DOCUMENTS_TYPES
+    ]
 
     return render_template(
         'competitions/detail.html',
@@ -193,6 +205,7 @@ def detail(competition_id):
         documents_by_type=documents_by_type,
         results_groups=results_groups,
         info_documents=info_documents,
+        competition_documents_docs=competition_documents_docs,
         applications=applications, total_athletes=total_athletes,
         can_submit_application=can_submit_application, application_logos=application_logos,
     )

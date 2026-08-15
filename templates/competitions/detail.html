@@ -3,6 +3,43 @@
 {% block title %}{{ competition.name }} — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}{{ competition.name }}: даты, место проведения, документы{% endblock %}
 
+{% macro document_cards(items) %}
+    {% for item in items %}
+        {% if item.docs %}
+            {% for doc in item.docs %}
+                {% set ext = doc.file_path|file_extension %}
+                {% set icon_file = 'pdf_icon_48.png' if ext == 'pdf' else ('word_icon_48.png' if ext in ('doc', 'docx') else ('excel_icon_48.png' if ext in ('xls', 'xlsx') else None)) %}
+                <div class="doc-list-item">
+                    <p class="news-row-date">{{ doc.uploaded_at|ru_date_full if doc.uploaded_at else '' }}</p>
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <h3 class="doc-list-title">{{ item.label }}</h3>
+                            <button type="button" class="btn btn-sm btn-primary doc-copy-link"
+                                    data-url="{{ url_for('static', filename=doc.file_path, _external=True) }}">
+                                Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=doc.file_path) }}"
+                           target="_blank" rel="noopener">
+                            {% if icon_file %}
+                                <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt=".{{ ext }}">
+                            {% else %}
+                                <span class="doc-file-icon doc-icon-file">.{{ ext }}</span>
+                            {% endif %}
+                            <span class="d-block small">Открыть</span>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="doc-list-item doc-list-item-empty">
+                <h3 class="doc-list-title">{{ item.label }}</h3>
+                <p class="text-muted small mb-0">Пока не загружено.</p>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
 {% macro results_table(doc) %}
     {% set попытка_подколонки = ('время', 'штраф', 'итог') %}
     {% set есть_попытки = ('1 попытка, время' in doc.protocol_columns) %}
@@ -135,43 +172,13 @@
                 </div>
 
                 <div class="row g-4">
-                    <div class="col-lg-6" id="comp-info-left"></div>
                     <div class="col-lg-6">
                         <h2 class="h5 mb-3">ИНФОРМАЦИЯ</h2>
-                        {% for item in info_documents %}
-                            {% if item.docs %}
-                                {% for doc in item.docs %}
-                                    {% set ext = doc.file_path|file_extension %}
-                                    {% set icon_file = 'pdf_icon_48.png' if ext == 'pdf' else ('word_icon_48.png' if ext in ('doc', 'docx') else ('excel_icon_48.png' if ext in ('xls', 'xlsx') else None)) %}
-                                    <div class="doc-list-item">
-                                        <p class="news-row-date">{{ doc.uploaded_at|ru_date_full if doc.uploaded_at else '' }}</p>
-                                        <div class="d-flex justify-content-between align-items-start gap-3">
-                                            <div>
-                                                <h3 class="doc-list-title">{{ item.label }}</h3>
-                                                <button type="button" class="btn btn-sm btn-primary doc-copy-link"
-                                                        data-url="{{ url_for('static', filename=doc.file_path, _external=True) }}">
-                                                    Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
-                                                </button>
-                                            </div>
-                                            <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=doc.file_path) }}"
-                                               target="_blank" rel="noopener">
-                                                {% if icon_file %}
-                                                    <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt=".{{ ext }}">
-                                                {% else %}
-                                                    <span class="doc-file-icon doc-icon-file">.{{ ext }}</span>
-                                                {% endif %}
-                                                <span class="d-block small">Открыть</span>
-                                            </a>
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="doc-list-item doc-list-item-empty">
-                                    <h3 class="doc-list-title">{{ item.label }}</h3>
-                                    <p class="text-muted small mb-0">Пока не загружено.</p>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
+                        {{ document_cards(info_documents) }}
+                    </div>
+                    <div class="col-lg-6">
+                        <h2 class="h5 mb-3">ДОКУМЕНТЫ СОРЕВНОВАНИЙ</h2>
+                        {{ document_cards(competition_documents_docs) }}
                     </div>
                 </div>
             </div>
