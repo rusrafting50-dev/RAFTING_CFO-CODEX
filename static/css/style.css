@@ -1114,10 +1114,24 @@ footer hr {
 .news-search-row.doc-search-panel {
     flex-direction: column;
     align-items: stretch;
+    /* Отступ снизу уменьшен вдвое (16px → 8px), чтобы расстояние от поля
+       поиска до полосы «Найдено документов» (8 + 12 margin + 10 padding
+       = 30px) совпадало с расстоянием от неё до первой карточки
+       документа (10 padding + 20 margin = 30px). */
+    padding-bottom: 8px;
 }
 
 .doc-search-panel h2 {
     margin-bottom: 16px;
+}
+
+/* .news-search-input-form наследует flex: 1 1 320px, рассчитанный на
+   горизонтальную раскладку (.news-search-row по умолчанию — строка), где
+   320px задаёт минимальную ШИРИНУ. В .doc-search-panel раскладка
+   вертикальная (flex-direction: column), и то же правило без переопределения
+   растянуло бы форму на 320px в ВЫСОТУ — сбрасываем flex-basis на auto. */
+.doc-search-panel .news-search-input-form {
+    flex: none;
 }
 
 /* Каждый документ в списке — отдельная белая карточка с тенью (как на

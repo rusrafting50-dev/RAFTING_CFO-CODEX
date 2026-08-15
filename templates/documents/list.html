@@ -22,10 +22,6 @@
 
                 <p class="doc-count-bar">Найдено документов: <span id="doc-count">{{ documents|length }}</span></p>
 
-                {% if selected_section %}
-                    <a href="{{ url_for('documents.index') }}" class="d-inline-block mb-3">&larr; Все документы</a>
-                {% endif %}
-
                 {% if documents %}
                     <div id="doc-list">
                         {% for document in documents %}
