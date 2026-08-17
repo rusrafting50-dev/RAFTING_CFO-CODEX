@@ -93,6 +93,11 @@ def ensure_schema():
     _ensure_column(inspector, 'document', 'section_id', 'INTEGER')
     _ensure_column(inspector, 'competition_application', 'logo_path', 'VARCHAR(500)')
     _ensure_column(inspector, 'competition_document', 'is_published', 'BOOLEAN NOT NULL DEFAULT 1')
+    _ensure_column(inspector, 'regional_federation', 'intro_text', 'TEXT')
+    _ensure_column(inspector, 'regional_federation', 'goals_text', 'TEXT')
+    _ensure_column(inspector, 'regional_federation', 'contact_phone', 'VARCHAR(100)')
+    _ensure_column(inspector, 'regional_federation', 'contact_email', 'VARCHAR(150)')
+    _ensure_column(inspector, 'regional_federation', 'contact_address', 'VARCHAR(500)')
 
 
 def seed_news_taxonomy():

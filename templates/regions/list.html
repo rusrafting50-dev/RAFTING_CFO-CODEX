@@ -11,7 +11,7 @@
             <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
                 {% for rf in regional_federations %}
                     <div class="col">
-                        <div class="region-card">
+                        <a class="region-card" href="{{ url_for('regions.detail', region_id=rf.id) }}">
                             <div class="region-card-photo">
                                 <div class="region-card-logo">
                                     {% if rf.logo_path %}
@@ -22,7 +22,7 @@
                             <div class="region-card-body">
                                 <h2 class="region-card-name">{{ rf.name }}</h2>
                             </div>
-                        </div>
+                        </a>
                     </div>
                 {% endfor %}
             </div>

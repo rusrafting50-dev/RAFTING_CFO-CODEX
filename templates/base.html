@@ -17,18 +17,31 @@
 <header>
     <div class="header-top">
         <div class="container header-top-inner">
-            <div class="org-name org-name-left">
-                <span class="org-title">ФЕДЕРАЦИЯ РАФТИНГА РОССИИ</span>
-                <span class="org-subtitle">Общероссийская общественная организация</span>
-            </div>
-            <div class="org-name org-name-right">
-                <span class="org-title">Центральный федеральный округ</span>
-                <span class="org-subtitle">РОССИЙСКОЙ ФЕДЕРАЦИИ</span>
-            </div>
+            {% if region %}
+                <div class="org-name org-name-left">
+                    <span class="org-title">{{ region.name_quoted|upper }}</span>
+                    {% if region.name_before_quote %}
+                        <span class="org-subtitle">{{ region.name_before_quote }}</span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="org-name org-name-left">
+                    <span class="org-title">ФЕДЕРАЦИЯ РАФТИНГА РОССИИ</span>
+                    <span class="org-subtitle">Общероссийская общественная организация</span>
+                </div>
+                <div class="org-name org-name-right">
+                    <span class="org-title">Центральный федеральный округ</span>
+                    <span class="org-subtitle">РОССИЙСКОЙ ФЕДЕРАЦИИ</span>
+                </div>
+            {% endif %}
         </div>
     </div>
-    <a class="logo-link" href="{{ url_for('main.index') }}" aria-label="На главную">
-        <img class="logo" src="{{ url_for('static', filename='img/ФРР лого.png') }}" alt="Федерация рафтинга России">
+    <a class="logo-link" href="{{ url_for('regions.detail', region_id=region.id) if region else url_for('main.index') }}" aria-label="На главную">
+        {% if region and region.logo_path %}
+            <img class="logo" src="{{ url_for('static', filename=region.logo_path) }}" alt="{{ region.name }}">
+        {% else %}
+            <img class="logo" src="{{ url_for('static', filename='img/ФРР лого.png') }}" alt="Федерация рафтинга России">
+        {% endif %}
     </a>
     <nav class="header-nav navbar navbar-expand-lg navbar-dark">
         <div class="container header-nav-inner">
@@ -37,25 +50,47 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav nav-left">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.news') }}">Новости</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.index') }}">Регионы ЦФО</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('documents.index') }}">Рафтинг ЦФО</a></li>
-                </ul>
-                <ul class="navbar-nav nav-right">
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Календарь ЦФО</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                           aria-expanded="false">
-                            Соревнования
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('competitions.current') }}">Текущие</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('competitions.archive') }}">Архив</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
-                </ul>
+                {% if region %}
+                    <ul class="navbar-nav nav-left">
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.news') }}">Новости</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.section', region_id=region.id, section='clubs') }}">Клубы</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.section', region_id=region.id, section='calendar') }}">Календарь</a></li>
+                    </ul>
+                    <ul class="navbar-nav nav-right">
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.detail', region_id=region.id) }}">Федерация</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Соревнования
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('competitions.current') }}">Текущие</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('competitions.archive') }}">Архив</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
+                    </ul>
+                {% else %}
+                    <ul class="navbar-nav nav-left">
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.news') }}">Новости</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.index') }}">Регионы ЦФО</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('documents.index') }}">Рафтинг ЦФО</a></li>
+                    </ul>
+                    <ul class="navbar-nav nav-right">
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Календарь ЦФО</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Соревнования
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{{ url_for('competitions.current') }}">Текущие</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('competitions.archive') }}">Архив</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
+                    </ul>
+                {% endif %}
             </div>
         </div>
     </nav>

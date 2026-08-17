@@ -26,6 +26,32 @@
                 {% if region and region.logo_path %}Оставьте поле пустым, чтобы не менять текущий логотип.{% endif %}
             </div>
         </div>
+        <div class="mb-3">
+            <label for="intro_text" class="form-label">Общая информация (на странице федерации, под баннером)</label>
+            <textarea class="form-control" id="intro_text" name="intro_text" rows="4">{{ region.intro_text or '' if region else '' }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="goals_text" class="form-label">Цели и задачи</label>
+            <textarea class="form-control" id="goals_text" name="goals_text" rows="4">{{ region.goals_text or '' if region else '' }}</textarea>
+        </div>
+        <h2 class="h6 mb-3">Контакты</h2>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="contact_phone" class="form-label">Телефон</label>
+                <input type="text" class="form-control" id="contact_phone" name="contact_phone"
+                       value="{{ region.contact_phone or '' if region else '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="contact_email" class="form-label">E-mail</label>
+                <input type="text" class="form-control" id="contact_email" name="contact_email"
+                       value="{{ region.contact_email or '' if region else '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="contact_address" class="form-label">Адрес</label>
+                <input type="text" class="form-control" id="contact_address" name="contact_address"
+                       value="{{ region.contact_address or '' if region else '' }}">
+            </div>
+        </div>
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Сохранить</button>
             <a class="btn btn-outline-secondary" href="{{ url_for('admin.regions_list') }}">Отмена</a>

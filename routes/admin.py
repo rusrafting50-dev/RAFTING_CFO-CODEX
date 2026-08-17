@@ -876,6 +876,11 @@ def regions_new():
         region = RegionalFederation(
             name=name,
             logo_path=save_upload(logo) if logo and logo.filename else None,
+            intro_text=request.form.get('intro_text', '').strip() or None,
+            goals_text=request.form.get('goals_text', '').strip() or None,
+            contact_phone=request.form.get('contact_phone', '').strip() or None,
+            contact_email=request.form.get('contact_email', '').strip() or None,
+            contact_address=request.form.get('contact_address', '').strip() or None,
         )
         db.session.add(region)
         db.session.commit()
@@ -906,6 +911,11 @@ def regions_edit(region_id):
         region.name = name
         if logo and logo.filename:
             region.logo_path = save_upload(logo)
+        region.intro_text = request.form.get('intro_text', '').strip() or None
+        region.goals_text = request.form.get('goals_text', '').strip() or None
+        region.contact_phone = request.form.get('contact_phone', '').strip() or None
+        region.contact_email = request.form.get('contact_email', '').strip() or None
+        region.contact_address = request.form.get('contact_address', '').strip() or None
         db.session.commit()
         flash('Данные обновлены.', 'success')
         return redirect(url_for('admin.regions_list'))

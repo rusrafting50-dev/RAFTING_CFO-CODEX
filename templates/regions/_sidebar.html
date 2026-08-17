@@ -1,0 +1,15 @@
+{# Боковое меню «О федерации» — общее для страницы обзора федерации
+   (regions/detail.html, где `section` не определён — ничего не
+   подсвечено) и страниц её разделов (regions/section.html, `section` —
+   ключ текущего раздела 'goals'/'leadership'/...). #}
+<div class="fed-sidebar">
+    <div class="fed-sidebar-header">О ФЕДЕРАЦИИ</div>
+    <ul class="fed-sidebar-menu">
+        {% for key, label in sections %}
+            <li>
+                <a class="{{ 'active' if section == key }}"
+                   href="{{ url_for('regions.section', region_id=region.id, section=key) }}">{{ label }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>

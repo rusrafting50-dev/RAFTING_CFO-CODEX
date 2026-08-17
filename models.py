@@ -229,11 +229,48 @@ class FederationMember(db.Model):
 
 
 class RegionalFederation(db.Model):
-    """Региональные федерации субъектов ЦФО (страница «Регионы ЦФО»)."""
+    """Региональные федерации субъектов ЦФО (страница «Регионы ЦФО» и
+    персональная страница каждой федерации по клику на неё)."""
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     logo_path = db.Column(db.String(500))
+    # Общая информация под баннером на странице федерации.
+    intro_text = db.Column(db.Text)
+    # Разделы бокового меню «О федерации».
+    goals_text = db.Column(db.Text)  # Цели и задачи
+    contact_phone = db.Column(db.String(100))
+    contact_email = db.Column(db.String(150))
+    contact_address = db.Column(db.String(500))
+
+    # В шапке сайта на странице конкретной федерации наименование
+    # разбивается на 2 строки: часть в кавычках (короткое/торговое
+    # название) — заглавными без кавычек в первой строке, часть до
+    # кавычек — во второй. Если кавычек в названии нет, всё название
+    # выводится одной строкой (name_quoted), а name_before_quote пуст.
+    _QUOTE_PAIRS = (('«', '»'), ('"', '"'), ('“', '”'), ('„', '“'))
+
+    def _split_name(self):
+        name = self.name or ''
+        for open_q, close_q in self._QUOTE_PAIRS:
+            start = name.find(open_q)
+            if start == -1:
+                continue
+            end = name.find(close_q, start + len(open_q))
+            if end == -1:
+                continue
+            before = name[:start].strip()
+            quoted = name[start + len(open_q):end].strip()
+            return before, quoted
+        return '', name.strip()
+
+    @property
+    def name_before_quote(self):
+        return self._split_name()[0]
+
+    @property
+    def name_quoted(self):
+        return self._split_name()[1]
 
 
 class Banner(db.Model):

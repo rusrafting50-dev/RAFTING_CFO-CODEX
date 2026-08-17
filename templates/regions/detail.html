@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ region.name }}: общая информация{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="fed-page-title">{{ region.name }}</h1>
+
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <div class="fed-banner">
+                    {% if region.logo_path %}
+                        <img class="fed-banner-logo" src="{{ url_for('static', filename=region.logo_path) }}" alt="{{ region.name }}">
+                    {% endif %}
+                </div>
+
+                {% if region.intro_text %}
+                    <div class="fed-intro">{{ region.intro_text }}</div>
+                {% else %}
+                    <p class="text-muted">Общая информация о федерации пока не добавлена.</p>
+                {% endif %}
+            </div>
+            <div class="col-lg-3">
+                {% include "regions/_sidebar.html" with context %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
