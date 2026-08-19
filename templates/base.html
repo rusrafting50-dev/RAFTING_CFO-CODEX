@@ -57,18 +57,9 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.section', region_id=region.id, section='clubs') }}">Клубы</a></li>
                     </ul>
                     <ul class="navbar-nav nav-right">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                               aria-expanded="false">
-                                Соревнования
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('competitions.current') }}">Текущие</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('competitions.archive') }}">Архив</a></li>
-                            </ul>
-                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.current') }}">Соревнования</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('documents.index') }}">Рафтинг ЦФО</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Рафтинг ЦФО</a></li>
                     </ul>
                 {% else %}
                     <ul class="navbar-nav nav-left">
@@ -78,16 +69,7 @@
                     </ul>
                     <ul class="navbar-nav nav-right">
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Календарь ЦФО</a></li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                               aria-expanded="false">
-                                Соревнования
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('competitions.current') }}">Текущие</a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('competitions.archive') }}">Архив</a></li>
-                            </ul>
-                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.current') }}">Соревнования</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
                     </ul>
                 {% endif %}
