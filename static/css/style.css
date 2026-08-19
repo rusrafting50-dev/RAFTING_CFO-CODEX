@@ -1283,6 +1283,7 @@ footer hr {
     background: none;
     border: none;
     text-align: left;
+    text-decoration: none;
     padding: 14px 10px;
     color: var(--color-dark);
     font-weight: 400;
@@ -2421,61 +2422,30 @@ footer hr {
     margin-bottom: 24px;
 }
 
+/* Логотип на баннере — тот же приём, что у .region-card-logo на
+   странице «Регионы ЦФО»: белый круг с тенью, картинка вписана внутрь
+   с отступом (71% от круга). */
 .fed-banner-logo {
-    max-width: 220px;
-    max-height: 220px;
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.fed-banner-logo img {
+    width: 71%;
+    height: 71%;
     object-fit: contain;
 }
 
 .fed-intro {
     white-space: pre-line;
     line-height: 1.6;
-}
-
-.fed-sidebar {
-    background: #fff;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.fed-sidebar-header {
-    background: var(--color-accent);
-    color: #fff;
-    font-weight: 700;
-    font-size: 15px;
-    padding: 16px 20px;
-}
-
-.fed-sidebar-menu {
-    list-style: none;
-    margin: 0;
-    padding: 8px 0;
-}
-
-.fed-sidebar-menu li {
-    border-bottom: 1px solid #eee;
-}
-
-.fed-sidebar-menu li:last-child {
-    border-bottom: none;
-}
-
-.fed-sidebar-menu a {
-    display: block;
-    padding: 12px 20px;
-    color: var(--color-dark);
-    text-decoration: none;
-    font-size: 15px;
-}
-
-.fed-sidebar-menu a:hover {
-    color: var(--color-accent);
-}
-
-.fed-sidebar-menu a.active {
-    font-weight: 700;
-    color: var(--color-accent);
 }
 
 /* ===== Таблицы результатов (чередование строк) ===== */

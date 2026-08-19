@@ -37,8 +37,8 @@
         </div>
     </div>
     <a class="logo-link" href="{{ url_for('regions.detail', region_id=region.id) if region else url_for('main.index') }}" aria-label="На главную">
-        {% if region and region.logo_path %}
-            <img class="logo" src="{{ url_for('static', filename=region.logo_path) }}" alt="{{ region.name }}">
+        {% if region and (region.logo_white_path or region.logo_path) %}
+            <img class="logo" src="{{ url_for('static', filename=region.logo_white_path or region.logo_path) }}" alt="{{ region.name }}">
         {% else %}
             <img class="logo" src="{{ url_for('static', filename='img/ФРР лого.png') }}" alt="Федерация рафтинга России">
         {% endif %}
