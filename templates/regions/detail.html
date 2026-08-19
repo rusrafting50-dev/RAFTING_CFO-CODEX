@@ -10,9 +10,11 @@
         <div class="row g-4">
             <div class="col-lg-9">
                 <div class="fed-banner">
-                    {% if region.logo_path %}
-                        <img class="fed-banner-logo" src="{{ url_for('static', filename=region.logo_path) }}" alt="{{ region.name }}">
-                    {% endif %}
+                    <div class="fed-banner-logo">
+                        {% if region.logo_path %}
+                            <img src="{{ url_for('static', filename=region.logo_path) }}" alt="{{ region.name }}">
+                        {% endif %}
+                    </div>
                 </div>
 
                 {% if region.intro_text %}

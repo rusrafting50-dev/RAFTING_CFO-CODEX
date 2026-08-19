@@ -234,7 +234,10 @@ class RegionalFederation(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
-    logo_path = db.Column(db.String(500))
+    logo_path = db.Column(db.String(500))  # цветной логотип — круг на карточке/баннере
+    # Светлый вариант логотипа для шапки сайта на странице федерации (там
+    # тёмный фон) — если не загружен, используется logo_path.
+    logo_white_path = db.Column(db.String(500))
     # Общая информация под баннером на странице федерации.
     intro_text = db.Column(db.Text)
     # Разделы бокового меню «О федерации».

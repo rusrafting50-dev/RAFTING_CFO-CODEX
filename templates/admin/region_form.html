@@ -27,6 +27,21 @@
             </div>
         </div>
         <div class="mb-3">
+            <label for="logo_white" class="form-label">Логотип для шапки сайта (светлый вариант)</label>
+            {% if region and region.logo_white_path %}
+                <div class="mb-2 p-3 rounded" style="background: #1a1a2e; display: inline-block;">
+                    <img src="{{ url_for('static', filename=region.logo_white_path) }}" alt=""
+                         style="height: 60px; object-fit: contain;">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="logo_white" name="logo_white" accept=".jpg,.jpeg,.png,.webp">
+            <div class="form-text">
+                Показывается в шапке сайта на странице федерации (тёмный фон) — нужен светлый/белый вариант логотипа.
+                Если не загружен, используется обычный логотип выше.
+                {% if region and region.logo_white_path %}Оставьте поле пустым, чтобы не менять.{% endif %}
+            </div>
+        </div>
+        <div class="mb-3">
             <label for="intro_text" class="form-label">Общая информация (на странице федерации, под баннером)</label>
             <textarea class="form-control" id="intro_text" name="intro_text" rows="4">{{ region.intro_text or '' if region else '' }}</textarea>
         </div>

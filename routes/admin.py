@@ -864,6 +864,7 @@ def regions_new():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         logo = request.files.get('logo')
+        logo_white = request.files.get('logo_white')
 
         if not name:
             flash('Название федерации обязательно.', 'error')
@@ -873,9 +874,14 @@ def regions_new():
             flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
             return render_template('admin/region_form.html', active='regions', region=None)
 
+        if logo_white and logo_white.filename and not allowed_image(logo_white.filename):
+            flash('Допустимые форматы белого логотипа: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/region_form.html', active='regions', region=None)
+
         region = RegionalFederation(
             name=name,
             logo_path=save_upload(logo) if logo and logo.filename else None,
+            logo_white_path=save_upload(logo_white) if logo_white and logo_white.filename else None,
             intro_text=request.form.get('intro_text', '').strip() or None,
             goals_text=request.form.get('goals_text', '').strip() or None,
             contact_phone=request.form.get('contact_phone', '').strip() or None,
@@ -899,6 +905,7 @@ def regions_edit(region_id):
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
         logo = request.files.get('logo')
+        logo_white = request.files.get('logo_white')
 
         if not name:
             flash('Название федерации обязательно.', 'error')
@@ -908,9 +915,15 @@ def regions_edit(region_id):
             flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
             return render_template('admin/region_form.html', active='regions', region=region)
 
+        if logo_white and logo_white.filename and not allowed_image(logo_white.filename):
+            flash('Допустимые форматы белого логотипа: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/region_form.html', active='regions', region=region)
+
         region.name = name
         if logo and logo.filename:
             region.logo_path = save_upload(logo)
+        if logo_white and logo_white.filename:
+            region.logo_white_path = save_upload(logo_white)
         region.intro_text = request.form.get('intro_text', '').strip() or None
         region.goals_text = request.form.get('goals_text', '').strip() or None
         region.contact_phone = request.form.get('contact_phone', '').strip() or None

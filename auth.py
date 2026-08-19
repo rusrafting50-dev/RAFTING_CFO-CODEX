@@ -98,6 +98,7 @@ def ensure_schema():
     _ensure_column(inspector, 'regional_federation', 'contact_phone', 'VARCHAR(100)')
     _ensure_column(inspector, 'regional_federation', 'contact_email', 'VARCHAR(150)')
     _ensure_column(inspector, 'regional_federation', 'contact_address', 'VARCHAR(500)')
+    _ensure_column(inspector, 'regional_federation', 'logo_white_path', 'VARCHAR(500)')
 
 
 def seed_news_taxonomy():
