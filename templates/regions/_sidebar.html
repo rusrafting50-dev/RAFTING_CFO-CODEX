@@ -1,15 +1,14 @@
 {# Боковое меню «О федерации» — общее для страницы обзора федерации
-   (regions/detail.html, где `section` не определён — ничего не
-   подсвечено) и страниц её разделов (regions/section.html, `section` —
-   ключ текущего раздела 'goals'/'leadership'/...).
-   Оформление — те же классы, что у бокового меню категорий на странице
-   «Рафтинг ЦФО» (.doc-category-panel/.doc-category-item/
-   .doc-category-toggle), без отдельного заголовка панели. #}
+   (regions/detail.html) и страниц её разделов (regions/section.html).
+   sidebar_items — список пунктов (первый — «Федерация», затем разделы),
+   собранный в routes/regions.py._sidebar_items(). Текущий пункт
+   выводится не строкой списка, а плашкой-заголовком (синий фон, белый
+   текст) — как раньше был статичный заголовок «О ФЕДЕРАЦИИ». #}
 <div class="doc-category-panel">
-    {% for key, label in sections %}
+    {% for item in sidebar_items %}
         <div class="doc-category-item">
-            <a class="doc-category-toggle {{ 'has-active' if section == key }}"
-               href="{{ url_for('regions.section', region_id=region.id, section=key) }}">{{ label }}</a>
+            <a class="{{ 'fed-sidebar-active' if item.active else 'doc-category-toggle' }}"
+               href="{{ item.url }}">{{ item.label }}</a>
         </div>
     {% endfor %}
 </div>

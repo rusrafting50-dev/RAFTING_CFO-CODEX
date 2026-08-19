@@ -1,5 +1,5 @@
 """Региональные федерации субъектов ЦФО."""
-from flask import Blueprint, abort, render_template
+from flask import Blueprint, abort, render_template, url_for
 
 from models import RegionalFederation
 
@@ -22,6 +22,24 @@ SECTIONS = [
 SECTION_KEYS = {key for key, _ in SECTIONS}
 
 
+def _sidebar_items(region, active_section):
+    """Пункты бокового меню «О федерации»: первым — «Федерация» (ссылка
+    на обзорную страницу), затем разделы. active — текущий пункт, он
+    выводится как заголовок-плашка вместо обычной строки."""
+    items = [{
+        'label': 'Федерация',
+        'url': url_for('regions.detail', region_id=region.id),
+        'active': active_section is None,
+    }]
+    for key, label in SECTIONS:
+        items.append({
+            'label': label,
+            'url': url_for('regions.section', region_id=region.id, section=key),
+            'active': active_section == key,
+        })
+    return items
+
+
 @bp.route('/')
 def index():
     regional_federations = RegionalFederation.query.order_by(RegionalFederation.name).all()
@@ -31,7 +49,7 @@ def index():
 @bp.route('/<int:region_id>')
 def detail(region_id):
     region = RegionalFederation.query.get_or_404(region_id)
-    return render_template('regions/detail.html', region=region, sections=SECTIONS)
+    return render_template('regions/detail.html', region=region, sidebar_items=_sidebar_items(region, None))
 
 
 @bp.route('/<int:region_id>/<section>')
@@ -41,6 +59,6 @@ def section(region_id, section):
     region = RegionalFederation.query.get_or_404(region_id)
     section_label = dict(SECTIONS)[section]
     return render_template(
-        'regions/section.html', region=region, sections=SECTIONS,
+        'regions/section.html', region=region, sidebar_items=_sidebar_items(region, section),
         section=section, section_label=section_label,
     )

@@ -2448,6 +2448,20 @@ footer hr {
     line-height: 1.6;
 }
 
+/* Текущий пункт бокового меню «О федерации» — плашка-заголовок вместо
+   обычной строки списка (тот же вид, что раньше был у статичного
+   заголовка «О ФЕДЕРАЦИИ»). */
+.fed-sidebar-active {
+    display: block;
+    background: var(--color-accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    padding: 16px 20px;
+    border-radius: 4px;
+}
+
 /* ===== Таблицы результатов (чередование строк) ===== */
 table.table-zebra tbody tr:nth-child(odd) {
     background: #fff;
