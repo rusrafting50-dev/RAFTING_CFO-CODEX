@@ -130,35 +130,53 @@ def archive():
 def documents():
     """Нормативные документы соревнований — та же страница-список, что
     «Рафтинг ЦФО» (documents.index), но в шапке раздела «Соревнования» и
-    со своим боковым меню категорий (scope='соревнования')."""
+    со своим боковым меню категорий (scope='соревнования').
+
+    Документ появляется здесь, если при загрузке в админке ему назначили
+    категорию из этого меню (Document.doc_category — совпадение по
+    названию категории) и/или конкретный раздел внутри неё
+    (Document.section_id) — раздел не обязателен, самой категории
+    достаточно."""
     categories = (
         DocumentCategory.query.filter_by(scope='соревнования')
         .order_by(DocumentCategory.name)
         .all()
     )
+    category_names = [category.name for category in categories]
     section_ids = [section.id for category in categories for section in category.sections]
 
     selected_section_id = request.args.get('section', type=int)
     selected_section = DocumentSection.query.get(selected_section_id) if selected_section_id else None
 
+    selected_category = None
+    if not selected_section:
+        selected_category_id = request.args.get('category', type=int)
+        if selected_category_id:
+            selected_category = next((c for c in categories if c.id == selected_category_id), None)
+
+    query = Document.query.order_by(Document.uploaded_at.desc(), Document.title)
+
     if selected_section:
-        documents_ = (
-            Document.query.filter_by(section_id=selected_section.id)
-            .order_by(Document.uploaded_at.desc(), Document.title)
-            .all()
-        )
-    elif section_ids:
-        documents_ = (
-            Document.query.filter(Document.section_id.in_(section_ids))
-            .order_by(Document.uploaded_at.desc(), Document.title)
-            .all()
-        )
+        documents_ = query.filter_by(section_id=selected_section.id).all()
+    elif selected_category:
+        category_section_ids = [s.id for s in selected_category.sections]
+        conditions = [Document.doc_category == selected_category.name]
+        if category_section_ids:
+            conditions.append(Document.section_id.in_(category_section_ids))
+        documents_ = query.filter(db.or_(*conditions)).all()
+    elif category_names or section_ids:
+        conditions = []
+        if category_names:
+            conditions.append(Document.doc_category.in_(category_names))
+        if section_ids:
+            conditions.append(Document.section_id.in_(section_ids))
+        documents_ = query.filter(db.or_(*conditions)).all()
     else:
         documents_ = []
 
     return render_template(
         'competitions/documents.html', documents=documents_, categories=categories,
-        selected_section=selected_section,
+        selected_section=selected_section, selected_category=selected_category,
     )
 
 

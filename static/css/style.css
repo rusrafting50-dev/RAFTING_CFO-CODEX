@@ -1333,6 +1333,33 @@ footer hr {
     transform: rotate(180deg);
 }
 
+/* Страница «Соревнования → Нормативные документы»: сам пункт категории —
+   ссылка-фильтр (в отличие от .doc-category-toggle на «Рафтинг ЦФО»,
+   там это просто кнопка-раскрывашка) — шеврон вынесен в отдельную
+   кнопку рядом, чтобы клик по названию не разворачивал/сворачивал
+   список разделов, а сразу фильтровал документы по категории. */
+.doc-category-toggle-link {
+    flex: 1;
+    color: inherit;
+    text-decoration: none;
+}
+
+.doc-category-chevron-btn {
+    flex: none;
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    padding: 4px;
+    margin: -4px;
+    color: inherit;
+    cursor: pointer;
+}
+
+.doc-category-chevron-btn[aria-expanded="true"] .doc-category-chevron {
+    transform: rotate(180deg);
+}
+
 .doc-section-list {
     display: none;
     list-style: none;
