@@ -10,7 +10,6 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
-from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Banner, Competition, CompetitionApplication, CompetitionDocument, Document,
@@ -20,6 +19,7 @@ from models import (
 )
 from sync_to_referee import отправить_заявку, обновить_заявку
 from sync_to_corez import отправить_заявку_команды, обновить_заявку_команды
+from utils import safe_upload_filename
 
 bp = Blueprint('admin', __name__)
 
@@ -145,7 +145,7 @@ def allowed_image(filename):
 def save_upload(file):
     """Сохраняет файл в UPLOAD_FOLDER под уникальным именем, возвращает путь
     относительно static/ (как хранится в *.file_path / *.image_path)."""
-    filename = secure_filename(file.filename)
+    filename = safe_upload_filename(file.filename)
     unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
     upload_dir = current_app.config['UPLOAD_FOLDER']
     os.makedirs(upload_dir, exist_ok=True)
@@ -598,7 +598,7 @@ def documents_new():
                 category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
             )
 
-        filename = secure_filename(file.filename)
+        filename = safe_upload_filename(file.filename)
         unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
         upload_dir = current_app.config['UPLOAD_FOLDER']
         os.makedirs(upload_dir, exist_ok=True)
@@ -646,7 +646,7 @@ def documents_edit(document_id):
                     category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
                 )
 
-            filename = secure_filename(file.filename)
+            filename = safe_upload_filename(file.filename)
             unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
             upload_dir = current_app.config['UPLOAD_FOLDER']
             os.makedirs(upload_dir, exist_ok=True)
@@ -726,7 +726,7 @@ def competition_document_new(competition_id):
         flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
         return redirect(url_for('admin.competition_documents', competition_id=competition.id))
 
-    filename = secure_filename(file.filename)
+    filename = safe_upload_filename(file.filename)
     unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
     upload_dir = current_app.config['UPLOAD_FOLDER']
     os.makedirs(upload_dir, exist_ok=True)

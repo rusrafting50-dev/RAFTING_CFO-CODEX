@@ -12,12 +12,12 @@ from datetime import date, datetime
 from functools import wraps
 
 from flask import Blueprint, current_app, jsonify, request
-from werkzeug.utils import secure_filename
 
 from models import (
     Athlete, Competition, CompetitionDocument, Event, Referee,
     SeminarApplicationSubmission, SeminarApplicationSubmissionParticipant, SyncLog, db,
 )
+from utils import safe_upload_filename
 
 bp = Blueprint('api', __name__)
 
@@ -100,7 +100,7 @@ def save_logo_from_base64(filename, b64_data):
 
     upload_dir = current_app.config['UPLOAD_FOLDER']
     os.makedirs(upload_dir, exist_ok=True)
-    unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{secure_filename(filename)}"
+    unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{safe_upload_filename(filename)}"
     with open(os.path.join(upload_dir, unique_name), 'wb') as f:
         f.write(raw)
     return f"uploads/{unique_name}"

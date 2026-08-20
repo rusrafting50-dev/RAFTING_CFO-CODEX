@@ -6,13 +6,13 @@ from datetime import date, datetime
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import extract
-from werkzeug.utils import secure_filename
 
 from models import (
     Competition, CompetitionApplication, CompetitionApplicationAthlete,
     CompetitionDocument, Document, DocumentCategory, DocumentSection,
     RegionalFederation, db,
 )
+from utils import safe_upload_filename
 
 bp = Blueprint('competitions', __name__)
 
@@ -397,7 +397,7 @@ def _apply_logo_upload(application, files):
         flash('Логотип: допустимые форматы файлов — JPG, PNG, WEBP.', 'error')
         return False
 
-    filename = secure_filename(file.filename)
+    filename = safe_upload_filename(file.filename)
     unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
     upload_dir = current_app.config['UPLOAD_FOLDER']
     os.makedirs(upload_dir, exist_ok=True)
