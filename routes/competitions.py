@@ -10,7 +10,8 @@ from werkzeug.utils import secure_filename
 
 from models import (
     Competition, CompetitionApplication, CompetitionApplicationAthlete,
-    CompetitionDocument, RegionalFederation, db,
+    CompetitionDocument, Document, DocumentCategory, DocumentSection,
+    RegionalFederation, db,
 )
 
 bp = Blueprint('competitions', __name__)
@@ -122,6 +123,42 @@ def archive():
         archive=True,
         years=years,
         selected_year=year,
+    )
+
+
+@bp.route('/documents')
+def documents():
+    """Нормативные документы соревнований — та же страница-список, что
+    «Рафтинг ЦФО» (documents.index), но в шапке раздела «Соревнования» и
+    со своим боковым меню категорий (scope='соревнования')."""
+    categories = (
+        DocumentCategory.query.filter_by(scope='соревнования')
+        .order_by(DocumentCategory.name)
+        .all()
+    )
+    section_ids = [section.id for category in categories for section in category.sections]
+
+    selected_section_id = request.args.get('section', type=int)
+    selected_section = DocumentSection.query.get(selected_section_id) if selected_section_id else None
+
+    if selected_section:
+        documents_ = (
+            Document.query.filter_by(section_id=selected_section.id)
+            .order_by(Document.uploaded_at.desc(), Document.title)
+            .all()
+        )
+    elif section_ids:
+        documents_ = (
+            Document.query.filter(Document.section_id.in_(section_ids))
+            .order_by(Document.uploaded_at.desc(), Document.title)
+            .all()
+        )
+    else:
+        documents_ = []
+
+    return render_template(
+        'competitions/documents.html', documents=documents_, categories=categories,
+        selected_section=selected_section,
     )
 
 

@@ -1,18 +1,12 @@
 {% extends "base.html" %}
+{% from "competitions/_tabs.html" import comp_tabs %}
 
 {% block title %}Спортивные соревнования — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}Календарный план спортивных соревнований по рафтингу{% endblock %}
 
 {% block content %}
     <div class="container py-5">
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
-            <h1 class="h3 mb-0">СПОРТИВНЫЕ СОРЕВНОВАНИЯ</h1>
-            <ul class="news-filter-menu comp-tabs-menu">
-                <li role="presentation"><a class="active" href="{{ url_for('competitions.calendar') }}">Календарный план</a></li>
-                <li role="presentation"><a href="{{ url_for('documents.index') }}">Нормативные документы</a></li>
-                <li role="presentation"><a href="#">Оборудование и снаряжение</a></li>
-            </ul>
-        </div>
+        {{ comp_tabs('calendar') }}
 
         <ul class="news-submenu mb-4" id="calendarSubTabs" role="tablist">
             <li role="presentation">

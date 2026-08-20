@@ -162,10 +162,17 @@ class DocumentCategory(db.Model):
     управления. Document.doc_category хранит название категории строкой
     (как News.category у NewsCategory) — привязки по внешнему ключу нет,
     поэтому переименование/удаление категории не трогает уже загруженные
-    документы, только отвязывает их от соответствующего пункта меню."""
+    документы, только отвязывает их от соответствующего пункта меню.
+
+    scope разделяет один и тот же список категорий на два независимых
+    боковых меню: 'цфо' — страница «Рафтинг ЦФО» (documents.index),
+    'соревнования' — страница «Нормативные документы» под Соревнования
+    (competitions.documents). Раздел (DocumentSection) наследует scope
+    родительской категории."""
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
+    scope = db.Column(db.String(30), nullable=False, default='цфо')
 
 
 class DocumentSection(db.Model):

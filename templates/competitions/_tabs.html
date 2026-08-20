@@ -1,0 +1,19 @@
+{# Общая «шапка» страниц раздела «Соревнования» — заголовок СПОРТИВНЫЕ
+   СОРЕВНОВАНИЯ и строка меню Календарный план/Нормативные документы/
+   Оборудование и снаряжение. active — какой пункт подсветить текущим. #}
+{% macro comp_tabs(active) %}
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
+        <h1 class="h3 mb-0">СПОРТИВНЫЕ СОРЕВНОВАНИЯ</h1>
+        <ul class="news-filter-menu comp-tabs-menu">
+            <li role="presentation">
+                <a class="{{ 'active' if active == 'calendar' }}" href="{{ url_for('competitions.calendar') }}">Календарный план</a>
+            </li>
+            <li role="presentation">
+                <a class="{{ 'active' if active == 'documents' }}" href="{{ url_for('competitions.documents') }}">Нормативные документы</a>
+            </li>
+            <li role="presentation">
+                <a class="{{ 'active' if active == 'equipment' }}" href="#">Оборудование и снаряжение</a>
+            </li>
+        </ul>
+    </div>
+{% endmacro %}

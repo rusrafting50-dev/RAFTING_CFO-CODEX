@@ -2,7 +2,7 @@
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager
 
-from models import NewsCategory, NewsLevel, db, User
+from models import DocumentCategory, NewsCategory, NewsLevel, db, User
 
 login_manager = LoginManager()
 login_manager.login_view = 'admin.login'
@@ -100,6 +100,7 @@ def ensure_schema():
     _ensure_column(inspector, 'regional_federation', 'contact_email', 'VARCHAR(150)')
     _ensure_column(inspector, 'regional_federation', 'contact_address', 'VARCHAR(500)')
     _ensure_column(inspector, 'regional_federation', 'logo_white_path', 'VARCHAR(500)')
+    _ensure_column(inspector, 'document_category', 'scope', "VARCHAR(30) NOT NULL DEFAULT 'цфо'")
 
 
 def seed_news_taxonomy():
@@ -123,6 +124,18 @@ def seed_news_taxonomy():
             db.session.add(NewsLevel(name=name))
 
     db.session.commit()
+
+
+def seed_competition_document_taxonomy():
+    """Начальное заполнение категорий бокового меню страницы «Нормативные
+    документы» под Соревнования (scope='соревнования') — тот же приём,
+    что seed_news_taxonomy: срабатывает только если таких категорий ещё
+    нет, чтобы ручное удаление через админку не возвращалось обратно
+    после перезапуска сервера."""
+    if DocumentCategory.query.filter_by(scope='соревнования').count() == 0:
+        for name in ('Законы', 'Минспорт России', 'WRF', 'ФРР'):
+            db.session.add(DocumentCategory(name=name, scope='соревнования'))
+        db.session.commit()
 
 
 def create_default_admin():

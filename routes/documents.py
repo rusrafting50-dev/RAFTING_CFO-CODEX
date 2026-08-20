@@ -8,7 +8,7 @@ bp = Blueprint('documents', __name__)
 
 @bp.route('/')
 def index():
-    categories = DocumentCategory.query.order_by(DocumentCategory.name).all()
+    categories = DocumentCategory.query.filter_by(scope='цфо').order_by(DocumentCategory.name).all()
 
     selected_section_id = request.args.get('section', type=int)
     selected_section = DocumentSection.query.get(selected_section_id) if selected_section_id else None
