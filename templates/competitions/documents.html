@@ -46,7 +46,10 @@
                                         {% if icon_file %}
                                             <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt=".{{ ext }}">
                                         {% else %}
-                                            <span class="doc-file-icon doc-icon-file">.{{ ext }}</span>
+                                            <svg class="doc-file-icon-generic" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M6 2h8l5 5v15H6z" fill="#8a9199"/>
+                                                <path d="M14 2v5h5z" fill="#c2c7cc"/>
+                                            </svg>
                                         {% endif %}
                                         <span class="d-block small">Открыть</span>
                                     </a>
