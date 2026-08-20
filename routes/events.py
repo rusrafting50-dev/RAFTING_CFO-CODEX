@@ -3,6 +3,7 @@ from datetime import date, datetime
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import extract
 
 from models import (
     Event, RegionalFederation, SeminarApplicationSubmission,
@@ -21,21 +22,64 @@ SEMINAR_PARTICIPANT_SPECIALIZATIONS = [
     'Секретариат, информация, Судейство, дистанции',
 ]
 
+# Вторая строка меню на странице «Мероприятия — Календарный план».
+# 'спортивная_подготовка' — новый тип, площадка для него на сайте уже
+# есть, а данные придут от SPORTS_REFEREE отдельным довеском к
+# существующей синхронизации (routes/api.py принимает event_type любой
+# строкой, без ограничения списком).
+EVENT_TYPE_FILTERS = [
+    ('семинар_судей', 'Спортивные судьи'),
+    ('семинар_тренеров', 'Тренеры'),
+    ('спортивная_подготовка', 'Спортивная подготовка'),
+    ('семинар_руководителей', 'Руководители организаций'),
+]
+
 
 @bp.route('/')
 def index():
+    """Мероприятия — календарный план текущего года + ссылки в архив
+    трёх предыдущих лет (по образцу competitions.calendar)."""
     event_type = request.args.get('event_type', '')
+    year = date.today().year
+
+    query = Event.query.filter(extract('year', Event.start_date) == year)
+    if event_type:
+        query = query.filter_by(event_type=event_type)
+
+    events = query.order_by(Event.start_date.asc()).all()
+    archive_years = [year - 1, year - 2, year - 3]
+
+    return render_template(
+        'events/list.html',
+        events=events, selected_event_type=event_type,
+        event_type_filters=EVENT_TYPE_FILTERS, year=year, archive_years=archive_years,
+    )
+
+
+@bp.route('/archive')
+def archive():
+    event_type = request.args.get('event_type', '')
+    year = request.args.get('year', type=int)
 
     query = Event.query
     if event_type:
         query = query.filter_by(event_type=event_type)
+    if year:
+        query = query.filter(extract('year', Event.start_date) == year)
+    else:
+        query = query.filter(Event.start_date < date.today())
 
     events = query.order_by(Event.start_date.desc()).all()
 
+    years = sorted(
+        {e.start_date.year for e in Event.query.all() if e.start_date},
+        reverse=True,
+    )
+
     return render_template(
-        'events/list.html',
-        events=events,
-        selected_event_type=event_type,
+        'events/archive.html',
+        events=events, selected_event_type=event_type,
+        years=years, selected_year=year,
     )
 
 

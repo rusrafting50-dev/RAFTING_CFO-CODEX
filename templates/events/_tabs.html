@@ -1,0 +1,16 @@
+{# Общая «шапка» страниц раздела «Мероприятия» — заголовок МЕРОПРИЯТИЯ и
+   строка меню Календарный план/Методические материалы. Тот же приём, что
+   competitions/_tabs.html. active — какой пункт подсветить текущим. #}
+{% macro events_tabs(active) %}
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
+        <h1 class="h3 mb-0">МЕРОПРИЯТИЯ</h1>
+        <ul class="news-filter-menu comp-tabs-menu">
+            <li role="presentation">
+                <a class="{{ 'active' if active == 'calendar' }}" href="{{ url_for('events.index') }}">Календарный план</a>
+            </li>
+            <li role="presentation">
+                <a class="{{ 'active' if active == 'materials' }}" href="#">Методические материалы</a>
+            </li>
+        </ul>
+    </div>
+{% endmacro %}
