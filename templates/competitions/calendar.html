@@ -1,50 +1,78 @@
 {% extends "base.html" %}
 
-{% block title %}Календарный план {{ year }} — Федерация рафтинга ЦФО{% endblock %}
-{% block description %}Календарный план соревнований по рафтингу на {{ year }} год{% endblock %}
+{% block title %}Спортивные соревнования — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Календарный план спортивных соревнований по рафтингу{% endblock %}
 
 {% block content %}
     <div class="container py-5">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-            <h1 class="h3 mb-0">Календарный план {{ year }}</h1>
-            <div class="d-flex gap-2">
-                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.calendar', year=year - 1) }}">&laquo; {{ year - 1 }}</a>
-                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.calendar', year=year + 1) }}">{{ year + 1 }} &raquo;</a>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
+            <h1 class="h3 mb-0">СПОРТИВНЫЕ СОРЕВНОВАНИЯ</h1>
+            <ul class="news-filter-menu comp-tabs-menu">
+                <li role="presentation"><a class="active" href="{{ url_for('competitions.calendar') }}">Календарный план</a></li>
+                <li role="presentation"><a href="{{ url_for('documents.index') }}">Нормативные документы</a></li>
+                <li role="presentation"><a href="#">Оборудование и снаряжение</a></li>
+            </ul>
+        </div>
+
+        <ul class="news-submenu mb-4" id="calendarSubTabs" role="tablist">
+            <li role="presentation">
+                <button class="active" id="tab-official-btn" data-bs-toggle="tab"
+                        data-bs-target="#tab-official" type="button" role="tab">Официальные спортивные соревнования</button>
+            </li>
+            <li role="presentation">
+                <button id="tab-forming-btn" data-bs-toggle="tab"
+                        data-bs-target="#tab-forming" type="button" role="tab">Формирование календарного плана</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="calendarSubTabsContent">
+            <div class="tab-pane fade show active" id="tab-official" role="tabpanel">
+                {% if competitions %}
+                    <div class="table-responsive">
+                        <table class="table table-zebra align-middle">
+                            <thead>
+                                <tr class="site-table-header">
+                                    <th>№ ЕКП/КП</th>
+                                    <th>Наименование соревнований</th>
+                                    <th>Виды программы</th>
+                                    <th>Сроки проведения</th>
+                                    <th>Место проведения</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for competition in competitions %}
+                                    <tr>
+                                        <td>{{ competition.registration_number or '' }}</td>
+                                        <td>
+                                            <a class="comp-calendar-link" href="{{ url_for('competitions.detail', competition_id=competition.id) }}">{{ competition.name }}</a>
+                                        </td>
+                                        <td>{{ competition.disciplines or '' }}</td>
+                                        <td>
+                                            {{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}
+                                            {% if competition.end_date and competition.end_date != competition.start_date %}
+                                                &ndash; {{ competition.end_date.strftime('%d.%m.%Y') }}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ competition.location }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">На {{ year }} год соревнования пока не запланированы.</p>
+                {% endif %}
+            </div>
+            <div class="tab-pane fade" id="tab-forming" role="tabpanel">
+                <p class="text-muted">Материалы пока не добавлены.</p>
             </div>
         </div>
 
-        {% if competitions %}
-            <div class="table-responsive">
-                <table class="table table-zebra align-middle">
-                    <thead>
-                        <tr class="site-table-header">
-                            <th>Даты</th>
-                            <th>Наименование</th>
-                            <th>Уровень</th>
-                            <th>Место проведения</th>
-                            <th>Статус</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for competition in competitions %}
-                            <tr>
-                                <td>
-                                    {{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}
-                                    {% if competition.end_date and competition.end_date != competition.start_date %}
-                                        &ndash; {{ competition.end_date.strftime('%d.%m.%Y') }}
-                                    {% endif %}
-                                </td>
-                                <td><a href="{{ url_for('competitions.detail', competition_id=competition.id) }}">{{ competition.name }}</a></td>
-                                <td>{{ competition.level }}</td>
-                                <td>{{ competition.location }}</td>
-                                <td>{{ competition.status }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p class="text-muted">На {{ year }} год соревнования пока не запланированы.</p>
-        {% endif %}
+        <h2 class="h5 mt-5 mb-3">Архив</h2>
+        <div class="d-flex flex-wrap gap-2">
+            {% for y in archive_years %}
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.archive', year=y) }}">{{ y }}</a>
+            {% endfor %}
+        </div>
     </div>
 {% endblock %}

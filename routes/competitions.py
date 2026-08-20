@@ -67,16 +67,21 @@ RESULT_DISCIPLINES = [
 
 @bp.route('/')
 def calendar():
-    """Календарный план текущего года."""
-    year = request.args.get('year', date.today().year, type=int)
+    """Соревнования — календарный план текущего года + ссылки в архив
+    трёх предыдущих лет."""
+    year = date.today().year
 
     competitions = (
         Competition.query.filter(extract('year', Competition.start_date) == year)
         .order_by(Competition.start_date.asc())
         .all()
     )
+    archive_years = [year - 1, year - 2, year - 3]
 
-    return render_template('competitions/calendar.html', competitions=competitions, year=year)
+    return render_template(
+        'competitions/calendar.html', competitions=competitions, year=year,
+        archive_years=archive_years,
+    )
 
 
 @bp.route('/current')

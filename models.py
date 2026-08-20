@@ -85,6 +85,7 @@ class Competition(db.Model):
     head_judge = db.Column(db.String(255))  # гл. судья соревнований
     registration_number = db.Column(db.String(100))  # № ЕКП
     logo_path = db.Column(db.String(500))  # логотип соревнования (относительно static/)
+    disciplines = db.Column(db.String(255))  # виды программы (напр. "Слалом, Спринт")
 
     documents = db.relationship(
         'CompetitionDocument', backref='competition',

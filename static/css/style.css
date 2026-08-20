@@ -1064,6 +1064,18 @@ footer hr {
     border: 1px dashed #ccc;
 }
 
+/* Ссылка на наименование соревнования в таблице календарного плана —
+   без подчёркивания, выделяется только при наведении. */
+.comp-calendar-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.comp-calendar-link:hover {
+    color: var(--color-accent);
+    text-decoration: underline;
+}
+
 /* ===== Страница соревнования: вкладки Информация/Новости/.../Результаты ===== */
 .comp-tabs-row {
     /* Вдвое меньше исходного mb-4 (24px) — черта подчёркивания активной

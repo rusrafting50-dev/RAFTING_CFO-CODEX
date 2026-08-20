@@ -57,7 +57,7 @@
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.section', region_id=region.id, section='clubs') }}">Клубы</a></li>
                     </ul>
                     <ul class="navbar-nav nav-right">
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.current') }}">Соревнования</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Соревнования</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Рафтинг ЦФО</a></li>
                     </ul>
@@ -69,7 +69,7 @@
                     </ul>
                     <ul class="navbar-nav nav-right">
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Календарь ЦФО</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.current') }}">Соревнования</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Соревнования</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
                     </ul>
                 {% endif %}
