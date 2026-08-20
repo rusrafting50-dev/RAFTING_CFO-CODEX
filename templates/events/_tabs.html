@@ -9,7 +9,7 @@
                 <a class="{{ 'active' if active == 'calendar' }}" href="{{ url_for('events.index') }}">Календарный план</a>
             </li>
             <li role="presentation">
-                <a class="{{ 'active' if active == 'materials' }}" href="#">Методические материалы</a>
+                <a class="{{ 'active' if active == 'materials' }}" href="{{ url_for('events.documents') }}">Методические материалы</a>
             </li>
         </ul>
     </div>

@@ -138,6 +138,18 @@ def seed_competition_document_taxonomy():
         db.session.commit()
 
 
+def seed_event_document_taxonomy():
+    """Начальное заполнение категорий бокового меню страницы «Методические
+    материалы» под Мероприятия (scope='мероприятия') — те же 4 пункта,
+    что вторая строка меню на странице Мероприятия/Календарный план
+    (routes/events.py: EVENT_TYPE_FILTERS), тот же приём, что
+    seed_competition_document_taxonomy."""
+    if DocumentCategory.query.filter_by(scope='мероприятия').count() == 0:
+        for name in ('Спортивные судьи', 'Тренеры', 'Спортивная подготовка', 'Руководители организаций'):
+            db.session.add(DocumentCategory(name=name, scope='мероприятия'))
+        db.session.commit()
+
+
 def create_default_admin():
     """Создаёт первого администратора, если в базе ещё нет ни одного пользователя."""
     if User.query.count() > 0:

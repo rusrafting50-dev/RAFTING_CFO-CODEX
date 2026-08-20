@@ -8,7 +8,7 @@ from flask import Flask, render_template, url_for
 
 from auth import (
     create_default_admin, ensure_schema, login_manager,
-    seed_competition_document_taxonomy, seed_news_taxonomy,
+    seed_competition_document_taxonomy, seed_event_document_taxonomy, seed_news_taxonomy,
 )
 from models import PartnerLogo, db
 from routes import register_blueprints
@@ -213,6 +213,7 @@ def create_app():
         create_default_admin()
         seed_news_taxonomy()
         seed_competition_document_taxonomy()
+        seed_event_document_taxonomy()
 
     @app.context_processor
     def inject_now():

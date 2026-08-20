@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% from "events/_tabs.html" import events_tabs %}
+
+{% block title %}Методические материалы — Мероприятия — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Методические материалы мероприятий по рафтингу{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        {{ events_tabs('materials') }}
+
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <div class="news-search-row doc-search-panel mb-0">
+                    <h2 class="h5 mb-3">{{ selected_section.name if selected_section else 'Все документы' }}</h2>
+                    <form method="get" action="{{ url_for('events.documents') }}" class="news-search-input-form">
+                        {% if selected_section %}<input type="hidden" name="section" value="{{ selected_section.id }}">{% endif %}
+                        <label class="news-search-input news-search-input-icon-right news-search-input-icon-lg news-search-input-icon-outline">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="10" cy="10" r="7"></circle>
+                                <line x1="21" y1="21" x2="15.5" y2="15.5"></line>
+                            </svg>
+                            <input type="text" id="doc-search" placeholder="Поиск...">
+                        </label>
+                    </form>
+                </div>
+
+                <p class="doc-count-bar">Найдено документов: <span id="doc-count">{{ documents|length }}</span></p>
+
+                {% if documents %}
+                    <div id="doc-list">
+                        {% for document in documents %}
+                            {% set ext = document.file_path|file_extension %}
+                            {% set icon_file = 'pdf_icon_48.png' if ext == 'pdf' else ('word_icon_48.png' if ext in ('doc', 'docx') else ('excel_icon_48.png' if ext in ('xls', 'xlsx') else None)) %}
+                            <div class="doc-list-item" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
+                                <p class="news-row-date">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</p>
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <h3 class="doc-list-title">{{ document.title }}</h3>
+                                        <button type="button" class="btn btn-sm btn-primary doc-copy-link"
+                                                data-url="{{ url_for('static', filename=document.file_path, _external=True) }}">
+                                            Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                    <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=document.file_path) }}"
+                                       target="_blank" rel="noopener">
+                                        {% if icon_file %}
+                                            <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt=".{{ ext }}">
+                                        {% else %}
+                                            <svg class="doc-file-icon-generic" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M6 2h8l5 5v15H6z" fill="#8a9199"/>
+                                                <path d="M14 2v5h5z" fill="#c2c7cc"/>
+                                            </svg>
+                                        {% endif %}
+                                        <span class="d-block small">Открыть</span>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Документы пока не загружены.</p>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-3">
+                <div class="doc-category-panel">
+                {% if not categories %}
+                    <p class="text-muted">Категории пока не добавлены.</p>
+                {% endif %}
+                {% for category in categories %}
+                    {% set category_selected = (selected_section and selected_section.category_id == category.id)
+                        or (selected_category and selected_category.id == category.id) %}
+                    <div class="doc-category-item">
+                        <div class="doc-category-toggle {{ 'has-active' if category_selected }}">
+                            <a class="doc-category-toggle-link" href="{{ url_for('events.documents', category=category.id) }}">{{ category.name }}</a>
+                            <button type="button" class="doc-category-chevron-btn"
+                                    data-target="doc-cat-{{ category.id }}" aria-expanded="{{ 'true' if category_selected else 'false' }}"
+                                    aria-label="Показать разделы">
+                                <svg class="doc-category-chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                            </button>
+                        </div>
+                        <ul class="doc-section-list {{ 'is-open' if category_selected }}" id="doc-cat-{{ category.id }}">
+                            {% for section in category.sections %}
+                                <li>
+                                    <a class="{{ 'active' if selected_section and selected_section.id == section.id }}"
+                                       href="{{ url_for('events.documents', section=section.id) }}">{{ section.name }}</a>
+                                </li>
+                            {% else %}
+                                <li class="text-muted">Разделов нет</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+                    <a class="doc-category-all {{ 'has-active' if not selected_section and not selected_category }}" href="{{ url_for('events.documents') }}">Все</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var input = document.getElementById('doc-search');
+            var countEl = document.getElementById('doc-count');
+            if (!input) return;
+            var items = document.querySelectorAll('#doc-list .doc-list-item');
+            input.addEventListener('input', function () {
+                var q = input.value.trim().toLowerCase();
+                var visible = 0;
+                items.forEach(function (item) {
+                    var match = item.dataset.title.indexOf(q) !== -1;
+                    item.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                countEl.textContent = visible;
+            });
+        })();
+
+        (function () {
+            document.querySelectorAll('.doc-copy-link').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    navigator.clipboard.writeText(btn.dataset.url).then(function () {
+                        var original = btn.innerHTML;
+                        btn.innerHTML = 'Скопировано';
+                        setTimeout(function () { btn.innerHTML = original; }, 1500);
+                    });
+                });
+            });
+        })();
+
+        (function () {
+            document.querySelectorAll('.doc-category-chevron-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var list = document.getElementById(btn.dataset.target);
+                    var expanded = btn.getAttribute('aria-expanded') === 'true';
+                    btn.setAttribute('aria-expanded', String(!expanded));
+                    list.classList.toggle('is-open', !expanded);
+                });
+            });
+        })();
+
+        (function () {
+            /* Центрирование заголовка «Все документы» — см. подробный
+               комментарий в documents/list.html, тот же приём один в один. */
+            var panel = document.querySelector('.doc-search-panel');
+            var heading = panel && panel.querySelector('h2');
+            var field = panel && panel.querySelector('.news-search-input');
+            if (!panel || !heading || !field) return;
+
+            function textRect(el) {
+                var range = document.createRange();
+                range.selectNodeContents(el);
+                return range.getBoundingClientRect();
+            }
+
+            function centerHeading() {
+                panel.style.paddingTop = '';
+                panel.style.gap = '';
+
+                var panelTop = panel.getBoundingClientRect().top;
+                var fieldTop = field.getBoundingClientRect().top;
+                var headingBox = heading.getBoundingClientRect();
+                var text = textRect(heading);
+
+                var extraTop = text.top - headingBox.top;
+                var extraBottom = headingBox.bottom - text.bottom;
+
+                var available = Math.max(0, (fieldTop - panelTop) - headingBox.height);
+                var paddingTop = Math.max(0, Math.min(available, (available + extraBottom - extraTop) / 2));
+                var gap = Math.max(0, available - paddingTop);
+
+                panel.style.paddingTop = paddingTop + 'px';
+                panel.style.gap = gap + 'px';
+            }
+
+            centerHeading();
+            window.addEventListener('resize', centerHeading);
+            if (window.document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(centerHeading);
+            }
+        })();
+    </script>
+{% endblock %}
