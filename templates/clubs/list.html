@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Спортивные клубы и организации рафтинга в ЦФО — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Спортивные клубы и организации рафтинга в регионах ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h4 text-uppercase mb-4">Спортивные клубы и организации рафтинга в ЦФО</h1>
+
+        {% if groups %}
+            {% for region, clubs in groups %}
+                <h2 class="h5 text-uppercase mt-5 mb-3">{{ region.name }}</h2>
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                    {% for club in clubs %}
+                        <div class="col">
+                            <a class="region-card" href="{{ url_for('clubs.detail', club_id=club.id) }}">
+                                <div class="region-card-photo">
+                                    <div class="region-card-logo">
+                                        {% if club.logo_path %}
+                                            <img src="{{ url_for('static', filename=club.logo_path) }}" alt="{{ club.name }}">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="region-card-body">
+                                    <h3 class="region-card-name">{{ club.name }}</h3>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">Клубы пока не добавлены.</p>
+        {% endif %}
+    </div>
+{% endblock %}

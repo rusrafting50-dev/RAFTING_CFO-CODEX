@@ -1,0 +1,11 @@
+{# Боковое меню страницы клуба — та же разметка, что
+   regions/_sidebar.html: первый пункт «Клуб» — обзорная страница, затем
+   разделы; текущий пункт выводится плашкой-заголовком. #}
+<div class="doc-category-panel">
+    {% for item in sidebar_items %}
+        <div class="doc-category-item">
+            <a class="{{ 'fed-sidebar-active' if item.active else 'doc-category-toggle' }}"
+               href="{{ item.url }}">{{ item.label }}</a>
+        </div>
+    {% endfor %}
+</div>

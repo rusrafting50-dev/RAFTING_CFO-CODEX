@@ -65,12 +65,12 @@
                     <ul class="navbar-nav nav-left">
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('main.news') }}">Новости</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.index') }}">Регионы ЦФО</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('documents.index') }}">Рафтинг ЦФО</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('clubs.index') }}">Клубы и команды</a></li>
                     </ul>
                     <ul class="navbar-nav nav-right">
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Календарь ЦФО</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('competitions.calendar') }}">Соревнования</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('events.index') }}">Мероприятия</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Рафтинг ЦФО</a></li>
                     </ul>
                 {% endif %}
             </div>
@@ -128,7 +128,7 @@
             <div class="col">
                 <h2 class="h6 text-uppercase">Соревнования</h2>
                 <ul class="list-unstyled">
-                    <li><a href="{{ url_for('documents.index') }}">Нормативные документы</a></li>
+                    <li><a href="{{ url_for('competitions.documents') }}">Нормативные документы</a></li>
                     <li><a href="{{ url_for('team.index') }}">Сборные команды</a></li>
                     <li><a href="{{ url_for('referees.index') }}">Спортивные судьи</a></li>
                     <li><a href="#">Оборудование и снаряжение</a></li>

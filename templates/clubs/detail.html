@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}{{ club.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ club.name }}: общая информация{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="fed-page-title">{{ club.name }}</h1>
+
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <div class="fed-banner">
+                    <div class="fed-banner-logo">
+                        {% if club.logo_path %}
+                            <img src="{{ url_for('static', filename=club.logo_path) }}" alt="{{ club.name }}">
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="fed-text-block">
+                    {% if club.intro_text %}
+                        <div class="fed-intro">{{ club.intro_text }}</div>
+                    {% else %}
+                        <p class="text-muted mb-0">Общая информация о клубе пока не добавлена.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-3">
+                {% include "clubs/_sidebar.html" with context %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -164,11 +164,12 @@ class DocumentCategory(db.Model):
     поэтому переименование/удаление категории не трогает уже загруженные
     документы, только отвязывает их от соответствующего пункта меню.
 
-    scope разделяет один и тот же список категорий на два независимых
-    боковых меню: 'цфо' — страница «Рафтинг ЦФО» (documents.index),
-    'соревнования' — страница «Нормативные документы» под Соревнования
-    (competitions.documents). Раздел (DocumentSection) наследует scope
-    родительской категории."""
+    scope разделяет один и тот же список категорий на независимые боковые
+    меню — сейчас используется 'соревнования' (страница «Нормативные
+    документы» под Соревнования, competitions.documents). 'цфо' — то же
+    самое для бывшей страницы «Рафтинг ЦФО» (documents.index, страница
+    удалена), значение оставлено на случай будущей аналогичной страницы.
+    Раздел (DocumentSection) наследует scope родительской категории."""
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
@@ -282,6 +283,31 @@ class RegionalFederation(db.Model):
     @property
     def name_quoted(self):
         return self._split_name()[1]
+
+
+class Club(db.Model):
+    """Спортивные клубы и организации рафтинга в ЦФО — страница «Клубы и
+    команды» (список, сгруппированный по региону) и персональная страница
+    клуба, по структуре и оформлению повторяющая RegionalFederation."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    region_id = db.Column(db.Integer, db.ForeignKey('regional_federation.id'), nullable=False)
+    logo_path = db.Column(db.String(500))  # круг на карточке/баннере, как у RegionalFederation.logo_path
+
+    # Общая информация под баннером на странице клуба (пункт «Клуб»).
+    intro_text = db.Column(db.Text)
+    # Разделы бокового меню страницы клуба.
+    leadership_text = db.Column(db.Text)  # Руководство
+    coaches_text = db.Column(db.Text)  # Тренеры
+    athletes_text = db.Column(db.Text)  # Спортсмены
+    schedule_text = db.Column(db.Text)  # Расписание занятий
+    achievements_text = db.Column(db.Text)  # Достижения
+    contact_phone = db.Column(db.String(100))
+    contact_email = db.Column(db.String(150))
+    contact_address = db.Column(db.String(500))
+
+    region = db.relationship('RegionalFederation', backref='clubs')
 
 
 class Banner(db.Model):

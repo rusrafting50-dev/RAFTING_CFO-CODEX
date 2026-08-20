@@ -12,7 +12,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from models import (
-    Athlete, Banner, Competition, CompetitionApplication, CompetitionDocument, Document,
+    Athlete, Banner, Club, Competition, CompetitionApplication, CompetitionDocument, Document,
     DocumentCategory, DocumentSection, Event, FederationMember, FederationRegistrationRequest,
     MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel, PartnerLogo,
     PasswordResetRequest, Referee, RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
@@ -73,6 +73,7 @@ SECTION_CHOICES = [
     ('documents', 'Документы'),
     ('members', 'Члены органов'),
     ('regions', 'Регионы ЦФО'),
+    ('clubs', 'Клубы'),
     ('banners', 'Баннеры'),
     ('media', 'Медиа'),
     ('partners', 'Логотипы партнёров'),
@@ -945,6 +946,101 @@ def regions_delete(region_id):
     db.session.commit()
     flash('Региональная федерация удалена.', 'success')
     return redirect(url_for('admin.regions_list'))
+
+
+# ---------- Клубы ----------
+
+def _club_form_fields(club, form):
+    club.name = form.get('name', '').strip()
+    club.region_id = form.get('region_id', type=int)
+    club.intro_text = form.get('intro_text', '').strip() or None
+    club.leadership_text = form.get('leadership_text', '').strip() or None
+    club.coaches_text = form.get('coaches_text', '').strip() or None
+    club.athletes_text = form.get('athletes_text', '').strip() or None
+    club.schedule_text = form.get('schedule_text', '').strip() or None
+    club.achievements_text = form.get('achievements_text', '').strip() or None
+    club.contact_phone = form.get('contact_phone', '').strip() or None
+    club.contact_email = form.get('contact_email', '').strip() or None
+    club.contact_address = form.get('contact_address', '').strip() or None
+
+
+@bp.route('/clubs')
+@section_required('clubs')
+def clubs_list():
+    clubs = Club.query.join(RegionalFederation).order_by(RegionalFederation.name, Club.name).all()
+    return render_template('admin/clubs_list.html', active='clubs', clubs=clubs)
+
+
+@bp.route('/clubs/new', methods=['GET', 'POST'])
+@section_required('clubs')
+@roles_required('admin', 'editor')
+def clubs_new():
+    regions = RegionalFederation.query.order_by(RegionalFederation.name).all()
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        region_id = request.form.get('region_id', type=int)
+        logo = request.files.get('logo')
+
+        if not name or not region_id:
+            flash('Название клуба и регион обязательны.', 'error')
+            return render_template('admin/club_form.html', active='clubs', club=None, regions=regions)
+
+        if logo and logo.filename and not allowed_image(logo.filename):
+            flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/club_form.html', active='clubs', club=None, regions=regions)
+
+        club = Club()
+        _club_form_fields(club, request.form)
+        if logo and logo.filename:
+            club.logo_path = save_upload(logo)
+        db.session.add(club)
+        db.session.commit()
+        flash('Клуб добавлен.', 'success')
+        return redirect(url_for('admin.clubs_list'))
+
+    return render_template('admin/club_form.html', active='clubs', club=None, regions=regions)
+
+
+@bp.route('/clubs/<int:club_id>/edit', methods=['GET', 'POST'])
+@section_required('clubs')
+@roles_required('admin', 'editor')
+def clubs_edit(club_id):
+    club = Club.query.get_or_404(club_id)
+    regions = RegionalFederation.query.order_by(RegionalFederation.name).all()
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        region_id = request.form.get('region_id', type=int)
+        logo = request.files.get('logo')
+
+        if not name or not region_id:
+            flash('Название клуба и регион обязательны.', 'error')
+            return render_template('admin/club_form.html', active='clubs', club=club, regions=regions)
+
+        if logo and logo.filename and not allowed_image(logo.filename):
+            flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/club_form.html', active='clubs', club=club, regions=regions)
+
+        _club_form_fields(club, request.form)
+        if logo and logo.filename:
+            club.logo_path = save_upload(logo)
+        db.session.commit()
+        flash('Данные обновлены.', 'success')
+        return redirect(url_for('admin.clubs_list'))
+
+    return render_template('admin/club_form.html', active='clubs', club=club, regions=regions)
+
+
+@bp.route('/clubs/<int:club_id>/delete', methods=['POST'])
+@section_required('clubs')
+@roles_required('admin', 'editor')
+def clubs_delete(club_id):
+    club = Club.query.get_or_404(club_id)
+    db.session.delete(club)
+    db.session.commit()
+    flash('Клуб удалён.', 'success')
+    return redirect(url_for('admin.clubs_list'))
 
 
 # ---------- Баннеры ----------
