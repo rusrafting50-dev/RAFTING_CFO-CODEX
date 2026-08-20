@@ -1,0 +1,4 @@
+cd /d "D:\Projects Claude Code\RAFTING_CFO"
+git add .
+git commit -m "добавлен новый файл"
+git push

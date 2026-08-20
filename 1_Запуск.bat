@@ -1,4 +1,5 @@
 @echo off
+set GIT_MERGE_AUTOEDIT=no
 cd /d "%~dp0"
 echo [1/3] Git pull...
 git pull origin main
