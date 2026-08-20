@@ -2412,7 +2412,7 @@ footer hr {
 }
 
 .fed-banner {
-    background: linear-gradient(135deg, var(--color-dark), var(--color-accent));
+    background: repeat url('../img/Фон серый треугольник.webp');
     border-radius: 12px;
     min-height: 260px;
     display: flex;
