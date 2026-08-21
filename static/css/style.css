@@ -2449,6 +2449,15 @@ footer hr {
     object-fit: contain;
 }
 
+/* Карточка клуба на странице «Клубы» — тот же круг, что у карточки
+   региона, но отступ от края круга до логотипа вдвое меньше (был 14.5%
+   с каждой стороны при 71% картинки, стало 7.25% при 85.5%). */
+.club-card-logo img {
+    width: 85.5%;
+    height: 85.5%;
+    object-fit: contain;
+}
+
 .region-card-body {
     padding: 20px;
     text-align: center;

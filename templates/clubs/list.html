@@ -15,7 +15,7 @@
                         <div class="col">
                             <a class="region-card" href="{{ url_for('clubs.detail', club_id=club.id) }}">
                                 <div class="region-card-photo">
-                                    <div class="region-card-logo">
+                                    <div class="region-card-logo club-card-logo">
                                         {% if club.logo_path %}
                                             <img src="{{ url_for('static', filename=club.logo_path) }}" alt="{{ club.name }}">
                                         {% endif %}
