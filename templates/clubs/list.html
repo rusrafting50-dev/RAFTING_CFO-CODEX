@@ -9,7 +9,7 @@
 
         {% if groups %}
             {% for region, clubs in groups %}
-                <h2 class="h5 text-uppercase mt-5 mb-3">{{ region.name }}</h2>
+                <h2 class="h5 text-uppercase mt-5 mb-3">{{ region.subject_name or region.name }}</h2>
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
                     {% for club in clubs %}
                         <div class="col">

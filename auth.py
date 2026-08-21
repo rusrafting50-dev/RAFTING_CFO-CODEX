@@ -101,6 +101,7 @@ def ensure_schema():
     _ensure_column(inspector, 'regional_federation', 'contact_address', 'VARCHAR(500)')
     _ensure_column(inspector, 'regional_federation', 'logo_white_path', 'VARCHAR(500)')
     _ensure_column(inspector, 'document_category', 'scope', "VARCHAR(30) NOT NULL DEFAULT 'цфо'")
+    _ensure_column(inspector, 'regional_federation', 'subject_name', 'VARCHAR(255)')
 
 
 def seed_news_taxonomy():

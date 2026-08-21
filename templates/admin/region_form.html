@@ -13,6 +13,13 @@
                    value="{{ region.name if region else '' }}">
         </div>
         <div class="mb-3">
+            <label for="subject_name" class="form-label">Наименование субъекта РФ</label>
+            <input type="text" class="form-control" id="subject_name" name="subject_name"
+                   placeholder="Например: Московская область"
+                   value="{{ region.subject_name or '' if region else '' }}">
+            <div class="form-text">Используется для группировки клубов по региону на странице «Клубы и команды».</div>
+        </div>
+        <div class="mb-3">
             <label for="logo" class="form-label">Логотип</label>
             {% if region and region.logo_path %}
                 <div class="mb-2">

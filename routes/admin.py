@@ -881,6 +881,7 @@ def regions_new():
 
         region = RegionalFederation(
             name=name,
+            subject_name=request.form.get('subject_name', '').strip() or None,
             logo_path=save_upload(logo) if logo and logo.filename else None,
             logo_white_path=save_upload(logo_white) if logo_white and logo_white.filename else None,
             intro_text=request.form.get('intro_text', '').strip() or None,
@@ -921,6 +922,7 @@ def regions_edit(region_id):
             return render_template('admin/region_form.html', active='regions', region=region)
 
         region.name = name
+        region.subject_name = request.form.get('subject_name', '').strip() or None
         if logo and logo.filename:
             region.logo_path = save_upload(logo)
         if logo_white and logo_white.filename:
