@@ -3,9 +3,12 @@ from itertools import groupby
 
 from flask import Blueprint, abort, render_template, url_for
 
-from models import Club, RegionalFederation
+from models import Athlete, Club, RegionalFederation
 
 bp = Blueprint('clubs', __name__)
+
+# section -> роль Athlete.role, которую показываем в этом разделе.
+SECTION_ATHLETE_ROLES = {'coaches': 'тренер', 'athletes': 'спортсмен'}
 
 # Разделы бокового меню на персональной странице клуба — тот же приём,
 # что regions.SECTIONS/_sidebar_items для региональной федерации.
@@ -58,7 +61,23 @@ def section(club_id, section):
         abort(404)
     club = Club.query.get_or_404(club_id)
     section_label = dict(SECTIONS)[section]
+
+    club_athletes = []
+    role = SECTION_ATHLETE_ROLES.get(section)
+    if role:
+        # Сравнение без учёта регистра — в Python, не в SQL: LOWER() в
+        # SQLite не переводит кириллицу в нижний регистр (см. тот же
+        # приём в routes/regions.py.section()).
+        club_name = club.name.strip().lower()
+        club_athletes = sorted(
+            (
+                a for a in Athlete.query.filter(Athlete.is_active.is_(True), Athlete.role == role).all()
+                if a.organization and a.organization.strip().lower() == club_name
+            ),
+            key=lambda a: a.full_name,
+        )
+
     return render_template(
         'clubs/section.html', club=club, sidebar_items=_sidebar_items(club, section),
-        section=section, section_label=section_label,
+        section=section, section_label=section_label, club_athletes=club_athletes,
     )

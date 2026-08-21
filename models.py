@@ -114,7 +114,16 @@ class CompetitionDocument(db.Model):
 
 
 class Athlete(db.Model):
-    """Спортсмены и тренеры сборной — поступают из REGTEAM_RAFTING."""
+    """Спортсмены и тренеры сборной — поступают из REGTEAM_RAFTING.
+
+    organization — направляющая организация (клуб/школа), по названию
+    сопоставляется с Club.name для разделов «Тренеры»/«Спортсмены» на
+    странице клуба. territory приходит от REGTEAM_RAFTING уже на уровне
+    субъекта РФ (не внутреннего района инстанса-источника) и по названию
+    сопоставляется с RegionalFederation.subject_name для раздела
+    «Сборная команда» на странице федерации — то же соответствие, что
+    Club.region_id, только по строке, а не по внешнему ключу, так как
+    REGTEAM_RAFTING не знает внутренних id сайта."""
 
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(255), nullable=False)
@@ -125,6 +134,10 @@ class Athlete(db.Model):
     territory = db.Column(db.String(255))
     national_team = db.Column(db.String(100))
     source_id = db.Column(db.Integer)  # ID в базе REGTEAM_RAFTING
+    # Включён ли сейчас в состав сборной (ChangeLog «включён»/«исключён»
+    # в REGTEAM_RAFTING) — исключённые не показываются в разделах
+    # «Сборная команда» и на страницах клубов, но не удаляются из базы.
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
 
 
 class Referee(db.Model):

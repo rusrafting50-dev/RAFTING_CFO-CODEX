@@ -1,20 +1,22 @@
 """Региональные федерации субъектов ЦФО."""
 from flask import Blueprint, abort, render_template, url_for
 
-from models import RegionalFederation
+from models import Athlete, RegionalFederation
 
 bp = Blueprint('regions', __name__)
 
 # Разделы бокового меню «О федерации» на персональной странице федерации.
-# Для goals/contacts есть реальные поля в RegionalFederation; для
-# остальных пока нет своей модели данных — раздел открывается с
-# заглушкой «материалы пока не добавлены», как и на других страницах
-# сайта, где источник данных ещё не подключён.
+# Для goals/contacts есть реальные поля в RegionalFederation, для team —
+# реальные данные из REGTEAM_RAFTING (см. section() ниже); для остальных
+# пока нет своей модели данных — раздел открывается с заглушкой
+# «материалы пока не добавлены», как и на других страницах сайта, где
+# источник данных ещё не подключён.
 SECTIONS = [
     ('goals', 'Цели и задачи'),
     ('leadership', 'Руководство'),
     ('committees', 'Комитеты и комиссии'),
     ('clubs', 'Клубы'),
+    ('team', 'Сборная команда'),
     ('calendar', 'Календарный план'),
     ('documents', 'Документы'),
     ('contacts', 'Контакты'),
@@ -65,7 +67,23 @@ def section(region_id, section):
         abort(404)
     region = RegionalFederation.query.get_or_404(region_id)
     section_label = dict(SECTIONS)[section]
+
+    team_athletes = []
+    if section == 'team' and region.subject_name:
+        # Сравнение без учёта регистра делается в Python, а не в SQL —
+        # LOWER() в SQLite работает только для ASCII и не переводит
+        # кириллицу в нижний регистр, из-за чего сравнение по regionу
+        # молча не находило бы совпадений.
+        subject_name = region.subject_name.strip().lower()
+        team_athletes = sorted(
+            (
+                a for a in Athlete.query.filter(Athlete.is_active.is_(True)).all()
+                if a.territory and a.territory.strip().lower() == subject_name
+            ),
+            key=lambda a: (a.role or '', a.full_name),
+        )
+
     return render_template(
         'regions/section.html', region=region, sidebar_items=_sidebar_items(region, section),
-        section=section, section_label=section_label,
+        section=section, section_label=section_label, team_athletes=team_athletes,
     )

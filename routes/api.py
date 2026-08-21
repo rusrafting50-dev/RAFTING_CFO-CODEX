@@ -193,16 +193,31 @@ def sync_athletes():
     if items is None:
         return jsonify({'error': 'Тело запроса должно быть JSON вида {"items": [...]}.'}), 400
 
-    created = updated = skipped = 0
+    created = updated = deleted = skipped = 0
     errors = []
 
     for item in items:
         source_id = item.get('source_id')
-        full_name = (item.get('full_name') or '').strip()
 
-        if source_id is None or not full_name:
+        if source_id is None:
             skipped += 1
-            errors.append(f'source_id={source_id}: отсутствует source_id или full_name')
+            errors.append('отсутствует source_id')
+            continue
+
+        if item.get('deleted'):
+            # Спортсмен/тренер удалён совсем (не просто исключён из
+            # состава — для этого есть is_active) — например, запись
+            # была создана по ошибке. Молча пропускаем, если такого
+            # source_id и так уже нет.
+            removed = Athlete.query.filter_by(source_id=source_id).delete()
+            if removed:
+                deleted += 1
+            continue
+
+        full_name = (item.get('full_name') or '').strip()
+        if not full_name:
+            skipped += 1
+            errors.append(f'source_id={source_id}: отсутствует full_name')
             continue
 
         athlete = Athlete.query.filter_by(source_id=source_id).first()
@@ -220,14 +235,15 @@ def sync_athletes():
         athlete.organization = item.get('organization')
         athlete.territory = item.get('territory')
         athlete.national_team = item.get('national_team')
+        athlete.is_active = bool(item.get('is_active', True))
 
     db.session.commit()
-    log_sync('athletes', created + updated,
-             message=f'создано: {created}, обновлено: {updated}, пропущено: {skipped}')
+    log_sync('athletes', created + updated + deleted,
+             message=f'создано: {created}, обновлено: {updated}, удалено: {deleted}, пропущено: {skipped}')
 
     return jsonify({
         'status': 'ok', 'received': len(items),
-        'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors,
+        'created': created, 'updated': updated, 'deleted': deleted, 'skipped': skipped, 'errors': errors,
     })
 
 

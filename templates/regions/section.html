@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_athletes_table.html" import athletes_table %}
 
 {% block title %}{{ section_label }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}{{ section_label }}: {{ region.name }}{% endblock %}
@@ -11,27 +12,31 @@
             <div class="col-lg-9">
                 <h2 class="h5 mb-3">{{ section_label }}</h2>
 
-                <div class="fed-text-block">
-                    {% if section == 'goals' %}
-                        {% if region.goals_text %}
-                            <div class="fed-intro">{{ region.goals_text }}</div>
+                {% if section == 'team' %}
+                    {{ athletes_table(team_athletes) }}
+                {% else %}
+                    <div class="fed-text-block">
+                        {% if section == 'goals' %}
+                            {% if region.goals_text %}
+                                <div class="fed-intro">{{ region.goals_text }}</div>
+                            {% else %}
+                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                            {% endif %}
+                        {% elif section == 'contacts' %}
+                            {% if region.contact_phone or region.contact_email or region.contact_address %}
+                                <ul class="list-unstyled mb-0">
+                                    {% if region.contact_address %}<li class="mb-2"><span aria-hidden="true">📍</span> {{ region.contact_address }}</li>{% endif %}
+                                    {% if region.contact_phone %}<li class="mb-2"><span aria-hidden="true">📞</span> {{ region.contact_phone }}</li>{% endif %}
+                                    {% if region.contact_email %}<li class="mb-0"><span aria-hidden="true">✉️</span> {{ region.contact_email }}</li>{% endif %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted mb-0">Контакты пока не добавлены.</p>
+                            {% endif %}
                         {% else %}
                             <p class="text-muted mb-0">Материалы пока не добавлены.</p>
                         {% endif %}
-                    {% elif section == 'contacts' %}
-                        {% if region.contact_phone or region.contact_email or region.contact_address %}
-                            <ul class="list-unstyled mb-0">
-                                {% if region.contact_address %}<li class="mb-2"><span aria-hidden="true">📍</span> {{ region.contact_address }}</li>{% endif %}
-                                {% if region.contact_phone %}<li class="mb-2"><span aria-hidden="true">📞</span> {{ region.contact_phone }}</li>{% endif %}
-                                {% if region.contact_email %}<li class="mb-0"><span aria-hidden="true">✉️</span> {{ region.contact_email }}</li>{% endif %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted mb-0">Контакты пока не добавлены.</p>
-                        {% endif %}
-                    {% else %}
-                        <p class="text-muted mb-0">Материалы пока не добавлены.</p>
-                    {% endif %}
-                </div>
+                    </div>
+                {% endif %}
             </div>
             <div class="col-lg-3">
                 {% include "regions/_sidebar.html" with context %}

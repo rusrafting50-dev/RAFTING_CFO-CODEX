@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_athletes_table.html" import athletes_table %}
 
 {% block title %}{{ section_label }} — {{ club.name }} — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}{{ section_label }}: {{ club.name }}{% endblock %}
@@ -11,32 +12,36 @@
             <div class="col-lg-9">
                 <h2 class="h5 mb-3">{{ section_label }}</h2>
 
-                <div class="fed-text-block">
-                    {% if section == 'contacts' %}
-                        {% if club.contact_phone or club.contact_email or club.contact_address %}
-                            <ul class="list-unstyled mb-0">
-                                {% if club.contact_address %}<li class="mb-2"><span aria-hidden="true">📍</span> {{ club.contact_address }}</li>{% endif %}
-                                {% if club.contact_phone %}<li class="mb-2"><span aria-hidden="true">📞</span> {{ club.contact_phone }}</li>{% endif %}
-                                {% if club.contact_email %}<li class="mb-0"><span aria-hidden="true">✉️</span> {{ club.contact_email }}</li>{% endif %}
-                            </ul>
+                {% if section in ('coaches', 'athletes') and club_athletes %}
+                    {{ athletes_table(club_athletes, show_organization=False) }}
+                {% else %}
+                    <div class="fed-text-block">
+                        {% if section == 'contacts' %}
+                            {% if club.contact_phone or club.contact_email or club.contact_address %}
+                                <ul class="list-unstyled mb-0">
+                                    {% if club.contact_address %}<li class="mb-2"><span aria-hidden="true">📍</span> {{ club.contact_address }}</li>{% endif %}
+                                    {% if club.contact_phone %}<li class="mb-2"><span aria-hidden="true">📞</span> {{ club.contact_phone }}</li>{% endif %}
+                                    {% if club.contact_email %}<li class="mb-0"><span aria-hidden="true">✉️</span> {{ club.contact_email }}</li>{% endif %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted mb-0">Контакты пока не добавлены.</p>
+                            {% endif %}
                         {% else %}
-                            <p class="text-muted mb-0">Контакты пока не добавлены.</p>
+                            {% set section_text = {
+                                'leadership': club.leadership_text,
+                                'coaches': club.coaches_text,
+                                'athletes': club.athletes_text,
+                                'schedule': club.schedule_text,
+                                'achievements': club.achievements_text,
+                            }[section] %}
+                            {% if section_text %}
+                                <div class="fed-intro">{{ section_text }}</div>
+                            {% else %}
+                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                            {% endif %}
                         {% endif %}
-                    {% else %}
-                        {% set section_text = {
-                            'leadership': club.leadership_text,
-                            'coaches': club.coaches_text,
-                            'athletes': club.athletes_text,
-                            'schedule': club.schedule_text,
-                            'achievements': club.achievements_text,
-                        }[section] %}
-                        {% if section_text %}
-                            <div class="fed-intro">{{ section_text }}</div>
-                        {% else %}
-                            <p class="text-muted mb-0">Материалы пока не добавлены.</p>
-                        {% endif %}
-                    {% endif %}
-                </div>
+                    </div>
+                {% endif %}
             </div>
             <div class="col-lg-3">
                 {% include "clubs/_sidebar.html" with context %}
