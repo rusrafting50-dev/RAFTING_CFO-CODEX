@@ -33,4 +33,58 @@
             <p class="text-muted">Клубы пока не добавлены.</p>
         {% endif %}
     </div>
+
+    <script>
+        (function () {
+            /* .club-card-logo img по умолчанию (CSS) занимает 85.5% круглого
+               поля — этого достаточно для большинства логотипов, но для
+               квадратного/близкого к квадрату изображения такой размер
+               означает, что border-radius: 50% на самом поле обрежет ему
+               углы. Уменьшать поле ради этого не нужно — оно должно
+               оставаться просторным для всех остальных логотипов. Вместо
+               этого здесь по фактическим пропорциям КОНКРЕТНОЙ картинки
+               считаем, вписывается ли она (при уже применённом
+               object-fit: contain) в круг целиком, и если нет — уменьшаем
+               именно эту картинку ровно настолько, чтобы она поместилась
+               по максимуму, не трогая поле и остальные логотипы. */
+            function fitLogo(img) {
+                var circle = img.closest('.club-card-logo');
+                if (!circle) return;
+                var size = circle.getBoundingClientRect().width;
+                var natW = img.naturalWidth;
+                var natH = img.naturalHeight;
+                if (!size || !natW || !natH) return;
+
+                var boxSide = size * 0.855;
+                var scaleToBox = Math.min(boxSide / natW, boxSide / natH);
+                var renderedW = natW * scaleToBox;
+                var renderedH = natH * scaleToBox;
+
+                var halfDiagonal = Math.sqrt(renderedW * renderedW + renderedH * renderedH) / 2;
+                var radius = size / 2;
+
+                if (halfDiagonal > radius) {
+                    var shrink = radius / halfDiagonal;
+                    img.style.width = (renderedW * shrink) + 'px';
+                    img.style.height = (renderedH * shrink) + 'px';
+                } else {
+                    img.style.width = '';
+                    img.style.height = '';
+                }
+            }
+
+            function fitAll() {
+                document.querySelectorAll('.club-card-logo img').forEach(fitLogo);
+            }
+
+            document.querySelectorAll('.club-card-logo img').forEach(function (img) {
+                if (img.complete) {
+                    fitLogo(img);
+                } else {
+                    img.addEventListener('load', function () { fitLogo(img); });
+                }
+            });
+            window.addEventListener('resize', fitAll);
+        })();
+    </script>
 {% endblock %}
