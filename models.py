@@ -277,8 +277,9 @@ class RegionalFederation(db.Model):
                 continue
             before = name[:start].strip()
             quoted = name[start + len(open_q):end].strip()
-            return before, quoted
-        return '', name.strip()
+            quoted_full = name[start:end + len(close_q)].strip()
+            return before, quoted, quoted_full
+        return '', name.strip(), name.strip()
 
     @property
     def name_before_quote(self):
@@ -287,6 +288,15 @@ class RegionalFederation(db.Model):
     @property
     def name_quoted(self):
         return self._split_name()[1]
+
+    @property
+    def name_quoted_full(self):
+        """Часть названия в кавычках вместе с самими кавычками, без
+        изменения регистра — для заголовка на персональной странице
+        федерации (fed-page-title), где название переносится на вторую
+        строку по границе кавычек, а не режется браузером как попало.
+        В отличие от name_quoted (для шапки сайта), кавычки не убираются."""
+        return self._split_name()[2]
 
 
 class Club(db.Model):

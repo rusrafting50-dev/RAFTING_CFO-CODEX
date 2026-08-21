@@ -5,7 +5,14 @@
 
 {% block content %}
     <div class="container py-5">
-        <h1 class="fed-page-title">{{ region.name }}</h1>
+        <h1 class="fed-page-title">
+            {% if region.name_before_quote %}
+                <span class="fed-page-title-line">{{ region.name_before_quote }}</span>
+                <span class="fed-page-title-line">{{ region.name_quoted_full }}</span>
+            {% else %}
+                {{ region.name }}
+            {% endif %}
+        </h1>
 
         <div class="row g-4">
             <div class="col-lg-9">
