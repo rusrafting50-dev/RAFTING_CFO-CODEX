@@ -2487,6 +2487,19 @@ footer hr {
     margin-bottom: 24px;
 }
 
+/* Заголовок страницы федерации (regions/_page_title.html): по
+   умолчанию — одна строка; JS переключает на .fed-page-title-split,
+   если название не помещается целиком. .fed-page-title-full должна
+   быть блочной, иначе clientWidth инлайнового элемента всегда 0 и
+   сравнение со scrollWidth в скрипте не работает. overflow/ellipsis —
+   запасной вариант на случай, если JS не выполнится. */
+.fed-page-title-full {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 /* Если название не помещается в одну строку — принудительный перенос
    по границе кавычек (часть без кавычек / часть в кавычках), а не там,
    где придётся браузеру. */

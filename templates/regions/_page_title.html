@@ -1,0 +1,44 @@
+{# Заголовок страницы федерации — regions/detail.html и regions/section.html.
+   Если полное название помещается в одну строку — выводится одной строкой.
+   Если нет — переносится по границе кавычек (часть без кавычек / часть в
+   кавычках), как раньше. Оба варианта рендерятся в разметке, JS ниже
+   измеряет фактическую ширину и показывает подходящий — без этого при
+   отключённом JS остаётся вариант в одну строку с многоточием по
+   переполнению (текст всё равно не режется браузером как попало). #}
+<h1 class="fed-page-title">
+    <span class="fed-page-title-full">{{ region.name }}</span>
+    {% if region.name_before_quote %}
+        <span class="fed-page-title-split" hidden>
+            <span class="fed-page-title-line">{{ region.name_before_quote }}</span>
+            <span class="fed-page-title-line">{{ region.name_quoted_full }}</span>
+        </span>
+    {% endif %}
+</h1>
+
+<script>
+    (function () {
+        var title = document.currentScript.previousElementSibling;
+        var split = title.querySelector('.fed-page-title-split');
+        if (!split) return;
+        var full = title.querySelector('.fed-page-title-full');
+
+        function apply() {
+            // display через .hidden (атрибут [hidden]) здесь не работает:
+            // .fed-page-title-full задаёт свой display: block с той же
+            // специфичностью, что и стандартное правило [hidden] { display:
+            // none } — и, идя позже в каскаде, перебивает его. Инлайновый
+            // style.display побеждает оба правила и работает надёжно.
+            full.style.display = 'block';
+            split.style.display = 'none';
+            var fits = full.scrollWidth <= full.clientWidth + 1;
+            full.style.display = fits ? 'block' : 'none';
+            split.style.display = fits ? 'none' : 'block';
+        }
+
+        apply();
+        window.addEventListener('resize', apply);
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(apply);
+        }
+    })();
+</script>

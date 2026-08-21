@@ -24,7 +24,9 @@ SECTION_KEYS = {key for key, _ in SECTIONS}
 
 def _sidebar_items(region, active_section):
     """Пункты бокового меню «О федерации»: первым — «Федерация» (ссылка
-    на обзорную страницу), затем разделы. active — текущий пункт, он
+    на обзорную страницу), затем разделы, последним — «Спортивные
+    судьи» (ссылка на общую по ЦФО страницу судей, а не раздел этой
+    федерации, поэтому активной не бывает). active — текущий пункт, он
     выводится как заголовок-плашка вместо обычной строки."""
     items = [{
         'label': 'Федерация',
@@ -37,6 +39,11 @@ def _sidebar_items(region, active_section):
             'url': url_for('regions.section', region_id=region.id, section=key),
             'active': active_section == key,
         })
+    items.append({
+        'label': 'Спортивные судьи',
+        'url': url_for('referees.index'),
+        'active': False,
+    })
     return items
 
 
