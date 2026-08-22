@@ -61,21 +61,15 @@
 
     // Расчёт зависит от ширины надписи "Федерация рафтинга России" и
     // ширины логотипа — обе могут на момент первой отрисовки ещё не
-    // устояться (шрифт Roboto, файл логотипа без width/height, появление
-    // или исчезновение полосы прокрутки после того, как догрузится
-    // остальной контент страницы, и т.п. — причин может быть несколько
-    // сразу, и пытаться перечислить их все через отдельные "готово ли
-    // X" флаги ненадёжно). Поэтому вместо этого группа остаётся скрытой
-    // (не через CSS — чтобы без JS она осталась на запасном месте, а не
-    // пропала совсем) и показывается только один раз, когда посчитанная
-    // позиция перестаёт меняться между вызовами в течение REVEAL_SETTLE_MS
-    // — после первого такого "устаканивания" дальнейшие пересчёты (resize
-    // и т.п.) уже просто обновляют позицию на лету, без повторного скрытия.
-    var settled = false;
-    var revealTimer = null;
-    var lastLeft = null;
-    var lastWidth = null;
-    var REVEAL_SETTLE_MS = 150;
+    // устояться (шрифт Roboto, файл логотипа без width/height и т.п.).
+    // Раньше группа на это время пряталась (visibility: hidden) — но
+    // полностью пропадающий на долю секунды текст меню бросается в
+    // глаза ничуть не меньше, чем скачок позиции (что и увидел
+    // пользователь). Поэтому группа больше не прячется вообще: она
+    // сразу встаёт на первое посчитанное место, а если более точный
+    // пересчёт (после подгрузки шрифта/лого) слегка её поправит —
+    // .header-nav .nav-left в CSS плавно доедет туда за счёт transition
+    // на left/width, а не дёрнется мгновенно.
 
     // У .nav-link есть собственный горизонтальный padding (Bootstrap
     // --bs-navbar-nav-link-padding-x, 8px) — видимый текст "Новости"
@@ -90,7 +84,6 @@
             navLeft.style.left = '';
             navLeft.style.width = '';
             navLeft.style.paddingRight = '';
-            navLeft.style.visibility = '';
             return;
         }
 
@@ -126,28 +119,6 @@
         navLeft.style.left = cachedTargetLeft + 'px';
         navLeft.style.width = newWidth + 'px';
         navLeft.style.paddingRight = '0';
-
-        if (settled) {
-            navLeft.style.visibility = '';
-            return;
-        }
-
-        var changed = lastLeft === null
-            || Math.abs(cachedTargetLeft - lastLeft) > 0.5
-            || Math.abs(newWidth - lastWidth) > 0.5;
-        lastLeft = cachedTargetLeft;
-        lastWidth = newWidth;
-
-        if (changed) {
-            navLeft.style.visibility = 'hidden';
-            if (revealTimer) {
-                clearTimeout(revealTimer);
-            }
-            revealTimer = setTimeout(function () {
-                settled = true;
-                navLeft.style.visibility = '';
-            }, REVEAL_SETTLE_MS);
-        }
     }
 
     var resizeTimer = null;
@@ -163,8 +134,8 @@
     // Возможные источники изменения расчёта после первой отрисовки —
     // подгрузка шрифта, подгрузка самого файла логотипа (у него не
     // заданы width/height) — каждый просто ещё раз запускает пересчёт;
-    // остаётся ли группа при этом скрытой или уже показана — решает
-    // сам syncNavLeft (см. settled выше).
+    // если он даст другое значение, CSS-transition (см. style.css)
+    // плавно доведёт группу до новой позиции.
     if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(syncNavLeft);
     }
