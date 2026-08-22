@@ -197,13 +197,12 @@ EQUIPMENT_SCOPE_BY_AUDIENCE = {
 @bp.route('/equipment')
 def equipment():
     """Оборудование и снаряжение — третья вкладка раздела «Соревнования»
-    (см. comp_tabs в competitions/_tabs.html). Устроена как страница
-    «Мероприятия»: сначала выбор аудитории (для спортсменов / для
-    организаторов соревнований) — первая строка меню, затем вторая
-    строка — категории оборудования внутри выбранной аудитории
-    (DocumentCategory, scope зависит от аудитории), ниже — документы
-    выбранной категории (тот же приём, что «Нормативные документы»,
-    см. documents() выше, но без разделов — тут только категории)."""
+    (см. comp_tabs в competitions/_tabs.html). Сначала выбор аудитории
+    (для спортсменов / для организаторов соревнований) — строка меню,
+    затем на самой странице категории оборудования внутри выбранной
+    аудитории (DocumentCategory, scope зависит от аудитории) выводятся
+    как заголовки разделов, а не как отдельная строка меню-вкладок —
+    под каждым заголовком сразу все документы этой категории."""
     audience = request.args.get('audience', 'спортсмены')
     if audience not in EQUIPMENT_SCOPE_BY_AUDIENCE:
         audience = 'спортсмены'
@@ -214,26 +213,19 @@ def equipment():
         .order_by(DocumentCategory.name)
         .all()
     )
-    category_names = [category.name for category in categories]
 
-    selected_category_id = request.args.get('category', type=int)
-    selected_category = (
-        next((c for c in categories if c.id == selected_category_id), None)
-        if selected_category_id else None
-    )
-
-    query = Document.query.order_by(Document.uploaded_at.desc(), Document.title)
-    if selected_category:
-        documents_ = query.filter_by(doc_category=selected_category.name).all()
-    elif category_names:
-        documents_ = query.filter(Document.doc_category.in_(category_names)).all()
-    else:
-        documents_ = []
+    documents_by_category = {}
+    for category in categories:
+        documents_by_category[category.id] = (
+            Document.query.filter_by(doc_category=category.name)
+            .order_by(Document.uploaded_at.desc(), Document.title)
+            .all()
+        )
 
     return render_template(
         'competitions/equipment.html',
         audiences=EQUIPMENT_AUDIENCES, selected_audience=audience,
-        categories=categories, selected_category=selected_category, documents=documents_,
+        categories=categories, documents_by_category=documents_by_category,
     )
 
 
