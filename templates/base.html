@@ -117,10 +117,14 @@
     <div class="container py-5">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
             <div class="col">
-                <h2 class="h6 text-uppercase">Рафтинг ЦФО</h2>
+                <h2 class="h6 text-uppercase">{{ 'Федерация' if region else 'Рафтинг ЦФО' }}</h2>
                 <ul class="list-unstyled">
                     <li><a href="{{ url_for('main.news') }}">Новости</a></li>
-                    <li><a href="{{ url_for('regions.index') }}">Регионы ЦФО</a></li>
+                    {% if region %}
+                        <li><a href="{{ url_for('regions.section', region_id=region.id, section='clubs') }}">Клубы</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('regions.index') }}">Регионы ЦФО</a></li>
+                    {% endif %}
                     <li><a href="{{ url_for('main.media') }}">Медиа</a></li>
                     <li><a href="{{ url_for('admin.login') }}">Вход на сайт</a></li>
                 </ul>
@@ -128,7 +132,9 @@
             <div class="col">
                 <h2 class="h6 text-uppercase">Соревнования</h2>
                 <ul class="list-unstyled">
-                    <li><a href="{{ url_for('clubs.index') }}">Клубы</a></li>
+                    {% if not region %}
+                        <li><a href="{{ url_for('clubs.index') }}">Клубы</a></li>
+                    {% endif %}
                     <li><a href="{{ url_for('competitions.documents') }}">Нормативные документы</a></li>
                     <li><a href="{{ url_for('competitions.calendar') }}">Календарный план</a></li>
                     <li><a href="#">Оборудование и снаряжение</a></li>
