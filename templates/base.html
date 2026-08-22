@@ -119,28 +119,26 @@
             <div class="col">
                 <h2 class="h6 text-uppercase">Рафтинг ЦФО</h2>
                 <ul class="list-unstyled">
-                    <li><a href="#">Представители ЦФО в ФРР</a></li>
+                    <li><a href="{{ url_for('main.news') }}">Новости</a></li>
                     <li><a href="{{ url_for('regions.index') }}">Регионы ЦФО</a></li>
-                    <li><a href="{{ url_for('competitions.calendar') }}">Календарный план спортивных соревнований</a></li>
-                    <li><a href="#">Положение о соревнованиях</a></li>
+                    <li><a href="{{ url_for('main.media') }}">Медиа</a></li>
+                    <li><a href="{{ url_for('admin.login') }}">Вход на сайт</a></li>
                 </ul>
             </div>
             <div class="col">
                 <h2 class="h6 text-uppercase">Соревнования</h2>
                 <ul class="list-unstyled">
-                    <li><a href="{{ url_for('competitions.documents') }}">Нормативные документы</a></li>
-                    <li><a href="{{ url_for('team.index') }}">Сборные команды</a></li>
-                    <li><a href="{{ url_for('referees.index') }}">Спортивные судьи</a></li>
+                    <li><a href="{{ url_for('competitions.documents') }}">Документы</a></li>
+                    <li><a href="{{ url_for('competitions.calendar') }}">Календарный план</a></li>
                     <li><a href="#">Оборудование и снаряжение</a></li>
-                    <li><a href="{{ url_for('admin.login') }}">Панель управления</a></li>
                 </ul>
             </div>
             <div class="col">
                 <h2 class="h6 text-uppercase">Мероприятия</h2>
                 <ul class="list-unstyled">
-                    <li><a href="{{ url_for('events.index', event_type='семинар_судей') }}">Семинары подготовки судей</a></li>
-                    <li><a href="{{ url_for('events.index', event_type='семинар_руководителей') }}">Семинары повышения квалификации руководителей</a></li>
-                    <li><a href="{{ url_for('events.index', event_type='семинар_тренеров') }}">Семинары повышения квалификации тренеров</a></li>
+                    <li><a href="{{ url_for('events.index') }}">Календарный план</a></li>
+                    <li><a href="{{ url_for('events.documents') }}">Методические материалы</a></li>
+                    <li><a href="#">Антидопинг</a></li>
                 </ul>
             </div>
             <div class="col d-flex flex-column align-items-center align-items-lg-end">
@@ -160,9 +158,6 @@
                 </div>
                 <img class="footer-logo" src="{{ url_for('static', filename='img/ФРР_лого_серый.png') }}" alt="Федерация рафтинга России">
             </div>
-        </div>
-        <div class="text-center mt-2 mb-4">
-            <a href="{{ url_for('admin.login') }}" class="btn btn-outline-light btn-sm">Вход для региональных федераций</a>
         </div>
         <hr>
         <p class="mb-0 text-center">&copy; {{ now.year }} Общероссийская общественная организация «Федерация рафтинга России», Центральный федеральный округ</p>
