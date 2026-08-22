@@ -182,6 +182,40 @@ def asset_url(filename):
     return f"{url_for('static', filename=filename)}?v={version}"
 
 
+_STATIC_IMAGE_SIZE_CACHE = {}
+
+
+def static_image_size(filename):
+    """Реальные (width, height) файла в static/ — выводятся как атрибуты
+    width/height у логотипа в шапке (base.html), чтобы браузер знал его
+    пропорции ДО того, как файл реально загрузится. Без этого <img> без
+    width/height до загрузки имеет нулевой размер, а main.js, меряющий
+    положение логотипа для расстановки пунктов меню, в этот момент
+    получает неверные (нулевые) координаты — пункты меню на долю секунды
+    оказывались не на своём месте и заметно "доезжали" туда чуть позже.
+    Кэшируется в памяти по (файл, время изменения) — файл логотипа не
+    меняется между запросами, декодировать его на каждый рендер шапки незачем."""
+    path = os.path.join(BASE_DIR, 'static', filename)
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        return None
+
+    cached = _STATIC_IMAGE_SIZE_CACHE.get(filename)
+    if cached and cached[0] == mtime:
+        return cached[1]
+
+    try:
+        from PIL import Image
+        with Image.open(path) as img:
+            size = img.size
+    except Exception:
+        return None
+
+    _STATIC_IMAGE_SIZE_CACHE[filename] = (mtime, size)
+    return size
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -207,6 +241,7 @@ def create_app():
     app.jinja_env.filters['video_embed_url'] = video_embed_url
     app.jinja_env.tests['time_or_roman'] = is_time_or_roman
     app.jinja_env.globals['asset_url'] = asset_url
+    app.jinja_env.globals['static_image_size'] = static_image_size
 
     register_blueprints(app)
 
