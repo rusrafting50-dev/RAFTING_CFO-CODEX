@@ -59,6 +59,15 @@
     var header = document.querySelector('header');
     var cachedTargetLeft = null;
 
+    // До того как загрузится шрифт Roboto, ширина надписи "Федерация
+    // рафтинга России" считается по запасному шрифту (Arial) и отличается
+    // от финальной — если в этот момент уже показать левую группу пунктов
+    // меню на посчитанном по ней месте, при подгрузке Roboto она видимо
+    // "дёргается" на исправленную позицию. Поэтому группа скрыта (не
+    // через CSS — чтобы без JS она осталась на запасном месте, а не
+    // пропала совсем), пока не станет известно, что шрифт точно готов.
+    var fontsReady = !(window.document && document.fonts && document.fonts.ready);
+
     // У .nav-link есть собственный горизонтальный padding (Bootstrap
     // --bs-navbar-nav-link-padding-x, 8px) — видимый текст "Новости"
     // начинается на 8px правее левого края своего блока. Чтобы
@@ -72,7 +81,12 @@
             navLeft.style.left = '';
             navLeft.style.width = '';
             navLeft.style.paddingRight = '';
+            navLeft.style.visibility = '';
             return;
+        }
+
+        if (!fontsReady) {
+            navLeft.style.visibility = 'hidden';
         }
 
         var collapseRect = navbarCollapse.getBoundingClientRect();
@@ -106,6 +120,9 @@
         navLeft.style.left = cachedTargetLeft + 'px';
         navLeft.style.width = Math.max(0, targetRight - cachedTargetLeft) + 'px';
         navLeft.style.paddingRight = '0';
+        if (fontsReady) {
+            navLeft.style.visibility = '';
+        }
     }
 
     var resizeTimer = null;
@@ -119,7 +136,10 @@
     logo.addEventListener('transitionend', syncNavLeft);
 
     if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(syncNavLeft);
+        document.fonts.ready.then(function () {
+            fontsReady = true;
+            syncNavLeft();
+        });
     }
 
     window.addEventListener('load', syncNavLeft);
