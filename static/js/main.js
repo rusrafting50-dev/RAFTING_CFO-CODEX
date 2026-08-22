@@ -32,78 +32,15 @@
     });
 })();
 
-// Точный зазор между "Клубы" (последний пункт левой группы) и логотипом
-// — должен совпадать с зазором между логотипом и "Соревнования" справа
-// — зависит от фактической ширины контейнера Bootstrap (меняется по
-// брейкпоинтам не непрерывно, а скачками) и от ширины текста правых
-// пунктов меню (зависит от того, догрузился ли шрифт Roboto) — то есть
-// в принципе не выражается одним фиксированным CSS-числом, верным на
-// любом экране. Раньше это же в JS пересчитывалось МНОГОКРАТНО по ходу
-// загрузки страницы (каждая догрузка шрифта/логотипа/стилей запускала
-// новый пересчёт) — на каждом промежуточном вызове получалось чуть
-// другое число, и с точки зрения пользователя пункты между "Новости" и
-// логотипом заметно "ездили". Здесь другой подход: расчёт и применение
-// — РОВНО ОДИН РАЗ, после того как шрифт точно догрузился (единственное,
-// что ещё может изменить результат после первой отрисовки) — что
-// исключает повторные исправления. До этого момента используется
-// запасное значение из CSS (см. .header-nav .nav-left в style.css) —
-// оно не идеально точное, но обычно достаточно близкое, и меняется
-// только один раз.
-(function () {
-    var logo = document.querySelector('.logo');
-    var navLeft = document.querySelector('.header-nav .nav-left');
-    var navbarCollapse = document.querySelector('.header-nav .navbar-collapse');
-    var firstRightLink = document.querySelector('.header-nav .nav-right .nav-link');
-
-    if (!logo || !navLeft || !navbarCollapse || !firstRightLink) {
-        return;
-    }
-
-    // Тот же отступ, что left: -8px у .header-nav .nav-left в CSS —
-    // левый край группы не пересчитывается (см. left: -8px в style.css),
-    // но нужен здесь, чтобы перевести "зазор до логотипа" в ширину блока.
-    var NAV_LEFT_EDGE = -8;
-
-    function applyWidth() {
-        if (window.innerWidth < 992) {
-            navLeft.style.width = '';
-            navLeft.style.paddingRight = '';
-            return;
-        }
-
-        // .header-nav .nav-left получает position:absolute только из
-        // нашего style.css — если он почему-то ещё не применился,
-        // getBoundingClientRect() ниже вернёт координаты нестилизованной
-        // раскладки, а не финальной. В этом случае лучше не трогать
-        // ничего, чем применить заведомо неверные числа.
-        if (getComputedStyle(navLeft).position !== 'absolute') {
-            return;
-        }
-
-        var collapseRect = navbarCollapse.getBoundingClientRect();
-        var logoRect = logo.getBoundingClientRect();
-        var rightItemRect = firstRightLink.getBoundingClientRect();
-
-        var gapAtLogo = rightItemRect.left - logoRect.right;
-        var targetRight = (logoRect.left - gapAtLogo) - collapseRect.left;
-        var newWidth = Math.max(0, targetRight - NAV_LEFT_EDGE);
-
-        navLeft.style.width = newWidth + 'px';
-        navLeft.style.paddingRight = '0';
-    }
-
-    var resizeTimer = null;
-    window.addEventListener('resize', function () {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(applyWidth, 100);
-    });
-
-    if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(applyWidth);
-    } else {
-        applyWidth();
-    }
-})();
+// Ширина левой группы пунктов меню (Новости / Регионы ЦФО / Клубы)
+// раньше пересчитывалась здесь через JS (зазор "Клубы -> логотип" должен
+// зеркально совпадать с зазором "логотип -> Соревнования" справа) — но
+// оказалось, что нужное значение в пикселях НЕ зависит от ширины экрана
+// вообще (проверено расчётом от 992px до 3000px — везде одно и то же
+// число: логотип центрирован по всей шапке, а обе группы меню
+// симметрично привязаны к контейнеру). Поэтому JS здесь больше не
+// нужен — ширина прописана фиксированным числом прямо в CSS (см.
+// .header-nav .nav-left в style.css).
 
 // Карусель карточек на главной (вкладки "Соревнования" / "Мероприятия"):
 // стрелки прокручивают ленту на ширину одной карточки + отступ, а не
