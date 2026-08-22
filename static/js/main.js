@@ -72,6 +72,21 @@
             return;
         }
 
+        if (!(logo.complete && logo.naturalWidth > 0)) {
+            // Пока файл логотипа не загрузился, у <img> нет реальных
+            // размеров — getBoundingClientRect() в этот момент возвращает
+            // координаты вырожденного (нулевой ширины) элемента, а не то,
+            // где логотип окажется после загрузки. Если по этим неверным
+            // координатам всё равно посчитать и применить width, "Клубы"
+            // на долю секунды окажется на месте, где логотип вот-вот
+            // появится ("заезжает под лого") — и тут же поправится
+            // следующим вызовом (logo.addEventListener('load', ...) ниже),
+            // отсюда и "слишком быстро, не успеть заскриншотить". Поэтому
+            // пока лого не готово — просто не трогаем width, оставляя
+            // безопасное запасное значение padding-right из CSS.
+            return;
+        }
+
         var collapseRect = navbarCollapse.getBoundingClientRect();
         var logoRect = logo.getBoundingClientRect();
         var rightItemRect = firstRightLink.getBoundingClientRect();
