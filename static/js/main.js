@@ -59,23 +59,23 @@
     var header = document.querySelector('header');
     var cachedTargetLeft = null;
 
-    // Расчёт зависит от двух вещей, которые в момент первой отрисовки
-    // страницы могут быть ещё не готовы: ширины надписи "Федерация
-    // рафтинга России" (зависит от шрифта Roboto — до его подгрузки
-    // измеряется по запасному Arial) и ширины самого логотипа (у <img>
-    // не заданы width/height, поэтому браузер не знает её, пока файл
-    // не загрузится). Если в этот момент уже показать левую группу
-    // пунктов меню на предварительно посчитанном месте, то при
-    // подгрузке шрифта и/или логотипа она видимо "дёргается" на
-    // исправленную позицию. Поэтому группа скрыта (не через CSS —
-    // чтобы без JS она осталась на запасном месте, а не пропала
-    // совсем), пока не готовы оба условия.
-    var fontsReady = !(window.document && document.fonts && document.fonts.ready);
-    var logoReady = logo.complete && logo.naturalWidth > 0;
-
-    function allReady() {
-        return fontsReady && logoReady;
-    }
+    // Расчёт зависит от ширины надписи "Федерация рафтинга России" и
+    // ширины логотипа — обе могут на момент первой отрисовки ещё не
+    // устояться (шрифт Roboto, файл логотипа без width/height, появление
+    // или исчезновение полосы прокрутки после того, как догрузится
+    // остальной контент страницы, и т.п. — причин может быть несколько
+    // сразу, и пытаться перечислить их все через отдельные "готово ли
+    // X" флаги ненадёжно). Поэтому вместо этого группа остаётся скрытой
+    // (не через CSS — чтобы без JS она осталась на запасном месте, а не
+    // пропала совсем) и показывается только один раз, когда посчитанная
+    // позиция перестаёт меняться между вызовами в течение REVEAL_SETTLE_MS
+    // — после первого такого "устаканивания" дальнейшие пересчёты (resize
+    // и т.п.) уже просто обновляют позицию на лету, без повторного скрытия.
+    var settled = false;
+    var revealTimer = null;
+    var lastLeft = null;
+    var lastWidth = null;
+    var REVEAL_SETTLE_MS = 150;
 
     // У .nav-link есть собственный горизонтальный padding (Bootstrap
     // --bs-navbar-nav-link-padding-x, 8px) — видимый текст "Новости"
@@ -92,10 +92,6 @@
             navLeft.style.paddingRight = '';
             navLeft.style.visibility = '';
             return;
-        }
-
-        if (!allReady()) {
-            navLeft.style.visibility = 'hidden';
         }
 
         var collapseRect = navbarCollapse.getBoundingClientRect();
@@ -125,12 +121,32 @@
         // всегда, в отличие от левого края.
         var gapAtLogo = rightItemRect.left - logoRect.right;
         var targetRight = (logoRect.left - gapAtLogo) - collapseRect.left;
+        var newWidth = Math.max(0, targetRight - cachedTargetLeft);
 
         navLeft.style.left = cachedTargetLeft + 'px';
-        navLeft.style.width = Math.max(0, targetRight - cachedTargetLeft) + 'px';
+        navLeft.style.width = newWidth + 'px';
         navLeft.style.paddingRight = '0';
-        if (allReady()) {
+
+        if (settled) {
             navLeft.style.visibility = '';
+            return;
+        }
+
+        var changed = lastLeft === null
+            || Math.abs(cachedTargetLeft - lastLeft) > 0.5
+            || Math.abs(newWidth - lastWidth) > 0.5;
+        lastLeft = cachedTargetLeft;
+        lastWidth = newWidth;
+
+        if (changed) {
+            navLeft.style.visibility = 'hidden';
+            if (revealTimer) {
+                clearTimeout(revealTimer);
+            }
+            revealTimer = setTimeout(function () {
+                settled = true;
+                navLeft.style.visibility = '';
+            }, REVEAL_SETTLE_MS);
         }
     }
 
@@ -144,21 +160,16 @@
     // (сжатие при прокрутке) — пересчитываем позицию и по её завершении.
     logo.addEventListener('transitionend', syncNavLeft);
 
+    // Возможные источники изменения расчёта после первой отрисовки —
+    // подгрузка шрифта, подгрузка самого файла логотипа (у него не
+    // заданы width/height) — каждый просто ещё раз запускает пересчёт;
+    // остаётся ли группа при этом скрытой или уже показана — решает
+    // сам syncNavLeft (см. settled выше).
     if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(function () {
-            fontsReady = true;
-            syncNavLeft();
-        });
+        document.fonts.ready.then(syncNavLeft);
     }
-
-    if (!logoReady) {
-        var markLogoReady = function () {
-            logoReady = true;
-            syncNavLeft();
-        };
-        logo.addEventListener('load', markLogoReady);
-        logo.addEventListener('error', markLogoReady);
-    }
+    logo.addEventListener('load', syncNavLeft);
+    logo.addEventListener('error', syncNavLeft);
 
     window.addEventListener('load', syncNavLeft);
     syncNavLeft();
