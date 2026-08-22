@@ -65,13 +65,19 @@ def section(club_id, section):
     club_athletes = []
     role = SECTION_ATHLETE_ROLES.get(section)
     if role:
+        # Принадлежность клубу и включение в сборную — независимые вещи:
+        # исключённый из сборной (is_active=False) спортсмен/тренер всё
+        # равно остаётся в составе клуба, поэтому здесь фильтра по
+        # is_active нет (в отличие от routes/regions.py.section() —
+        # раздел «Сборная команда» федерации показывает только активных).
+        #
         # Сравнение без учёта регистра — в Python, не в SQL: LOWER() в
         # SQLite не переводит кириллицу в нижний регистр (см. тот же
         # приём в routes/regions.py.section()).
         club_name = club.name.strip().lower()
         club_athletes = sorted(
             (
-                a for a in Athlete.query.filter(Athlete.is_active.is_(True), Athlete.role == role).all()
+                a for a in Athlete.query.filter(Athlete.role == role).all()
                 if a.organization and a.organization.strip().lower() == club_name
             ),
             key=lambda a: a.full_name,

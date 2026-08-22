@@ -13,7 +13,7 @@
                 <h2 class="h5 mb-3">{{ section_label }}</h2>
 
                 {% if section in ('coaches', 'athletes') and club_athletes %}
-                    {{ athletes_table(club_athletes, show_organization=False) }}
+                    {{ athletes_table(club_athletes, show_organization=False, show_team_status=True) }}
                 {% else %}
                     <div class="fed-text-block">
                         {% if section == 'contacts' %}

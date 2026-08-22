@@ -3,8 +3,12 @@
    разделов «Тренеры»/«Спортсмены» на странице клуба (clubs/section.html).
    Данные — Athlete, поступают из REGTEAM_RAFTING. show_organization
    скрывает столбец «Организация» там, где он и так ясен из контекста
-   страницы (на странице самого клуба). #}
-{% macro athletes_table(athletes, show_organization=True) %}
+   страницы (на странице самого клуба). show_team_status добавляет
+   столбец «В сборной команде» — на странице клуба показываются все
+   члены клуба независимо от включения в сборную, столбец поясняет,
+   кто из них сейчас в её составе (на странице федерации он не нужен —
+   там и так показаны только активные). #}
+{% macro athletes_table(athletes, show_organization=True, show_team_status=False) %}
     {% if athletes %}
         <div class="table-responsive">
             <table class="table table-zebra align-middle">
@@ -15,6 +19,7 @@
                         <th>Дисциплина</th>
                         <th>Разряд / звание</th>
                         {% if show_organization %}<th>Организация</th>{% endif %}
+                        {% if show_team_status %}<th>В сборной команде</th>{% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -25,6 +30,7 @@
                             <td>{{ athlete.discipline or '' }}</td>
                             <td>{{ athlete.rank or '' }}</td>
                             {% if show_organization %}<td>{{ athlete.organization or '' }}</td>{% endif %}
+                            {% if show_team_status %}<td>{{ 'Да' if athlete.is_active else '—' }}</td>{% endif %}
                         </tr>
                     {% endfor %}
                 </tbody>

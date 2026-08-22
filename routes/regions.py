@@ -1,7 +1,7 @@
 """Региональные федерации субъектов ЦФО."""
 from flask import Blueprint, abort, render_template, url_for
 
-from models import Athlete, RegionalFederation
+from models import Athlete, Club, RegionalFederation
 
 bp = Blueprint('regions', __name__)
 
@@ -75,10 +75,17 @@ def section(region_id, section):
         # кириллицу в нижний регистр, из-за чего сравнение по regionу
         # молча не находило бы совпадений.
         subject_name = region.subject_name.strip().lower()
+        # В сборную команду попадают только те, кто состоит в каком-то
+        # клубе (Club.name совпадает с Athlete.organization) — состав
+        # клуба первичен, включение в сборную зависит от него, а не
+        # наоборот (см. соответствующие разделы «Тренеры»/«Спортсмены»
+        # на странице клуба, routes/clubs.py.section()).
+        club_names = {c.name.strip().lower() for c in Club.query.all()}
         team_athletes = sorted(
             (
                 a for a in Athlete.query.filter(Athlete.is_active.is_(True)).all()
                 if a.territory and a.territory.strip().lower() == subject_name
+                and a.organization and a.organization.strip().lower() in club_names
             ),
             key=lambda a: (a.role or '', a.full_name),
         )
