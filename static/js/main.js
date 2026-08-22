@@ -32,20 +32,78 @@
     });
 })();
 
-// Позиционирование левой группы пунктов меню (Новости / Регионы ЦФО /
-// Клубы) — раньше правый край этой группы (зазор до логотипа) считал
-// JS, по факту измеряя логотип и соседние элементы. От этого отказались
-// совсем: JS-измерение неизбежно пересчитывалось по мере догрузки
-// страницы (шрифт, логотип, стили) и каждый раз могло дать чуть другое
-// число — с точки зрения пользователя пункты меню между "Новости" и
-// логотипом заметно "ездили" при каждой загрузке страницы. Теперь оба
-// края группы — фиксированные CSS-значения (left/width/padding-right в
-// style.css, как left: -8px у самой группы и right: -8px у правой) —
-// так же неподвижно, как правая группа, которая никогда не зависела от
-// JS. Небольшая цена — зазор до логотипа при этом не подстраивается
-// идеально под каждую конкретную ширину экрана (см. комментарий у
-// .header-nav .nav-left в style.css), но это разумный обмен на полное
-// отсутствие подвижности.
+// Точный зазор между "Клубы" (последний пункт левой группы) и логотипом
+// — должен совпадать с зазором между логотипом и "Соревнования" справа
+// — зависит от фактической ширины контейнера Bootstrap (меняется по
+// брейкпоинтам не непрерывно, а скачками) и от ширины текста правых
+// пунктов меню (зависит от того, догрузился ли шрифт Roboto) — то есть
+// в принципе не выражается одним фиксированным CSS-числом, верным на
+// любом экране. Раньше это же в JS пересчитывалось МНОГОКРАТНО по ходу
+// загрузки страницы (каждая догрузка шрифта/логотипа/стилей запускала
+// новый пересчёт) — на каждом промежуточном вызове получалось чуть
+// другое число, и с точки зрения пользователя пункты между "Новости" и
+// логотипом заметно "ездили". Здесь другой подход: расчёт и применение
+// — РОВНО ОДИН РАЗ, после того как шрифт точно догрузился (единственное,
+// что ещё может изменить результат после первой отрисовки) — что
+// исключает повторные исправления. До этого момента используется
+// запасное значение из CSS (см. .header-nav .nav-left в style.css) —
+// оно не идеально точное, но обычно достаточно близкое, и меняется
+// только один раз.
+(function () {
+    var logo = document.querySelector('.logo');
+    var navLeft = document.querySelector('.header-nav .nav-left');
+    var navbarCollapse = document.querySelector('.header-nav .navbar-collapse');
+    var firstRightLink = document.querySelector('.header-nav .nav-right .nav-link');
+
+    if (!logo || !navLeft || !navbarCollapse || !firstRightLink) {
+        return;
+    }
+
+    // Тот же отступ, что left: -8px у .header-nav .nav-left в CSS —
+    // левый край группы не пересчитывается (см. left: -8px в style.css),
+    // но нужен здесь, чтобы перевести "зазор до логотипа" в ширину блока.
+    var NAV_LEFT_EDGE = -8;
+
+    function applyWidth() {
+        if (window.innerWidth < 992) {
+            navLeft.style.width = '';
+            navLeft.style.paddingRight = '';
+            return;
+        }
+
+        // .header-nav .nav-left получает position:absolute только из
+        // нашего style.css — если он почему-то ещё не применился,
+        // getBoundingClientRect() ниже вернёт координаты нестилизованной
+        // раскладки, а не финальной. В этом случае лучше не трогать
+        // ничего, чем применить заведомо неверные числа.
+        if (getComputedStyle(navLeft).position !== 'absolute') {
+            return;
+        }
+
+        var collapseRect = navbarCollapse.getBoundingClientRect();
+        var logoRect = logo.getBoundingClientRect();
+        var rightItemRect = firstRightLink.getBoundingClientRect();
+
+        var gapAtLogo = rightItemRect.left - logoRect.right;
+        var targetRight = (logoRect.left - gapAtLogo) - collapseRect.left;
+        var newWidth = Math.max(0, targetRight - NAV_LEFT_EDGE);
+
+        navLeft.style.width = newWidth + 'px';
+        navLeft.style.paddingRight = '0';
+    }
+
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(applyWidth, 100);
+    });
+
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(applyWidth);
+    } else {
+        applyWidth();
+    }
+})();
 
 // Карусель карточек на главной (вкладки "Соревнования" / "Мероприятия"):
 // стрелки прокручивают ленту на ширину одной карточки + отступ, а не
