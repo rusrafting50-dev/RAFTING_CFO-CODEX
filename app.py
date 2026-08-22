@@ -13,7 +13,10 @@ from auth import (
 from models import PartnerLogo, db
 from routes import register_blueprints
 
-load_dotenv()
+# override=True — .env должен побеждать даже если такая переменная уже
+# случайно задана на уровне Windows (иначе пустое/старое системное
+# значение молча маскирует правильное значение из .env).
+load_dotenv(override=True)
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
