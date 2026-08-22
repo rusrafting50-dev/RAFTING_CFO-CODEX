@@ -59,14 +59,23 @@
     var header = document.querySelector('header');
     var cachedTargetLeft = null;
 
-    // До того как загрузится шрифт Roboto, ширина надписи "Федерация
-    // рафтинга России" считается по запасному шрифту (Arial) и отличается
-    // от финальной — если в этот момент уже показать левую группу пунктов
-    // меню на посчитанном по ней месте, при подгрузке Roboto она видимо
-    // "дёргается" на исправленную позицию. Поэтому группа скрыта (не
-    // через CSS — чтобы без JS она осталась на запасном месте, а не
-    // пропала совсем), пока не станет известно, что шрифт точно готов.
+    // Расчёт зависит от двух вещей, которые в момент первой отрисовки
+    // страницы могут быть ещё не готовы: ширины надписи "Федерация
+    // рафтинга России" (зависит от шрифта Roboto — до его подгрузки
+    // измеряется по запасному Arial) и ширины самого логотипа (у <img>
+    // не заданы width/height, поэтому браузер не знает её, пока файл
+    // не загрузится). Если в этот момент уже показать левую группу
+    // пунктов меню на предварительно посчитанном месте, то при
+    // подгрузке шрифта и/или логотипа она видимо "дёргается" на
+    // исправленную позицию. Поэтому группа скрыта (не через CSS —
+    // чтобы без JS она осталась на запасном месте, а не пропала
+    // совсем), пока не готовы оба условия.
     var fontsReady = !(window.document && document.fonts && document.fonts.ready);
+    var logoReady = logo.complete && logo.naturalWidth > 0;
+
+    function allReady() {
+        return fontsReady && logoReady;
+    }
 
     // У .nav-link есть собственный горизонтальный padding (Bootstrap
     // --bs-navbar-nav-link-padding-x, 8px) — видимый текст "Новости"
@@ -85,7 +94,7 @@
             return;
         }
 
-        if (!fontsReady) {
+        if (!allReady()) {
             navLeft.style.visibility = 'hidden';
         }
 
@@ -120,7 +129,7 @@
         navLeft.style.left = cachedTargetLeft + 'px';
         navLeft.style.width = Math.max(0, targetRight - cachedTargetLeft) + 'px';
         navLeft.style.paddingRight = '0';
-        if (fontsReady) {
+        if (allReady()) {
             navLeft.style.visibility = '';
         }
     }
@@ -140,6 +149,15 @@
             fontsReady = true;
             syncNavLeft();
         });
+    }
+
+    if (!logoReady) {
+        var markLogoReady = function () {
+            logoReady = true;
+            syncNavLeft();
+        };
+        logo.addEventListener('load', markLogoReady);
+        logo.addEventListener('error', markLogoReady);
     }
 
     window.addEventListener('load', syncNavLeft);
