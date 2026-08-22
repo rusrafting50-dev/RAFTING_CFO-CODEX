@@ -1,0 +1,35 @@
+{# Таблица судей — общая для страницы «Судьи» (referees/list.html, все
+   судьи ЦФО) и раздела «Спортивные судьи» на странице региональной
+   федерации (regions/section.html, уже отфильтровано по региону).
+   show_territory скрывает столбец «Территория» там, где он и так ясен
+   из контекста страницы (на странице региона). #}
+{% macro referees_table(referees, show_territory=True) %}
+    {% if referees %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="site-table-header">
+                        <th>ФИО</th>
+                        <th>Категория</th>
+                        <th>Дисциплины</th>
+                        {% if show_territory %}<th>Территория</th>{% endif %}
+                        <th>Организация</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for referee in referees %}
+                        <tr>
+                            <td>{{ referee.full_name }}</td>
+                            <td>{{ referee.category or '' }}</td>
+                            <td>{{ referee.disciplines or '' }}</td>
+                            {% if show_territory %}<td>{{ referee.territory or '' }}</td>{% endif %}
+                            <td>{{ referee.organization or '' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted mb-0">Данные о судьях пока не поступили.</p>
+    {% endif %}
+{% endmacro %}

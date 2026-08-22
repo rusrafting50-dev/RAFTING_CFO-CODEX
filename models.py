@@ -150,6 +150,7 @@ class Referee(db.Model):
     territory = db.Column(db.String(255))
     organization = db.Column(db.String(255))
     source_id = db.Column(db.Integer)  # ID в базе SPORTS_REFEREE
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
 
 
 class Event(db.Model):

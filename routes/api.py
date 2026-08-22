@@ -254,16 +254,30 @@ def sync_referees():
     if items is None:
         return jsonify({'error': 'Тело запроса должно быть JSON вида {"items": [...]}.'}), 400
 
-    created = updated = skipped = 0
+    created = updated = deleted = skipped = 0
     errors = []
 
     for item in items:
         source_id = item.get('source_id')
-        full_name = (item.get('full_name') or '').strip()
 
-        if source_id is None or not full_name:
+        if source_id is None:
             skipped += 1
-            errors.append(f'source_id={source_id}: отсутствует source_id или full_name')
+            errors.append('отсутствует source_id')
+            continue
+
+        if item.get('deleted'):
+            # Судья удалён совсем (не просто исключён из активного
+            # списка — для этого есть is_active). Молча пропускаем, если
+            # такого source_id и так уже нет.
+            removed = Referee.query.filter_by(source_id=source_id).delete()
+            if removed:
+                deleted += 1
+            continue
+
+        full_name = (item.get('full_name') or '').strip()
+        if not full_name:
+            skipped += 1
+            errors.append(f'source_id={source_id}: отсутствует full_name')
             continue
 
         referee = Referee.query.filter_by(source_id=source_id).first()
@@ -279,14 +293,15 @@ def sync_referees():
         referee.disciplines = item.get('disciplines')
         referee.territory = item.get('territory')
         referee.organization = item.get('organization')
+        referee.is_active = bool(item.get('is_active', True))
 
     db.session.commit()
-    log_sync('referees', created + updated,
-             message=f'создано: {created}, обновлено: {updated}, пропущено: {skipped}')
+    log_sync('referees', created + updated + deleted,
+             message=f'создано: {created}, обновлено: {updated}, удалено: {deleted}, пропущено: {skipped}')
 
     return jsonify({
         'status': 'ok', 'received': len(items),
-        'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors,
+        'created': created, 'updated': updated, 'deleted': deleted, 'skipped': skipped, 'errors': errors,
     })
 
 

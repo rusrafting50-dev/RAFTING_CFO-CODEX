@@ -1,7 +1,7 @@
 """Региональные федерации субъектов ЦФО."""
 from flask import Blueprint, abort, render_template, url_for
 
-from models import Athlete, Club, RegionalFederation
+from models import Athlete, Club, Referee, RegionalFederation
 
 bp = Blueprint('regions', __name__)
 
@@ -17,6 +17,7 @@ SECTIONS = [
     ('committees', 'Комитеты и комиссии'),
     ('clubs', 'Клубы'),
     ('team', 'Сборная команда'),
+    ('referees', 'Спортивные судьи'),
     ('calendar', 'Календарный план'),
     ('documents', 'Документы'),
     ('contacts', 'Контакты'),
@@ -26,9 +27,7 @@ SECTION_KEYS = {key for key, _ in SECTIONS}
 
 def _sidebar_items(region, active_section):
     """Пункты бокового меню «О федерации»: первым — «Федерация» (ссылка
-    на обзорную страницу), затем разделы, последним — «Спортивные
-    судьи» (ссылка на общую по ЦФО страницу судей, а не раздел этой
-    федерации, поэтому активной не бывает). active — текущий пункт, он
+    на обзорную страницу), затем разделы. active — текущий пункт, он
     выводится как заголовок-плашка вместо обычной строки."""
     items = [{
         'label': 'Федерация',
@@ -41,11 +40,6 @@ def _sidebar_items(region, active_section):
             'url': url_for('regions.section', region_id=region.id, section=key),
             'active': active_section == key,
         })
-    items.append({
-        'label': 'Спортивные судьи',
-        'url': url_for('referees.index'),
-        'active': False,
-    })
     return items
 
 
@@ -72,6 +66,21 @@ def section(region_id, section):
     if section == 'clubs':
         region_clubs = Club.query.filter_by(region_id=region.id).order_by(Club.name).all()
 
+    region_referees = []
+    if section == 'referees' and region.subject_name:
+        # Territory у Referee — сразу наименование субъекта РФ (Judge.region
+        # в SPORTS_REFEREE), а не внутренний район, поэтому сравниваем
+        # напрямую, без привязки к клубам (в отличие от team_athletes ниже —
+        # у судей нет понятия «состоит в клубе»).
+        subject_name = region.subject_name.strip().lower()
+        region_referees = sorted(
+            (
+                r for r in Referee.query.filter(Referee.is_active.is_(True)).all()
+                if r.territory and r.territory.strip().lower() == subject_name
+            ),
+            key=lambda r: r.full_name,
+        )
+
     team_athletes = []
     if section == 'team' and region.subject_name:
         # Сравнение без учёта регистра делается в Python, а не в SQL —
@@ -97,5 +106,5 @@ def section(region_id, section):
     return render_template(
         'regions/section.html', region=region, sidebar_items=_sidebar_items(region, section),
         section=section, section_label=section_label, team_athletes=team_athletes,
-        region_clubs=region_clubs,
+        region_clubs=region_clubs, region_referees=region_referees,
     )

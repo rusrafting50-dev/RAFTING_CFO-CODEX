@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_referees_table.html" import referees_table %}
 
 {% block title %}Судьи — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}Судьи всероссийской категории по рафтингу{% endblock %}
@@ -30,33 +31,6 @@
             {% endif %}
         </form>
 
-        {% if referees %}
-            <div class="table-responsive">
-                <table class="table table-zebra align-middle">
-                    <thead>
-                        <tr class="site-table-header">
-                            <th>ФИО</th>
-                            <th>Категория</th>
-                            <th>Дисциплины</th>
-                            <th>Территория</th>
-                            <th>Организация</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for referee in referees %}
-                            <tr>
-                                <td>{{ referee.full_name }}</td>
-                                <td>{{ referee.category }}</td>
-                                <td>{{ referee.disciplines }}</td>
-                                <td>{{ referee.territory }}</td>
-                                <td>{{ referee.organization }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p class="text-muted">Данные о судьях пока не поступили.</p>
-        {% endif %}
+        {{ referees_table(referees) }}
     </div>
 {% endblock %}

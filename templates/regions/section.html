@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_athletes_table.html" import athletes_table %}
+{% from "_referees_table.html" import referees_table %}
 {% from "clubs/_cards.html" import club_cards, club_cards_script %}
 
 {% block title %}{{ section_label }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
@@ -15,6 +16,8 @@
 
                 {% if section == 'team' %}
                     {{ athletes_table(team_athletes) }}
+                {% elif section == 'referees' %}
+                    {{ referees_table(region_referees, show_territory=False) }}
                 {% elif section == 'clubs' %}
                     {% if region_clubs %}
                         {{ club_cards(region_clubs) }}

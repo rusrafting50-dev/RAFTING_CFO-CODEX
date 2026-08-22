@@ -11,7 +11,7 @@ def index():
     category = request.args.get('category', '')
     territory = request.args.get('territory', '')
 
-    query = Referee.query
+    query = Referee.query.filter(Referee.is_active.is_(True))
     if category:
         query = query.filter_by(category=category)
     if territory:
@@ -19,13 +19,14 @@ def index():
 
     referees = query.order_by(Referee.full_name.asc()).all()
 
+    active_referees = Referee.query.filter(Referee.is_active.is_(True))
     categories = [
         row[0] for row in
-        Referee.query.with_entities(Referee.category).filter(Referee.category.isnot(None)).distinct()
+        active_referees.with_entities(Referee.category).filter(Referee.category.isnot(None)).distinct()
     ]
     territories = [
         row[0] for row in
-        Referee.query.with_entities(Referee.territory).filter(Referee.territory.isnot(None)).distinct()
+        active_referees.with_entities(Referee.territory).filter(Referee.territory.isnot(None)).distinct()
     ]
 
     return render_template(
