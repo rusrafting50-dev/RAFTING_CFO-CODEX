@@ -1,0 +1,82 @@
+{# Карточки клубов (лого + название) — общие для страницы «Клубы» ЦФО
+   (clubs/list.html, сгруппированы по регионам) и раздела «Клубы» на
+   странице региональной федерации (regions/section.html, уже один
+   конкретный регион). club_cards_script() — JS «дотягивания» логотипа,
+   не помещающегося в круглое поле (см. комментарий внутри) — его
+   достаточно подключить один раз на странице. #}
+{% macro club_cards(clubs) %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        {% for club in clubs %}
+            <div class="col">
+                <a class="region-card" href="{{ url_for('clubs.detail', club_id=club.id) }}">
+                    <div class="region-card-photo">
+                        <div class="region-card-logo club-card-logo">
+                            {% if club.logo_path %}
+                                <img src="{{ url_for('static', filename=club.logo_path) }}" alt="{{ club.name }}">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="region-card-body">
+                        <h3 class="region-card-name">{{ club.name }}</h3>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% macro club_cards_script() %}
+    <script>
+        (function () {
+            /* .club-card-logo img по умолчанию (CSS) занимает 85.5% круглого
+               поля — этого достаточно для большинства логотипов, но для
+               квадратного/близкого к квадрату изображения такой размер
+               означает, что border-radius: 50% на самом поле обрежет ему
+               углы. Уменьшать поле ради этого не нужно — оно должно
+               оставаться просторным для всех остальных логотипов. Вместо
+               этого здесь по фактическим пропорциям КОНКРЕТНОЙ картинки
+               считаем, вписывается ли она (при уже применённом
+               object-fit: contain) в круг целиком, и если нет — уменьшаем
+               именно эту картинку ровно настолько, чтобы она поместилась
+               по максимуму, не трогая поле и остальные логотипы. */
+            function fitLogo(img) {
+                var circle = img.closest('.club-card-logo');
+                if (!circle) return;
+                var size = circle.getBoundingClientRect().width;
+                var natW = img.naturalWidth;
+                var natH = img.naturalHeight;
+                if (!size || !natW || !natH) return;
+
+                var boxSide = size * 0.855;
+                var scaleToBox = Math.min(boxSide / natW, boxSide / natH);
+                var renderedW = natW * scaleToBox;
+                var renderedH = natH * scaleToBox;
+
+                var halfDiagonal = Math.sqrt(renderedW * renderedW + renderedH * renderedH) / 2;
+                var radius = size / 2;
+
+                if (halfDiagonal > radius) {
+                    var shrink = radius / halfDiagonal;
+                    img.style.width = (renderedW * shrink) + 'px';
+                    img.style.height = (renderedH * shrink) + 'px';
+                } else {
+                    img.style.width = '';
+                    img.style.height = '';
+                }
+            }
+
+            function fitAll() {
+                document.querySelectorAll('.club-card-logo img').forEach(fitLogo);
+            }
+
+            document.querySelectorAll('.club-card-logo img').forEach(function (img) {
+                if (img.complete) {
+                    fitLogo(img);
+                } else {
+                    img.addEventListener('load', function () { fitLogo(img); });
+                }
+            });
+            window.addEventListener('resize', fitAll);
+        })();
+    </script>
+{% endmacro %}

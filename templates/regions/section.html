@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "_athletes_table.html" import athletes_table %}
+{% from "clubs/_cards.html" import club_cards, club_cards_script %}
 
 {% block title %}{{ section_label }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}{{ section_label }}: {{ region.name }}{% endblock %}
@@ -14,6 +15,12 @@
 
                 {% if section == 'team' %}
                     {{ athletes_table(team_athletes) }}
+                {% elif section == 'clubs' %}
+                    {% if region_clubs %}
+                        {{ club_cards(region_clubs) }}
+                    {% else %}
+                        <p class="text-muted mb-0">Клубы пока не добавлены.</p>
+                    {% endif %}
                 {% else %}
                     <div class="fed-text-block">
                         {% if section == 'goals' %}
@@ -43,4 +50,8 @@
             </div>
         </div>
     </div>
+
+    {% if section == 'clubs' and region_clubs %}
+        {{ club_cards_script() }}
+    {% endif %}
 {% endblock %}

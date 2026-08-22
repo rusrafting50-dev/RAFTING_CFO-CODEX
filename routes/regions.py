@@ -68,6 +68,10 @@ def section(region_id, section):
     region = RegionalFederation.query.get_or_404(region_id)
     section_label = dict(SECTIONS)[section]
 
+    region_clubs = []
+    if section == 'clubs':
+        region_clubs = Club.query.filter_by(region_id=region.id).order_by(Club.name).all()
+
     team_athletes = []
     if section == 'team' and region.subject_name:
         # Сравнение без учёта регистра делается в Python, а не в SQL —
@@ -93,4 +97,5 @@ def section(region_id, section):
     return render_template(
         'regions/section.html', region=region, sidebar_items=_sidebar_items(region, section),
         section=section, section_label=section_label, team_athletes=team_athletes,
+        region_clubs=region_clubs,
     )
