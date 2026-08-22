@@ -180,6 +180,63 @@ def documents():
     )
 
 
+# Первая строка меню на странице «Оборудование и снаряжение» — тот же
+# приём, что EVENT_TYPE_FILTERS в routes/events.py.
+EQUIPMENT_AUDIENCES = [
+    ('спортсмены', 'Для спортсменов'),
+    ('организаторы', 'Для организаторов соревнований'),
+]
+# Вторая строка меню зависит от выбранной аудитории — это разные
+# DocumentCategory.scope (тот же приём, что 'соревнования'/'мероприятия').
+EQUIPMENT_SCOPE_BY_AUDIENCE = {
+    'спортсмены': 'оборудование_спортсмены',
+    'организаторы': 'оборудование_организаторы',
+}
+
+
+@bp.route('/equipment')
+def equipment():
+    """Оборудование и снаряжение — третья вкладка раздела «Соревнования»
+    (см. comp_tabs в competitions/_tabs.html). Устроена как страница
+    «Мероприятия»: сначала выбор аудитории (для спортсменов / для
+    организаторов соревнований) — первая строка меню, затем вторая
+    строка — категории оборудования внутри выбранной аудитории
+    (DocumentCategory, scope зависит от аудитории), ниже — документы
+    выбранной категории (тот же приём, что «Нормативные документы»,
+    см. documents() выше, но без разделов — тут только категории)."""
+    audience = request.args.get('audience', 'спортсмены')
+    if audience not in EQUIPMENT_SCOPE_BY_AUDIENCE:
+        audience = 'спортсмены'
+    scope = EQUIPMENT_SCOPE_BY_AUDIENCE[audience]
+
+    categories = (
+        DocumentCategory.query.filter_by(scope=scope)
+        .order_by(DocumentCategory.name)
+        .all()
+    )
+    category_names = [category.name for category in categories]
+
+    selected_category_id = request.args.get('category', type=int)
+    selected_category = (
+        next((c for c in categories if c.id == selected_category_id), None)
+        if selected_category_id else None
+    )
+
+    query = Document.query.order_by(Document.uploaded_at.desc(), Document.title)
+    if selected_category:
+        documents_ = query.filter_by(doc_category=selected_category.name).all()
+    elif category_names:
+        documents_ = query.filter(Document.doc_category.in_(category_names)).all()
+    else:
+        documents_ = []
+
+    return render_template(
+        'competitions/equipment.html',
+        audiences=EQUIPMENT_AUDIENCES, selected_audience=audience,
+        categories=categories, selected_category=selected_category, documents=documents_,
+    )
+
+
 def _federation_logo_lookup():
     """Логотип направляющей организации на «Команды» берём из логотипа
     региональной федерации с тем же названием — своего логотипа у заявки

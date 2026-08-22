@@ -155,6 +155,27 @@ def seed_event_document_taxonomy():
         db.session.commit()
 
 
+def seed_equipment_document_taxonomy():
+    """Начальное заполнение категорий страницы «Оборудование и снаряжение»
+    под Соревнования — отдельно для двух аудиторий (первая строка меню
+    на самой странице, routes/competitions.py: EQUIPMENT_AUDIENCES), тот
+    же приём, что seed_competition_document_taxonomy."""
+    if DocumentCategory.query.filter_by(scope='оборудование_спортсмены').count() == 0:
+        for name in (
+            'Рафты для спорта', 'Вёсла для спорта', 'Каски', 'Страховочные жилеты',
+            'Одежда слой из неопрена', 'Одежда верхний слой',
+        ):
+            db.session.add(DocumentCategory(name=name, scope='оборудование_спортсмены'))
+        db.session.commit()
+    if DocumentCategory.query.filter_by(scope='оборудование_организаторы').count() == 0:
+        for name in (
+            'Старт-Финиш', 'Дистанция «Слалом»', 'Дистанция «Параллельный спринт»',
+            'Программное обеспечение для секретариата',
+        ):
+            db.session.add(DocumentCategory(name=name, scope='оборудование_организаторы'))
+        db.session.commit()
+
+
 def create_default_admin():
     """Создаёт первого администратора, если в базе ещё нет ни одного пользователя."""
     if User.query.count() > 0:
