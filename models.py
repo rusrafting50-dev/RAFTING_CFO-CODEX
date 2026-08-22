@@ -149,6 +149,8 @@ class Referee(db.Model):
     disciplines = db.Column(db.String(255))
     territory = db.Column(db.String(255))
     organization = db.Column(db.String(255))
+    municipality = db.Column(db.String(150))    # Муниципальное образование
+    specialization = db.Column(db.String(300))  # Специализация
     source_id = db.Column(db.Integer)  # ID в базе SPORTS_REFEREE
     is_active = db.Column(db.Boolean, nullable=False, default=True)
 

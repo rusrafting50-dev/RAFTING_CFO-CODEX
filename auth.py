@@ -104,6 +104,8 @@ def ensure_schema():
     _ensure_column(inspector, 'regional_federation', 'subject_name', 'VARCHAR(255)')
     _ensure_column(inspector, 'athlete', 'is_active', 'BOOLEAN NOT NULL DEFAULT 1')
     _ensure_column(inspector, 'referee', 'is_active', 'BOOLEAN NOT NULL DEFAULT 1')
+    _ensure_column(inspector, 'referee', 'municipality', 'VARCHAR(150)')
+    _ensure_column(inspector, 'referee', 'specialization', 'VARCHAR(300)')
 
 
 def seed_news_taxonomy():

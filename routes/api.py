@@ -293,6 +293,8 @@ def sync_referees():
         referee.disciplines = item.get('disciplines')
         referee.territory = item.get('territory')
         referee.organization = item.get('organization')
+        referee.municipality = item.get('municipality')
+        referee.specialization = item.get('specialization')
         referee.is_active = bool(item.get('is_active', True))
 
     db.session.commit()

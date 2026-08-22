@@ -1,29 +1,27 @@
 {# Таблица судей — общая для страницы «Судьи» (referees/list.html, все
    судьи ЦФО) и раздела «Спортивные судьи» на странице региональной
-   федерации (regions/section.html, уже отфильтровано по региону).
-   show_territory скрывает столбец «Территория» там, где он и так ясен
-   из контекста страницы (на странице региона). #}
-{% macro referees_table(referees, show_territory=True) %}
+   федерации (regions/section.html, уже отфильтровано по региону). #}
+{% macro referees_table(referees) %}
     {% if referees %}
         <div class="table-responsive">
             <table class="table table-zebra align-middle">
                 <thead>
                     <tr class="site-table-header">
-                        <th>ФИО</th>
-                        <th>Категория</th>
-                        <th>Дисциплины</th>
-                        {% if show_territory %}<th>Территория</th>{% endif %}
-                        <th>Организация</th>
+                        <th>№ п/п</th>
+                        <th>Фамилия, имя, отчество</th>
+                        <th>Квалификационная категория</th>
+                        <th>Муниципальное образование</th>
+                        <th>Специализация</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for referee in referees %}
                         <tr>
+                            <td>{{ loop.index }}</td>
                             <td>{{ referee.full_name }}</td>
                             <td>{{ referee.category or '' }}</td>
-                            <td>{{ referee.disciplines or '' }}</td>
-                            {% if show_territory %}<td>{{ referee.territory or '' }}</td>{% endif %}
-                            <td>{{ referee.organization or '' }}</td>
+                            <td>{{ referee.municipality or '' }}</td>
+                            <td>{{ referee.specialization or '' }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

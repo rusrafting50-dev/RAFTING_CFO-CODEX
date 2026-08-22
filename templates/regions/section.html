@@ -17,7 +17,7 @@
                 {% if section == 'team' %}
                     {{ athletes_table(team_athletes) }}
                 {% elif section == 'referees' %}
-                    {{ referees_table(region_referees, show_territory=False) }}
+                    {{ referees_table(region_referees) }}
                 {% elif section == 'clubs' %}
                     {% if region_clubs %}
                         {{ club_cards(region_clubs) }}
