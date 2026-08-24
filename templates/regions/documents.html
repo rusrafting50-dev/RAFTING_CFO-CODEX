@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ selected_section.name if selected_section else (selected_category.name if selected_category else 'Документы') }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block title %}{{ (selected_section.name|cap_first) if selected_section else ((selected_category.name|cap_first) if selected_category else 'Документы') }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}Документы федерации: {{ region.name }}{% endblock %}
 
 {% block content %}
@@ -10,7 +10,7 @@
         <div class="row g-4">
             <div class="col-lg-9">
                 <div class="news-search-row doc-search-panel mb-0">
-                    <h2 class="h5 mb-3">{{ selected_section.name if selected_section else (selected_category.name if selected_category else 'Все документы') }}</h2>
+                    <h2 class="h5 mb-3">{{ (selected_section.name|cap_first) if selected_section else ((selected_category.name|cap_first) if selected_category else 'Все документы') }}</h2>
                     <form method="get" action="{{ url_for('regions.documents', region_id=region.id) }}" class="news-search-input-form">
                         {% if selected_section %}<input type="hidden" name="section" value="{{ selected_section.id }}">{% endif %}
                         {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category.id }}">{% endif %}

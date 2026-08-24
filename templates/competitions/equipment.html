@@ -19,7 +19,7 @@
 
         {% if categories %}
             {% for category in categories %}
-                <h2 class="h4 mb-3{{ ' mt-5' if not loop.first }}">{{ category.name }}</h2>
+                <h2 class="h4 mb-3{{ ' mt-5' if not loop.first }}">{{ category.name|cap_first }}</h2>
                 {% set documents = documents_by_category[category.id] %}
                 {% if documents %}
                     <div id="doc-list-{{ category.id }}" class="mb-4">
