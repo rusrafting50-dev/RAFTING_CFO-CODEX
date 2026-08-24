@@ -31,7 +31,7 @@
         <div class="taxonomy-reorder-group" data-reorder-categories="{{ scope }}">
             {% for category in scope_categories %}
                 <div class="card p-4 mb-3 taxonomy-drag-item" style="max-width: 500px;"
-                     {{ 'draggable="true"' if can_edit }} data-drag-item data-id="{{ category.id }}">
+                     data-drag-item data-id="{{ category.id }}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3 class="h6 mb-0">
                             {% if can_edit %}<span class="taxonomy-drag-handle" aria-hidden="true">⠿</span>{% endif %}
@@ -50,7 +50,7 @@
                         <ul class="list-group mb-3 taxonomy-reorder-group" data-reorder-sections="{{ category.id }}">
                             {% for section in category.sections %}
                                 <li class="list-group-item d-flex justify-content-between align-items-center taxonomy-drag-item"
-                                    {{ 'draggable="true"' if can_edit }} data-drag-item data-id="{{ section.id }}">
+                                    data-drag-item data-id="{{ section.id }}">
                                     <span>
                                         {% if can_edit %}<span class="taxonomy-drag-handle" aria-hidden="true">⠿</span>{% endif %}
                                         {{ section.name }}
@@ -90,63 +90,102 @@
             font-size: 18px;
             line-height: 1;
             vertical-align: middle;
-        }
-        .taxonomy-drag-item[draggable="true"] {
-            cursor: grab;
+            user-select: none;
+            touch-action: none;
         }
         .taxonomy-drag-item.taxonomy-dragging {
-            opacity: 0.4;
+            opacity: 0.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        .taxonomy-drag-item.taxonomy-drag-over {
-            border-color: var(--bs-primary, #0d6efd);
+        body.taxonomy-drag-active {
+            cursor: grabbing !important;
+            user-select: none;
         }
     </style>
 
     <script>
         (function () {
-            // Перетаскивание мышью для смены порядка категорий/разделов —
-            // тот же приём, что на странице «Стартовый протокол и
-            // жеребьёвка» в COREZ (раздел «Спринт», перестановка команд):
-            // элемент можно перетащить в другое место списка, итоговый
-            // порядок сохраняется одним запросом при отпускании мыши.
+            // Перетаскивание за значок ⠿ — через Pointer Events
+            // (pointerdown на значке, pointermove/pointerup на document),
+            // а не через нативный HTML5 Drag and Drop API
+            // (draggable="true" + dragstart/dragover/drop): тот API в
+            // разных браузерах ведёт себя непоследовательно (например,
+            // Firefox без dataTransfer.setData() вообще не начинает
+            // перетаскивание) и на практике оказался ненадёжным.
+            // pointermove/pointerup нарочно на document, а не через
+            // setPointerCapture на самом значке — элемент перемещается по
+            // DOM прямо во время перетаскивания (см. onPointerMove ниже),
+            // а такое перемещение сбрасывает захват указателя у части
+            // браузеров, из-за чего дальнейшие события переставали
+            // приходить сразу после первой же перестановки.
+            // Итоговый порядок сохраняется одним запросом при отпускании
+            // мыши — тот же общий приём, что на странице «Стартовый
+            // протокол и жеребьёвка» в COREZ (раздел «Спринт»).
             var CATEGORY_REORDER_URL = {{ url_for('admin.document_category_reorder')|tojson }};
             var SECTION_REORDER_URL = {{ url_for('admin.document_section_reorder')|tojson }};
 
-            function enableReorder(container, buildPayload) {
-                var dragEl = null;
+            function items(container) {
+                return Array.prototype.slice.call(container.querySelectorAll(':scope > [data-drag-item]'));
+            }
 
-                // stopPropagation везде ниже: категория с разделами
-                // содержит вложенный список разделов со своими же
-                // draggable-элементами — без остановки всплытия
-                // перетаскивание раздела задевало бы обработчики
-                // родительской категории (bubbling), путая обе группы.
-                container.querySelectorAll(':scope > [data-drag-item]').forEach(function (item) {
-                    item.addEventListener('dragstart', function (event) {
-                        event.stopPropagation();
-                        dragEl = item;
-                        item.classList.add('taxonomy-dragging');
-                    });
-                    item.addEventListener('dragend', function (event) {
-                        event.stopPropagation();
-                        item.classList.remove('taxonomy-dragging');
-                        dragEl = null;
-                        save();
-                    });
-                    item.addEventListener('dragover', function (event) {
-                        if (!dragEl || dragEl === item || item.parentElement !== container) return;
+            function enableReorder(container, buildPayload) {
+                items(container).forEach(function (item) {
+                    var handle = item.querySelector('.taxonomy-drag-handle');
+                    if (!handle) return;
+
+                    handle.addEventListener('pointerdown', function (event) {
+                        if (event.button !== 0) return;
                         event.preventDefault();
-                        event.stopPropagation();
-                        var rect = item.getBoundingClientRect();
-                        var before = (event.clientY - rect.top) < rect.height / 2;
-                        container.insertBefore(dragEl, before ? item : item.nextSibling);
+                        startDrag(item, event.pointerId);
                     });
                 });
 
+                function startDrag(item, pointerId) {
+                    // Слушатели — на document, а не setPointerCapture на
+                    // самом handle: перетаскиваемый элемент перемещается по
+                    // DOM (insertBefore/appendChild) прямо во время
+                    // перетаскивания, а такое перемещение сбрасывает
+                    // захват указателя (setPointerCapture) у части
+                    // браузеров — после первой же перестановки дальнейшие
+                    // pointermove/pointerup просто переставали приходить.
+                    item.classList.add('taxonomy-dragging');
+                    document.body.classList.add('taxonomy-drag-active');
+
+                    function onPointerMove(event) {
+                        if (event.pointerId !== pointerId) return;
+                        var siblings = items(container).filter(function (el) { return el !== item; });
+                        var target = null;
+                        for (var i = 0; i < siblings.length; i++) {
+                            var rect = siblings[i].getBoundingClientRect();
+                            if (event.clientY < rect.top + rect.height / 2) {
+                                target = siblings[i];
+                                break;
+                            }
+                        }
+                        if (target) {
+                            container.insertBefore(item, target);
+                        } else {
+                            container.appendChild(item);
+                        }
+                    }
+
+                    function onPointerUp(event) {
+                        if (event.pointerId !== pointerId) return;
+                        document.removeEventListener('pointermove', onPointerMove);
+                        document.removeEventListener('pointerup', onPointerUp);
+                        document.removeEventListener('pointercancel', onPointerUp);
+                        item.classList.remove('taxonomy-dragging');
+                        document.body.classList.remove('taxonomy-drag-active');
+                        save();
+                    }
+
+                    document.addEventListener('pointermove', onPointerMove);
+                    document.addEventListener('pointerup', onPointerUp);
+                    document.addEventListener('pointercancel', onPointerUp);
+                }
+
                 function save() {
-                    var order = Array.prototype.map.call(
-                        container.querySelectorAll(':scope > [data-drag-item]'),
-                        function (el) { return parseInt(el.dataset.id, 10); }
-                    );
+                    var order = items(container).map(function (el) { return parseInt(el.dataset.id, 10); });
                     var payload = buildPayload(order);
                     fetch(payload.url, {
                         method: 'POST',
