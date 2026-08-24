@@ -5,7 +5,7 @@ from datetime import datetime
 from functools import wraps
 
 from flask import (
-    Blueprint, current_app, flash, redirect, render_template,
+    Blueprint, current_app, flash, jsonify, redirect, render_template,
     request, url_for,
 )
 from flask_login import current_user, login_required, login_user, logout_user
@@ -571,52 +571,49 @@ def document_taxonomy():
     return render_template('admin/document_taxonomy.html', active='documents', categories=categories)
 
 
-def _move_sibling(siblings, item_id, direction):
-    """siblings — список объектов с полями id/sort_order, уже
-    отсортированный в текущем порядке отображения. Сначала
-    нормализует sort_order к 0..n-1 по этому порядку (на случай, если у
-    нескольких элементов сейчас одинаковое значение — иначе простой
-    обмен значениями ничего не изменит), затем меняет местами элемент
-    item_id с соседним в направлении direction ('up' — раньше, 'down' —
-    позже). На краю списка (двигать некуда) молча ничего не делает."""
-    for index, item in enumerate(siblings):
-        item.sort_order = index
-    index = next((i for i, item in enumerate(siblings) if item.id == item_id), None)
-    if index is None:
-        return
-    target = index - 1 if direction == 'up' else index + 1
-    if 0 <= target < len(siblings):
-        siblings[index].sort_order, siblings[target].sort_order = siblings[target].sort_order, siblings[index].sort_order
-
-
-@bp.route('/documents/taxonomy/categories/<int:category_id>/move', methods=['POST'])
+@bp.route('/documents/taxonomy/categories/reorder', methods=['POST'])
 @section_required('documents')
 @roles_required('admin', 'editor')
-def document_category_move(category_id):
-    category = DocumentCategory.query.get_or_404(category_id)
-    siblings = (
-        DocumentCategory.query.filter_by(scope=category.scope)
-        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
-        .all()
-    )
-    _move_sibling(siblings, category.id, request.form.get('direction'))
+def document_category_reorder():
+    """Перетаскивание категорий мышью в панели управления (см. drag-and-
+    drop скрипт в admin/document_taxonomy.html) — сохраняет итоговый
+    порядок одним запросом, а не по одной перестановке за раз, как было
+    у прежних кнопок ▲/▼. Тело запроса: {"scope": "...", "order": [id, id, ...]}
+    — новый порядок id категорий этого scope; id вне запрошенного scope
+    игнорируются, чтобы перетаскивание в одной группе не могло случайно
+    затронуть категории другого scope."""
+    payload = request.get_json(silent=True) or {}
+    scope = payload.get('scope')
+    order = payload.get('order') or []
+    if not scope or not order:
+        return jsonify({'ok': False}), 400
+    categories = {c.id: c for c in DocumentCategory.query.filter_by(scope=scope).all()}
+    for index, category_id in enumerate(order):
+        category = categories.get(category_id)
+        if category:
+            category.sort_order = index
     db.session.commit()
-    return redirect(url_for('admin.document_taxonomy'))
+    return jsonify({'ok': True})
 
 
-@bp.route('/documents/taxonomy/sections/<int:section_id>/move', methods=['POST'])
+@bp.route('/documents/taxonomy/sections/reorder', methods=['POST'])
 @section_required('documents')
 @roles_required('admin', 'editor')
-def document_section_move(section_id):
-    section = DocumentSection.query.get_or_404(section_id)
-    siblings = (
-        DocumentSection.query.filter_by(category_id=section.category_id)
-        .order_by(DocumentSection.sort_order, DocumentSection.name)
-        .all()
-    )
-    _move_sibling(siblings, section.id, request.form.get('direction'))
+def document_section_reorder():
+    """Тот же приём, что document_category_reorder, но для разделов
+    внутри одной категории. Тело запроса: {"category_id": id, "order": [id, id, ...]}."""
+    payload = request.get_json(silent=True) or {}
+    category_id = payload.get('category_id')
+    order = payload.get('order') or []
+    if not category_id or not order:
+        return jsonify({'ok': False}), 400
+    sections = {s.id: s for s in DocumentSection.query.filter_by(category_id=category_id).all()}
+    for index, section_id in enumerate(order):
+        section = sections.get(section_id)
+        if section:
+            section.sort_order = index
     db.session.commit()
-    return redirect(url_for('admin.document_taxonomy'))
+    return jsonify({'ok': True})
 
 
 @bp.route('/documents/taxonomy/categories/new', methods=['POST'])

@@ -1,5 +1,6 @@
 {% extends "admin/base_admin.html" %}
 {% set active = 'documents' %}
+{% set can_edit = current_user.role in ('admin', 'editor') %}
 
 {% block title %}Категории документов — Панель администратора{% endblock %}
 
@@ -8,9 +9,10 @@
     <p class="text-muted">
         Категории определяют пункты бокового меню на странице «Рафтинг ЦФО» (список документов на сайте),
         разделы — вложенные подпункты внутри каждой категории.
+        {% if can_edit %}Порядок внутри группы меняется перетаскиванием за значок <span aria-hidden="true">⠿</span>.{% endif %}
     </p>
 
-    {% if current_user.role in ('admin', 'editor') %}
+    {% if can_edit %}
         <div class="card p-4 mb-4" style="max-width: 500px;">
             <h2 class="h6 mb-3">Новая категория</h2>
             <form method="post" action="{{ url_for('admin.document_category_new') }}" class="d-flex gap-2">
@@ -26,70 +28,147 @@
 
     {% for scope, scope_categories in categories|groupby('scope') %}
         <h2 class="h5 mt-4 mb-3">{{ scope }}</h2>
-        {% for category in scope_categories %}
-            <div class="card p-4 mb-3" style="max-width: 500px;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h3 class="h6 mb-0">{{ category.name }}</h3>
-                    <div class="d-flex gap-2 align-items-center">
-                        {% if current_user.role in ('admin', 'editor') %}
-                            <div class="d-flex gap-1">
-                                <form method="post" action="{{ url_for('admin.document_category_move', category_id=category.id) }}">
-                                    <input type="hidden" name="direction" value="up">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Выше" {{ 'disabled' if loop.first }}>&uarr;</button>
-                                </form>
-                                <form method="post" action="{{ url_for('admin.document_category_move', category_id=category.id) }}">
-                                    <input type="hidden" name="direction" value="down">
-                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Ниже" {{ 'disabled' if loop.last }}>&darr;</button>
-                                </form>
-                            </div>
+        <div class="taxonomy-reorder-group" data-reorder-categories="{{ scope }}">
+            {% for category in scope_categories %}
+                <div class="card p-4 mb-3 taxonomy-drag-item" style="max-width: 500px;"
+                     {{ 'draggable="true"' if can_edit }} data-drag-item data-id="{{ category.id }}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="h6 mb-0">
+                            {% if can_edit %}<span class="taxonomy-drag-handle" aria-hidden="true">⠿</span>{% endif %}
+                            {{ category.name }}
+                        </h3>
+                        {% if can_edit %}
                             <form method="post" action="{{ url_for('admin.document_category_delete', category_id=category.id) }}"
                                   onsubmit="return confirm('Удалить категорию вместе со всеми её разделами?');">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">Удалить категорию</button>
                             </form>
                         {% endif %}
                     </div>
-                </div>
 
-                <h4 class="small text-uppercase text-muted mb-2">Разделы</h4>
-                {% if category.sections %}
-                    <ul class="list-group mb-3">
-                        {% for section in category.sections %}
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                {{ section.name }}
-                                {% if current_user.role in ('admin', 'editor') %}
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <div class="d-flex gap-1">
-                                            <form method="post" action="{{ url_for('admin.document_section_move', section_id=section.id) }}">
-                                                <input type="hidden" name="direction" value="up">
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Выше" {{ 'disabled' if loop.first }}>&uarr;</button>
-                                            </form>
-                                            <form method="post" action="{{ url_for('admin.document_section_move', section_id=section.id) }}">
-                                                <input type="hidden" name="direction" value="down">
-                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Ниже" {{ 'disabled' if loop.last }}>&darr;</button>
-                                            </form>
-                                        </div>
+                    <h4 class="small text-uppercase text-muted mb-2">Разделы</h4>
+                    {% if category.sections %}
+                        <ul class="list-group mb-3 taxonomy-reorder-group" data-reorder-sections="{{ category.id }}">
+                            {% for section in category.sections %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center taxonomy-drag-item"
+                                    {{ 'draggable="true"' if can_edit }} data-drag-item data-id="{{ section.id }}">
+                                    <span>
+                                        {% if can_edit %}<span class="taxonomy-drag-handle" aria-hidden="true">⠿</span>{% endif %}
+                                        {{ section.name }}
+                                    </span>
+                                    {% if can_edit %}
                                         <form method="post" action="{{ url_for('admin.document_section_delete', section_id=section.id) }}"
                                               onsubmit="return confirm('Удалить раздел?');">
                                             <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
                                         </form>
-                                    </div>
-                                {% endif %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-muted small">Разделов пока нет.</p>
-                {% endif %}
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted small">Разделов пока нет.</p>
+                    {% endif %}
 
-                {% if current_user.role in ('admin', 'editor') %}
-                    <form method="post" action="{{ url_for('admin.document_section_new', category_id=category.id) }}" class="d-flex gap-2">
-                        <input type="text" name="name" class="form-control" placeholder="Новый раздел" required>
-                        <button type="submit" class="btn btn-outline-primary">Добавить</button>
-                    </form>
-                {% endif %}
-            </div>
-        {% endfor %}
+                    {% if can_edit %}
+                        <form method="post" action="{{ url_for('admin.document_section_new', category_id=category.id) }}" class="d-flex gap-2">
+                            <input type="text" name="name" class="form-control" placeholder="Новый раздел" required>
+                            <button type="submit" class="btn btn-outline-primary">Добавить</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
     {% endfor %}
 
     <a class="btn btn-outline-secondary mt-2" href="{{ url_for('admin.documents_list') }}">К списку документов</a>
+
+    <style>
+        .taxonomy-drag-handle {
+            display: inline-block;
+            margin-right: 6px;
+            color: #adb5bd;
+            cursor: grab;
+            font-size: 18px;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        .taxonomy-drag-item[draggable="true"] {
+            cursor: grab;
+        }
+        .taxonomy-drag-item.taxonomy-dragging {
+            opacity: 0.4;
+        }
+        .taxonomy-drag-item.taxonomy-drag-over {
+            border-color: var(--bs-primary, #0d6efd);
+        }
+    </style>
+
+    <script>
+        (function () {
+            // Перетаскивание мышью для смены порядка категорий/разделов —
+            // тот же приём, что на странице «Стартовый протокол и
+            // жеребьёвка» в COREZ (раздел «Спринт», перестановка команд):
+            // элемент можно перетащить в другое место списка, итоговый
+            // порядок сохраняется одним запросом при отпускании мыши.
+            var CATEGORY_REORDER_URL = {{ url_for('admin.document_category_reorder')|tojson }};
+            var SECTION_REORDER_URL = {{ url_for('admin.document_section_reorder')|tojson }};
+
+            function enableReorder(container, buildPayload) {
+                var dragEl = null;
+
+                // stopPropagation везде ниже: категория с разделами
+                // содержит вложенный список разделов со своими же
+                // draggable-элементами — без остановки всплытия
+                // перетаскивание раздела задевало бы обработчики
+                // родительской категории (bubbling), путая обе группы.
+                container.querySelectorAll(':scope > [data-drag-item]').forEach(function (item) {
+                    item.addEventListener('dragstart', function (event) {
+                        event.stopPropagation();
+                        dragEl = item;
+                        item.classList.add('taxonomy-dragging');
+                    });
+                    item.addEventListener('dragend', function (event) {
+                        event.stopPropagation();
+                        item.classList.remove('taxonomy-dragging');
+                        dragEl = null;
+                        save();
+                    });
+                    item.addEventListener('dragover', function (event) {
+                        if (!dragEl || dragEl === item || item.parentElement !== container) return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        var rect = item.getBoundingClientRect();
+                        var before = (event.clientY - rect.top) < rect.height / 2;
+                        container.insertBefore(dragEl, before ? item : item.nextSibling);
+                    });
+                });
+
+                function save() {
+                    var order = Array.prototype.map.call(
+                        container.querySelectorAll(':scope > [data-drag-item]'),
+                        function (el) { return parseInt(el.dataset.id, 10); }
+                    );
+                    var payload = buildPayload(order);
+                    fetch(payload.url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload.body),
+                    });
+                }
+            }
+
+            document.querySelectorAll('[data-reorder-categories]').forEach(function (container) {
+                var scope = container.dataset.reorderCategories;
+                enableReorder(container, function (order) {
+                    return { url: CATEGORY_REORDER_URL, body: { scope: scope, order: order } };
+                });
+            });
+
+            document.querySelectorAll('[data-reorder-sections]').forEach(function (container) {
+                var categoryId = parseInt(container.dataset.reorderSections, 10);
+                enableReorder(container, function (order) {
+                    return { url: SECTION_REORDER_URL, body: { category_id: categoryId, order: order } };
+                });
+            });
+        })();
+    </script>
 {% endblock %}
