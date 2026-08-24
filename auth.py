@@ -2,7 +2,7 @@
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager
 
-from models import DocumentCategory, NewsCategory, NewsLevel, db, User
+from models import DocumentCategory, DocumentSection, NewsCategory, NewsLevel, db, User
 
 login_manager = LoginManager()
 login_manager.login_view = 'admin.login'
@@ -131,15 +131,70 @@ def seed_news_taxonomy():
     db.session.commit()
 
 
+# Категории и их разделы бокового меню страницы «Нормативные документы»
+# под Соревнования (scope='соревнования') — заданы федерацией; список
+# без разделов (пустой список) означает категорию без вложенных
+# разделов ("Все" в самом низу меню — не категория, а отдельная
+# постоянная ссылка, см. competitions/documents.html).
+COMPETITION_DOCUMENT_TAXONOMY = [
+    ('Основополагающие документы', [
+        'Уставные документы', 'Программы', 'Членство в ФРР', 'Государственная аккредитация',
+    ]),
+    ('Регламентирующие документы ФРР', []),
+    ('Лицензирование и сертификация', [
+        'Публичная финансовая информация', 'Лицензирование спортивных рафтинг клубов',
+        'Нормативные документы по спортивным сооружениям',
+        'Нормативные документы по оборудованию и снаряжению для рафтинга',
+    ]),
+    ('Нормативные документы', [
+        'Правила вида спорта «рафтинг»', 'Единая всероссийская спортивная классификация',
+        'Спортивные судьи', 'Спортивная подготовка', 'Иное',
+    ]),
+    ('Положение о межрегиональных и всероссийских спортивных соревнованиях по виду спорта «рафтинг»', []),
+    ('Методические материалы', []),
+    ('Календарный план', []),
+    ('Документы WRF', []),
+]
+
+# Прежний дефолтный набор категорий (до перехода на COMPETITION_DOCUMENT_TAXONOMY
+# выше) — нужен только migrate_competition_document_taxonomy(), чтобы отличить
+# нетронутую базу от базы, где админ уже сам поменял список категорий вручную.
+_OLD_COMPETITION_DOCUMENT_CATEGORIES = {'Законы', 'Минспорт России', 'WRF', 'ФРР'}
+
+
+def migrate_competition_document_taxonomy():
+    """Разовая замена старого дефолтного списка категорий (Законы/Минспорт
+    России/WRF/ФРР) на новую структуру категорий и разделов
+    (COMPETITION_DOCUMENT_TAXONOMY). Срабатывает только если категории
+    страницы до сих пор равны исходному дефолтному набору один в один и
+    без единого раздела — то есть их ещё никто не менял вручную через
+    админку; иначе ручные правки не трогаем (тот же принцип, что у
+    seed-функций — не затирать ручное редактирование при перезапуске)."""
+    categories = DocumentCategory.query.filter_by(scope='соревнования').all()
+    if not categories:
+        return
+    names = {c.name for c in categories}
+    has_sections = any(c.sections for c in categories)
+    if has_sections or names != _OLD_COMPETITION_DOCUMENT_CATEGORIES:
+        return
+    for category in categories:
+        db.session.delete(category)
+    db.session.commit()
+
+
 def seed_competition_document_taxonomy():
-    """Начальное заполнение категорий бокового меню страницы «Нормативные
-    документы» под Соревнования (scope='соревнования') — тот же приём,
-    что seed_news_taxonomy: срабатывает только если таких категорий ещё
-    нет, чтобы ручное удаление через админку не возвращалось обратно
-    после перезапуска сервера."""
+    """Начальное заполнение категорий и разделов бокового меню страницы
+    «Нормативные документы» под Соревнования (scope='соревнования') —
+    тот же приём, что seed_news_taxonomy: срабатывает только если таких
+    категорий ещё нет, чтобы ручное удаление через админку не
+    возвращалось обратно после перезапуска сервера."""
     if DocumentCategory.query.filter_by(scope='соревнования').count() == 0:
-        for name in ('Законы', 'Минспорт России', 'WRF', 'ФРР'):
-            db.session.add(DocumentCategory(name=name, scope='соревнования'))
+        for name, section_names in COMPETITION_DOCUMENT_TAXONOMY:
+            category = DocumentCategory(name=name, scope='соревнования')
+            db.session.add(category)
+            db.session.flush()
+            for section_name in section_names:
+                db.session.add(DocumentSection(category_id=category.id, name=section_name))
         db.session.commit()
 
 

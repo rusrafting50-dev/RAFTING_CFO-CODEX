@@ -8,8 +8,8 @@ from flask import Flask, render_template, url_for
 
 from auth import (
     create_default_admin, ensure_schema, login_manager,
-    seed_competition_document_taxonomy, seed_equipment_document_taxonomy,
-    seed_event_document_taxonomy, seed_news_taxonomy,
+    migrate_competition_document_taxonomy, seed_competition_document_taxonomy,
+    seed_equipment_document_taxonomy, seed_event_document_taxonomy, seed_news_taxonomy,
 )
 from models import PartnerLogo, db
 from routes import register_blueprints
@@ -251,6 +251,7 @@ def create_app():
         ensure_schema()
         create_default_admin()
         seed_news_taxonomy()
+        migrate_competition_document_taxonomy()
         seed_competition_document_taxonomy()
         seed_event_document_taxonomy()
         seed_equipment_document_taxonomy()
