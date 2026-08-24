@@ -563,8 +563,60 @@ def documents_list():
 @bp.route('/documents/taxonomy')
 @section_required('documents')
 def document_taxonomy():
-    categories = DocumentCategory.query.order_by(DocumentCategory.name).all()
+    categories = (
+        DocumentCategory.query
+        .order_by(DocumentCategory.scope, DocumentCategory.sort_order, DocumentCategory.name)
+        .all()
+    )
     return render_template('admin/document_taxonomy.html', active='documents', categories=categories)
+
+
+def _move_sibling(siblings, item_id, direction):
+    """siblings — список объектов с полями id/sort_order, уже
+    отсортированный в текущем порядке отображения. Сначала
+    нормализует sort_order к 0..n-1 по этому порядку (на случай, если у
+    нескольких элементов сейчас одинаковое значение — иначе простой
+    обмен значениями ничего не изменит), затем меняет местами элемент
+    item_id с соседним в направлении direction ('up' — раньше, 'down' —
+    позже). На краю списка (двигать некуда) молча ничего не делает."""
+    for index, item in enumerate(siblings):
+        item.sort_order = index
+    index = next((i for i, item in enumerate(siblings) if item.id == item_id), None)
+    if index is None:
+        return
+    target = index - 1 if direction == 'up' else index + 1
+    if 0 <= target < len(siblings):
+        siblings[index].sort_order, siblings[target].sort_order = siblings[target].sort_order, siblings[index].sort_order
+
+
+@bp.route('/documents/taxonomy/categories/<int:category_id>/move', methods=['POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def document_category_move(category_id):
+    category = DocumentCategory.query.get_or_404(category_id)
+    siblings = (
+        DocumentCategory.query.filter_by(scope=category.scope)
+        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
+        .all()
+    )
+    _move_sibling(siblings, category.id, request.form.get('direction'))
+    db.session.commit()
+    return redirect(url_for('admin.document_taxonomy'))
+
+
+@bp.route('/documents/taxonomy/sections/<int:section_id>/move', methods=['POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def document_section_move(section_id):
+    section = DocumentSection.query.get_or_404(section_id)
+    siblings = (
+        DocumentSection.query.filter_by(category_id=section.category_id)
+        .order_by(DocumentSection.sort_order, DocumentSection.name)
+        .all()
+    )
+    _move_sibling(siblings, section.id, request.form.get('direction'))
+    db.session.commit()
+    return redirect(url_for('admin.document_taxonomy'))
 
 
 @bp.route('/documents/taxonomy/categories/new', methods=['POST'])

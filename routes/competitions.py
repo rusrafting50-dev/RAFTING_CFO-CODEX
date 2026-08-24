@@ -146,7 +146,7 @@ def documents():
     общей для всего сайта, странице)."""
     categories = (
         DocumentCategory.query.filter_by(scope='соревнования')
-        .order_by(DocumentCategory.name)
+        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
         .all()
     )
     category_names = [category.name for category in categories]
@@ -220,7 +220,7 @@ def equipment():
 
     categories = (
         DocumentCategory.query.filter_by(scope=scope)
-        .order_by(DocumentCategory.name)
+        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
         .all()
     )
 

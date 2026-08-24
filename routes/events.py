@@ -102,7 +102,7 @@ def documents():
     конкретной федерации, а не этой, общей для всего сайта, странице)."""
     categories = (
         DocumentCategory.query.filter_by(scope='мероприятия')
-        .order_by(DocumentCategory.name)
+        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
         .all()
     )
     category_names = [category.name for category in categories]

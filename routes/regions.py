@@ -26,20 +26,42 @@ FUNCTIONAL_SECTIONS = [
 FUNCTIONAL_SECTION_LABELS = dict(FUNCTIONAL_SECTIONS)
 SECTION_KEYS = {key for key, _ in FUNCTIONAL_SECTIONS} | {'clubs'}
 
-# Порядок пунктов бокового меню «О федерации» между «Федерация» вверху и
-# «Все»/«Контакты» внизу — смесь категорий документов страницы федерации
-# (scope='федерация', см. auth.py: FEDERATION_DOCUMENT_TAXONOMY) и
-# функциональных разделов из FUNCTIONAL_SECTIONS. Задан федерацией.
+# Расположение пунктов бокового меню «О федерации» между «Федерация»
+# вверху и «Контакты»/«Все» внизу — чередование категорий документов
+# страницы федерации (scope='федерация', сколько их сейчас есть — см.
+# auth.py: FEDERATION_DOCUMENT_TAXONOMY) с функциональными разделами из
+# FUNCTIONAL_SECTIONS в заданных федерацией местах. Сама категория,
+# оказавшаяся в очередном слоте 'category', и порядок категорий между
+# собой — определяются DocumentCategory.sort_order (задаётся в панели
+# управления кнопками ▲/▼, admin/document_taxonomy.html), а не этим
+# списком — здесь зафиксированы только места функциональных разделов
+# относительно категорий (пятая категория в списке сейчас — «Положение о
+# межмуниципальных...», её слот идёт последним перед «Сборная команда»).
 FEDERATION_SIDEBAR_LAYOUT = [
-    ('category', 'Направления деятельности'),
-    ('category', 'Основополагающие документы'),
-    ('functional', 'leadership'),
-    ('category', 'Структура Федерации'),
-    ('category', 'Лицензирование и сертификация'),
-    ('functional', 'calendar'),
-    ('category', 'Положение о межмуниципальных и региональных спортивных соревнованиях по виду спорта «рафтинг»'),
-    ('functional', 'team'),
+    'category', 'category', ('functional', 'leadership'),
+    'category', 'category', ('functional', 'calendar'),
+    'category', ('functional', 'team'),
 ]
+
+
+def _category_sidebar_item(region, category, active_category, active_doc_section):
+    """Один пункт меню для категории документов страницы федерации —
+    раскрывающийся, если у категории есть разделы (kind='category'), или
+    обычная ссылка-фильтр без шеврона и пустой раскрывашки «Разделов
+    нет», если разделов нет (kind='link')."""
+    url = url_for('regions.documents', region_id=region.id, category=category.id)
+    active = (
+        (active_category is not None and active_category.id == category.id)
+        or (active_doc_section is not None and active_doc_section.category_id == category.id)
+    )
+    if not category.sections:
+        return {'kind': 'link', 'label': category.name, 'url': url, 'active': active}
+    sections = [{
+        'label': doc_section.name,
+        'url': url_for('regions.documents', region_id=region.id, section=doc_section.id),
+        'active': active_doc_section is not None and active_doc_section.id == doc_section.id,
+    } for doc_section in category.sections]
+    return {'kind': 'category', 'label': category.name, 'url': url, 'active': active, 'sections': sections}
 
 
 def _sidebar_items(region, active_section=None, active_category=None, active_doc_section=None):
@@ -56,10 +78,11 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
     раскрывашки, как и функциональные разделы и «Контакты» (kind='link').
     Текущий пункт выводится не строкой списка, а плашкой-заголовком
     (см. regions/_sidebar.html)."""
-    fed_categories = {
-        category.name: category
-        for category in DocumentCategory.query.filter_by(scope='федерация').all()
-    }
+    ordered_categories = iter(
+        DocumentCategory.query.filter_by(scope='федерация')
+        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
+        .all()
+    )
     showing_documents = active_category is not None or active_doc_section is not None or active_section == 'all_documents'
 
     items = [{
@@ -69,41 +92,25 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
         'active': active_section is None and not showing_documents,
     }]
 
-    for kind, key in FEDERATION_SIDEBAR_LAYOUT:
-        if kind == 'category':
-            category = fed_categories.get(key)
-            if not category:
-                continue
-            category_url = url_for('regions.documents', region_id=region.id, category=category.id)
-            category_active = (
-                (active_category is not None and active_category.id == category.id)
-                or (active_doc_section is not None and active_doc_section.category_id == category.id)
-            )
-            if not category.sections:
-                # Категория без разделов — обычная ссылка-фильтр, без
-                # шеврона и пустой раскрывашки «Разделов нет» (Направления
-                # деятельности, Лицензирование и сертификация и т.п.).
-                items.append({'kind': 'link', 'label': category.name, 'url': category_url, 'active': category_active})
-                continue
-            sections = [{
-                'label': doc_section.name,
-                'url': url_for('regions.documents', region_id=region.id, section=doc_section.id),
-                'active': active_doc_section is not None and active_doc_section.id == doc_section.id,
-            } for doc_section in category.sections]
-            items.append({
-                'kind': 'category',
-                'label': category.name,
-                'url': category_url,
-                'active': category_active,
-                'sections': sections,
-            })
+    for slot in FEDERATION_SIDEBAR_LAYOUT:
+        if slot == 'category':
+            category = next(ordered_categories, None)
+            if category:
+                items.append(_category_sidebar_item(region, category, active_category, active_doc_section))
         else:
+            _, key = slot
             items.append({
                 'kind': 'link',
                 'label': FUNCTIONAL_SECTION_LABELS[key],
                 'url': url_for('regions.section', region_id=region.id, section=key),
                 'active': active_section == key,
             })
+
+    # Категории сверх заранее расставленных слотов (например, новая
+    # категория, добавленная в панели управления) — довешиваются в конец,
+    # перед функциональными разделами, а не пропадают из меню молча.
+    for category in ordered_categories:
+        items.append(_category_sidebar_item(region, category, active_category, active_doc_section))
 
     items.append({
         'kind': 'link',
@@ -185,7 +192,7 @@ def documents(region_id):
 
     categories = (
         DocumentCategory.query.filter_by(scope='федерация')
-        .order_by(DocumentCategory.name)
+        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
         .all()
     )
     category_names = [category.name for category in categories]

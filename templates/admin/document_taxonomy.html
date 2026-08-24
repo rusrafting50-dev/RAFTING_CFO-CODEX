@@ -24,44 +24,71 @@
         <p class="text-muted">Категорий пока нет.</p>
     {% endif %}
 
-    {% for category in categories %}
-        <div class="card p-4 mb-3" style="max-width: 500px;">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="h6 mb-0">{{ category.name }}</h2>
+    {% for scope, scope_categories in categories|groupby('scope') %}
+        <h2 class="h5 mt-4 mb-3">{{ scope }}</h2>
+        {% for category in scope_categories %}
+            <div class="card p-4 mb-3" style="max-width: 500px;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="h6 mb-0">{{ category.name }}</h3>
+                    <div class="d-flex gap-2 align-items-center">
+                        {% if current_user.role in ('admin', 'editor') %}
+                            <div class="d-flex gap-1">
+                                <form method="post" action="{{ url_for('admin.document_category_move', category_id=category.id) }}">
+                                    <input type="hidden" name="direction" value="up">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Выше" {{ 'disabled' if loop.first }}>&uarr;</button>
+                                </form>
+                                <form method="post" action="{{ url_for('admin.document_category_move', category_id=category.id) }}">
+                                    <input type="hidden" name="direction" value="down">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Ниже" {{ 'disabled' if loop.last }}>&darr;</button>
+                                </form>
+                            </div>
+                            <form method="post" action="{{ url_for('admin.document_category_delete', category_id=category.id) }}"
+                                  onsubmit="return confirm('Удалить категорию вместе со всеми её разделами?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Удалить категорию</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <h4 class="small text-uppercase text-muted mb-2">Разделы</h4>
+                {% if category.sections %}
+                    <ul class="list-group mb-3">
+                        {% for section in category.sections %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ section.name }}
+                                {% if current_user.role in ('admin', 'editor') %}
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <div class="d-flex gap-1">
+                                            <form method="post" action="{{ url_for('admin.document_section_move', section_id=section.id) }}">
+                                                <input type="hidden" name="direction" value="up">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Выше" {{ 'disabled' if loop.first }}>&uarr;</button>
+                                            </form>
+                                            <form method="post" action="{{ url_for('admin.document_section_move', section_id=section.id) }}">
+                                                <input type="hidden" name="direction" value="down">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Ниже" {{ 'disabled' if loop.last }}>&darr;</button>
+                                            </form>
+                                        </div>
+                                        <form method="post" action="{{ url_for('admin.document_section_delete', section_id=section.id) }}"
+                                              onsubmit="return confirm('Удалить раздел?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted small">Разделов пока нет.</p>
+                {% endif %}
+
                 {% if current_user.role in ('admin', 'editor') %}
-                    <form method="post" action="{{ url_for('admin.document_category_delete', category_id=category.id) }}"
-                          onsubmit="return confirm('Удалить категорию вместе со всеми её разделами?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить категорию</button>
+                    <form method="post" action="{{ url_for('admin.document_section_new', category_id=category.id) }}" class="d-flex gap-2">
+                        <input type="text" name="name" class="form-control" placeholder="Новый раздел" required>
+                        <button type="submit" class="btn btn-outline-primary">Добавить</button>
                     </form>
                 {% endif %}
             </div>
-
-            <h3 class="small text-uppercase text-muted mb-2">Разделы</h3>
-            {% if category.sections %}
-                <ul class="list-group mb-3">
-                    {% for section in category.sections %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ section.name }}
-                            {% if current_user.role in ('admin', 'editor') %}
-                                <form method="post" action="{{ url_for('admin.document_section_delete', section_id=section.id) }}"
-                                      onsubmit="return confirm('Удалить раздел?');">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
-                                </form>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-muted small">Разделов пока нет.</p>
-            {% endif %}
-
-            {% if current_user.role in ('admin', 'editor') %}
-                <form method="post" action="{{ url_for('admin.document_section_new', category_id=category.id) }}" class="d-flex gap-2">
-                    <input type="text" name="name" class="form-control" placeholder="Новый раздел" required>
-                    <button type="submit" class="btn btn-outline-primary">Добавить</button>
-                </form>
-            {% endif %}
-        </div>
+        {% endfor %}
     {% endfor %}
 
     <a class="btn btn-outline-secondary mt-2" href="{{ url_for('admin.documents_list') }}">К списку документов</a>

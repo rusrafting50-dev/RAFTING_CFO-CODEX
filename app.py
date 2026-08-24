@@ -8,7 +8,7 @@ from flask import Flask, render_template, url_for
 
 from auth import (
     create_default_admin, ensure_competition_document_taxonomy, ensure_schema,
-    fix_federation_document_section_order, login_manager,
+    fix_legacy_document_taxonomy_order, login_manager,
     seed_equipment_document_taxonomy, seed_event_document_taxonomy,
     seed_federation_document_taxonomy, seed_news_taxonomy,
 )
@@ -256,7 +256,7 @@ def create_app():
         seed_event_document_taxonomy()
         seed_equipment_document_taxonomy()
         seed_federation_document_taxonomy()
-        fix_federation_document_section_order()
+        fix_legacy_document_taxonomy_order()
 
     @app.context_processor
     def inject_now():

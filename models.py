@@ -206,6 +206,10 @@ class DocumentCategory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     scope = db.Column(db.String(30), nullable=False, default='цфо')
+    # Порядок вывода среди категорий того же scope — редактируется в
+    # панели управления кнопками ▲/▼ (admin/document_taxonomy.html).
+    # По умолчанию 0 у всех — тогда сортировка возвращается к алфавитной.
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
 
     __table_args__ = (db.UniqueConstraint('name', 'scope', name='uq_document_category_name_scope'),)
 
@@ -215,12 +219,10 @@ class DocumentSection(db.Model):
     DocumentCategory, редактируется в панели управления вместе с
     категориями (страница «Категории документов»).
 
-    sort_order — ручной порядок вывода внутри категории (по умолчанию 0
-    у всех, тогда сортировка возвращается к алфавитной, как раньше —
-    см. order_by ниже). Задаётся кодом для категорий, где порядок важен
-    и не совпадает с алфавитным (например, страница федерации, см.
-    auth.py: FEDERATION_DOCUMENT_TAXONOMY) — своей формы для ручного
-    управления порядком в админке пока нет."""
+    sort_order — порядок вывода внутри категории (по умолчанию 0 у всех,
+    тогда сортировка возвращается к алфавитной, как раньше — см. order_by
+    ниже) — редактируется в панели управления кнопками ▲/▼
+    (admin/document_taxonomy.html)."""
 
     id = db.Column(db.Integer, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('document_category.id'), nullable=False)

@@ -155,6 +155,7 @@ def ensure_schema():
     _ensure_column(inspector, 'document', 'region_id', 'INTEGER')
     _ensure_document_category_scoped_unique()
     _ensure_column(inspector, 'document_section', 'sort_order', 'INTEGER NOT NULL DEFAULT 0')
+    _ensure_column(inspector, 'document_category', 'sort_order', 'INTEGER NOT NULL DEFAULT 0')
 
 
 def seed_news_taxonomy():
@@ -211,7 +212,10 @@ def ensure_competition_document_taxonomy():
     названию, ничего не удаляет и не трогает уже существующие категории
     и разделы (в том числе случайно оставшиеся от более раннего
     дефолтного набора «Законы»/«Минспорт России»/«WRF»/«ФРР» — админ
-    может убрать лишнее вручную через панель управления).
+    может убрать лишнее вручную через панель управления). Новым
+    категориям/разделам sort_order проставляется по их позиции в
+    COMPETITION_DOCUMENT_TAXONOMY — порядок в меню, пока админ не
+    поменяет его сам кнопками ▲/▼ в панели управления.
 
     Раньше вместо этого была одноразовая migrate_competition_document_taxonomy(),
     срабатывавшая только при точном совпадении с исходным дефолтным
@@ -225,17 +229,17 @@ def ensure_competition_document_taxonomy():
         for category in DocumentCategory.query.filter_by(scope='соревнования').all()
     }
     changed = False
-    for name, section_names in COMPETITION_DOCUMENT_TAXONOMY:
+    for category_order, (name, section_names) in enumerate(COMPETITION_DOCUMENT_TAXONOMY):
         category = existing_categories.get(name)
         if not category:
-            category = DocumentCategory(name=name, scope='соревнования')
+            category = DocumentCategory(name=name, scope='соревнования', sort_order=category_order)
             db.session.add(category)
             db.session.flush()
             changed = True
         existing_section_names = {section.name for section in category.sections}
-        for section_name in section_names:
+        for section_order, section_name in enumerate(section_names):
             if section_name not in existing_section_names:
-                db.session.add(DocumentSection(category_id=category.id, name=section_name))
+                db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=section_order))
                 changed = True
     if changed:
         db.session.commit()
@@ -248,8 +252,8 @@ def seed_event_document_taxonomy():
     (routes/events.py: EVENT_TYPE_FILTERS), тот же приём, что
     seed_competition_document_taxonomy."""
     if DocumentCategory.query.filter_by(scope='мероприятия').count() == 0:
-        for name in ('Спортивные судьи', 'Тренеры', 'Спортивная подготовка', 'Руководители организаций'):
-            db.session.add(DocumentCategory(name=name, scope='мероприятия'))
+        for order, name in enumerate(('Спортивные судьи', 'Тренеры', 'Спортивная подготовка', 'Руководители организаций')):
+            db.session.add(DocumentCategory(name=name, scope='мероприятия', sort_order=order))
         db.session.commit()
 
 
@@ -259,18 +263,18 @@ def seed_equipment_document_taxonomy():
     на самой странице, routes/competitions.py: EQUIPMENT_AUDIENCES), тот
     же приём, что seed_competition_document_taxonomy."""
     if DocumentCategory.query.filter_by(scope='оборудование_спортсмены').count() == 0:
-        for name in (
+        for order, name in enumerate((
             'Рафты для спорта', 'Вёсла для спорта', 'Каски', 'Страховочные жилеты',
             'Одежда слой из неопрена', 'Одежда верхний слой',
-        ):
-            db.session.add(DocumentCategory(name=name, scope='оборудование_спортсмены'))
+        )):
+            db.session.add(DocumentCategory(name=name, scope='оборудование_спортсмены', sort_order=order))
         db.session.commit()
     if DocumentCategory.query.filter_by(scope='оборудование_организаторы').count() == 0:
-        for name in (
+        for order, name in enumerate((
             'Старт-Финиш', 'Дистанция «Слалом»', 'Дистанция «Параллельный спринт»',
             'Программное обеспечение для секретариата',
-        ):
-            db.session.add(DocumentCategory(name=name, scope='оборудование_организаторы'))
+        )):
+            db.session.add(DocumentCategory(name=name, scope='оборудование_организаторы', sort_order=order))
         db.session.commit()
 
 
@@ -299,38 +303,63 @@ def seed_federation_document_taxonomy():
     своей позиции в FEDERATION_DOCUMENT_TAXONOMY — порядок в меню задан
     федерацией, а не алфавитный."""
     if DocumentCategory.query.filter_by(scope='федерация').count() == 0:
-        for name, section_names in FEDERATION_DOCUMENT_TAXONOMY:
-            category = DocumentCategory(name=name, scope='федерация')
+        for category_order, (name, section_names) in enumerate(FEDERATION_DOCUMENT_TAXONOMY):
+            category = DocumentCategory(name=name, scope='федерация', sort_order=category_order)
             db.session.add(category)
             db.session.flush()
-            for order, section_name in enumerate(section_names):
-                db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=order))
+            for section_order, section_name in enumerate(section_names):
+                db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=section_order))
         db.session.commit()
 
 
-def fix_federation_document_section_order():
-    """Проставляет sort_order разделам, уже созданным ДО появления этого
-    поля (seed_federation_document_taxonomy при первом запуске
-    записывала их в алфавитном порядке, как и все остальные разделы на
-    сайте) — по названию, в соответствии с позицией в
-    FEDERATION_DOCUMENT_TAXONOMY. Идемпотентна и ничего не ломает при
-    повторных запусках — можно смело вызывать при каждом старте
-    сервера, в отличие от seed-функций, которые выполняются один раз."""
-    categories = {
-        category.name: category
-        for category in DocumentCategory.query.filter_by(scope='федерация').all()
-    }
+def _apply_initial_order(rows, name_order):
+    """rows — список ORM-объектов с полями sort_order/name одной группы
+    (все категории одного scope, либо все разделы одной категории).
+    Проставляет sort_order по позиции названия в name_order, но только
+    если у ВСЕХ rows сейчас одинаковый sort_order — то есть порядок
+    среди них ещё никто и никак не задавал (ни при сидировании новых
+    категорий/разделов — см. ensure_competition_document_taxonomy и
+    seed_federation_document_taxonomy, ни вручную кнопками ▲/▼ в панели
+    управления). Как только у любого элемента группы значение
+    отличается — группу больше не трогает, чтобы не затереть ручную
+    перестановку. Возвращает True, если что-то изменила."""
+    if len({row.sort_order for row in rows}) > 1:
+        return False
+    position = {name: index for index, name in enumerate(name_order)}
     changed = False
-    for category_name, section_names in FEDERATION_DOCUMENT_TAXONOMY:
-        category = categories.get(category_name)
-        if not category:
-            continue
-        sections_by_name = {section.name: section for section in category.sections}
-        for order, section_name in enumerate(section_names):
-            section = sections_by_name.get(section_name)
-            if section and section.sort_order != order:
-                section.sort_order = order
-                changed = True
+    for row in rows:
+        order = position.get(row.name)
+        if order is not None and row.sort_order != order:
+            row.sort_order = order
+            changed = True
+    return changed
+
+
+def fix_legacy_document_taxonomy_order():
+    """Одноразовая по сути простановка sort_order категориям и разделам,
+    созданным до появления этого поля (стоит сплошной дефолт 0, то есть
+    сортировка сейчас алфавитная) — приводит их к порядку, заданному в
+    COMPETITION_DOCUMENT_TAXONOMY/FEDERATION_DOCUMENT_TAXONOMY. См.
+    _apply_initial_order — как только порядок где-то уже задан (при
+    сидировании новых категорий или вручную через панель управления),
+    эта функция такую группу больше не трогает, поэтому её можно
+    спокойно вызывать при каждом старте сервера."""
+    changed = False
+
+    competition_categories = DocumentCategory.query.filter_by(scope='соревнования').all()
+    changed |= _apply_initial_order(competition_categories, [name for name, _ in COMPETITION_DOCUMENT_TAXONOMY])
+    for name, section_names in COMPETITION_DOCUMENT_TAXONOMY:
+        category = next((c for c in competition_categories if c.name == name), None)
+        if category:
+            changed |= _apply_initial_order(category.sections, section_names)
+
+    federation_categories = DocumentCategory.query.filter_by(scope='федерация').all()
+    changed |= _apply_initial_order(federation_categories, [name for name, _ in FEDERATION_DOCUMENT_TAXONOMY])
+    for name, section_names in FEDERATION_DOCUMENT_TAXONOMY:
+        category = next((c for c in federation_categories if c.name == name), None)
+        if category:
+            changed |= _apply_initial_order(category.sections, section_names)
+
     if changed:
         db.session.commit()
 
