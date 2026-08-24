@@ -213,15 +213,26 @@ class DocumentCategory(db.Model):
 class DocumentSection(db.Model):
     """Раздел внутри категории документов — привязан к конкретной
     DocumentCategory, редактируется в панели управления вместе с
-    категориями (страница «Категории документов»)."""
+    категориями (страница «Категории документов»).
+
+    sort_order — ручной порядок вывода внутри категории (по умолчанию 0
+    у всех, тогда сортировка возвращается к алфавитной, как раньше —
+    см. order_by ниже). Задаётся кодом для категорий, где порядок важен
+    и не совпадает с алфавитным (например, страница федерации, см.
+    auth.py: FEDERATION_DOCUMENT_TAXONOMY) — своей формы для ручного
+    управления порядком в админке пока нет."""
 
     id = db.Column(db.Integer, primary_key=True)
     category_id = db.Column(db.Integer, db.ForeignKey('document_category.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
 
     category = db.relationship(
         'DocumentCategory',
-        backref=db.backref('sections', cascade='all, delete-orphan', order_by='DocumentSection.name'),
+        backref=db.backref(
+            'sections', cascade='all, delete-orphan',
+            order_by='DocumentSection.sort_order, DocumentSection.name',
+        ),
     )
 
 

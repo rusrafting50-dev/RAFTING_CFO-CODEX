@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, url_for
 
 from auth import (
-    create_default_admin, ensure_schema, login_manager,
+    create_default_admin, ensure_schema, fix_federation_document_section_order, login_manager,
     migrate_competition_document_taxonomy, seed_competition_document_taxonomy,
     seed_equipment_document_taxonomy, seed_event_document_taxonomy,
     seed_federation_document_taxonomy, seed_news_taxonomy,
@@ -257,6 +257,7 @@ def create_app():
         seed_event_document_taxonomy()
         seed_equipment_document_taxonomy()
         seed_federation_document_taxonomy()
+        fix_federation_document_section_order()
 
     @app.context_processor
     def inject_now():

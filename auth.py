@@ -154,6 +154,7 @@ def ensure_schema():
     _ensure_column(inspector, 'referee', 'specialization', 'VARCHAR(300)')
     _ensure_column(inspector, 'document', 'region_id', 'INTEGER')
     _ensure_document_category_scoped_unique()
+    _ensure_column(inspector, 'document_section', 'sort_order', 'INTEGER NOT NULL DEFAULT 0')
 
 
 def seed_news_taxonomy():
@@ -300,14 +301,43 @@ FEDERATION_DOCUMENT_TAXONOMY = [
 def seed_federation_document_taxonomy():
     """Начальное заполнение категорий и разделов бокового меню страницы
     конкретной федерации (scope='федерация') — тот же приём, что
-    seed_competition_document_taxonomy."""
+    seed_competition_document_taxonomy. Разделы получают sort_order по
+    своей позиции в FEDERATION_DOCUMENT_TAXONOMY — порядок в меню задан
+    федерацией, а не алфавитный."""
     if DocumentCategory.query.filter_by(scope='федерация').count() == 0:
         for name, section_names in FEDERATION_DOCUMENT_TAXONOMY:
             category = DocumentCategory(name=name, scope='федерация')
             db.session.add(category)
             db.session.flush()
-            for section_name in section_names:
-                db.session.add(DocumentSection(category_id=category.id, name=section_name))
+            for order, section_name in enumerate(section_names):
+                db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=order))
+        db.session.commit()
+
+
+def fix_federation_document_section_order():
+    """Проставляет sort_order разделам, уже созданным ДО появления этого
+    поля (seed_federation_document_taxonomy при первом запуске
+    записывала их в алфавитном порядке, как и все остальные разделы на
+    сайте) — по названию, в соответствии с позицией в
+    FEDERATION_DOCUMENT_TAXONOMY. Идемпотентна и ничего не ломает при
+    повторных запусках — можно смело вызывать при каждом старте
+    сервера, в отличие от seed-функций, которые выполняются один раз."""
+    categories = {
+        category.name: category
+        for category in DocumentCategory.query.filter_by(scope='федерация').all()
+    }
+    changed = False
+    for category_name, section_names in FEDERATION_DOCUMENT_TAXONOMY:
+        category = categories.get(category_name)
+        if not category:
+            continue
+        sections_by_name = {section.name: section for section in category.sections}
+        for order, section_name in enumerate(section_names):
+            section = sections_by_name.get(section_name)
+            if section and section.sort_order != order:
+                section.sort_order = order
+                changed = True
+    if changed:
         db.session.commit()
 
 

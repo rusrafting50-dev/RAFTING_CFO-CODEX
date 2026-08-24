@@ -44,8 +44,9 @@ FEDERATION_SIDEBAR_LAYOUT = [
 
 def _sidebar_items(region, active_section=None, active_category=None, active_doc_section=None):
     """Пункты бокового меню «О федерации»: «Федерация» вверху (ссылка на
-    обзорную страницу), затем FEDERATION_SIDEBAR_LAYOUT, затем «Все»
-    (сбрасывает фильтр документов) и «Контакты» — самыми последними.
+    обзорную страницу), затем FEDERATION_SIDEBAR_LAYOUT, затем
+    «Контакты» и «Все» (сбрасывает фильтр документов) — самыми
+    последними.
 
     Категории документов (scope='федерация') рендерятся как
     раскрывающиеся пункты со своими разделами внутри (kind='category') —
@@ -94,15 +95,15 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
 
     items.append({
         'kind': 'link',
-        'label': 'Все',
-        'url': url_for('regions.documents', region_id=region.id),
-        'active': active_section == 'all_documents',
-    })
-    items.append({
-        'kind': 'link',
         'label': 'Контакты',
         'url': url_for('regions.section', region_id=region.id, section='contacts'),
         'active': active_section == 'contacts',
+    })
+    items.append({
+        'kind': 'link',
+        'label': 'Все',
+        'url': url_for('regions.documents', region_id=region.id),
+        'active': active_section == 'all_documents',
     })
     return items
 
