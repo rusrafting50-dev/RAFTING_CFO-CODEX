@@ -205,45 +205,39 @@ COMPETITION_DOCUMENT_TAXONOMY = [
     ('Документы WRF', []),
 ]
 
-# Прежний дефолтный набор категорий (до перехода на COMPETITION_DOCUMENT_TAXONOMY
-# выше) — нужен только migrate_competition_document_taxonomy(), чтобы отличить
-# нетронутую базу от базы, где админ уже сам поменял список категорий вручную.
-_OLD_COMPETITION_DOCUMENT_CATEGORIES = {'Законы', 'Минспорт России', 'WRF', 'ФРР'}
+def ensure_competition_document_taxonomy():
+    """Гарантирует, что все категории и разделы из COMPETITION_DOCUMENT_TAXONOMY
+    существуют (scope='соревнования') — добавляет недостающие по
+    названию, ничего не удаляет и не трогает уже существующие категории
+    и разделы (в том числе случайно оставшиеся от более раннего
+    дефолтного набора «Законы»/«Минспорт России»/«WRF»/«ФРР» — админ
+    может убрать лишнее вручную через панель управления).
 
-
-def migrate_competition_document_taxonomy():
-    """Разовая замена старого дефолтного списка категорий (Законы/Минспорт
-    России/WRF/ФРР) на новую структуру категорий и разделов
-    (COMPETITION_DOCUMENT_TAXONOMY). Срабатывает только если категории
-    страницы до сих пор равны исходному дефолтному набору один в один и
-    без единого раздела — то есть их ещё никто не менял вручную через
-    админку; иначе ручные правки не трогаем (тот же принцип, что у
-    seed-функций — не затирать ручное редактирование при перезапуске)."""
-    categories = DocumentCategory.query.filter_by(scope='соревнования').all()
-    if not categories:
-        return
-    names = {c.name for c in categories}
-    has_sections = any(c.sections for c in categories)
-    if has_sections or names != _OLD_COMPETITION_DOCUMENT_CATEGORIES:
-        return
-    for category in categories:
-        db.session.delete(category)
-    db.session.commit()
-
-
-def seed_competition_document_taxonomy():
-    """Начальное заполнение категорий и разделов бокового меню страницы
-    «Нормативные документы» под Соревнования (scope='соревнования') —
-    тот же приём, что seed_news_taxonomy: срабатывает только если таких
-    категорий ещё нет, чтобы ручное удаление через админку не
-    возвращалось обратно после перезапуска сервера."""
-    if DocumentCategory.query.filter_by(scope='соревнования').count() == 0:
-        for name, section_names in COMPETITION_DOCUMENT_TAXONOMY:
+    Раньше вместо этого была одноразовая migrate_competition_document_taxonomy(),
+    срабатывавшая только при точном совпадении с исходным дефолтным
+    набором — на части уже работающих сайтов список категорий к этому
+    моменту успел разойтись (например, вручную удалили часть пунктов),
+    из-за чего миграция молча пропускалась и новые категории так и не
+    появлялись. Эта функция устроена проще и идемпотентна — можно
+    спокойно вызывать при каждом старте сервера, а не один раз."""
+    existing_categories = {
+        category.name: category
+        for category in DocumentCategory.query.filter_by(scope='соревнования').all()
+    }
+    changed = False
+    for name, section_names in COMPETITION_DOCUMENT_TAXONOMY:
+        category = existing_categories.get(name)
+        if not category:
             category = DocumentCategory(name=name, scope='соревнования')
             db.session.add(category)
             db.session.flush()
-            for section_name in section_names:
+            changed = True
+        existing_section_names = {section.name for section in category.sections}
+        for section_name in section_names:
+            if section_name not in existing_section_names:
                 db.session.add(DocumentSection(category_id=category.id, name=section_name))
+                changed = True
+    if changed:
         db.session.commit()
 
 
