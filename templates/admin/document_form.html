@@ -16,8 +16,8 @@
                 <label for="doc_category" class="form-label">Категория</label>
                 <select class="form-select" id="doc_category" name="doc_category">
                     <option value="">—</option>
-                    {% for choice in category_choices %}
-                        <option value="{{ choice }}" {{ 'selected' if document and document.doc_category == choice }}>{{ choice }}</option>
+                    {% for category in category_choices %}
+                        <option value="{{ category.id }}" {{ 'selected' if selected_category_id and selected_category_id == category.id }}>{{ category.name }} ({{ category.scope }})</option>
                     {% endfor %}
                 </select>
             </div>
@@ -28,6 +28,16 @@
                 </select>
                 <div class="form-text">Список зависит от выбранной категории.</div>
             </div>
+        </div>
+        <div class="mb-3" id="region-field" hidden>
+            <label for="region_id" class="form-label">Федерация</label>
+            <select class="form-select" id="region_id" name="region_id">
+                <option value="">—</option>
+                {% for region in region_choices %}
+                    <option value="{{ region.id }}" {{ 'selected' if document and document.region_id == region.id }}>{{ region.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">Только для категорий страницы конкретной федерации — какой федерации принадлежит документ.</div>
         </div>
         <div class="mb-3">
             <label for="file" class="form-label">Файл (PDF, DOCX){{ ' — оставьте пустым, чтобы не менять' if document }}</label>
@@ -42,8 +52,10 @@
     <script>
         (function () {
             var sectionsByCategory = {{ sections_by_category|tojson }};
+            var categoryScopes = {{ category_scopes|tojson }};
             var categorySelect = document.getElementById('doc_category');
             var sectionSelect = document.getElementById('section_id');
+            var regionField = document.getElementById('region-field');
             var currentSectionId = {{ document.section_id|tojson if document else 'null' }};
 
             function rebuildSections() {
@@ -63,8 +75,16 @@
                 });
             }
 
-            categorySelect.addEventListener('change', rebuildSections);
+            function toggleRegionField() {
+                regionField.hidden = categoryScopes[categorySelect.value] !== 'федерация';
+            }
+
+            categorySelect.addEventListener('change', function () {
+                rebuildSections();
+                toggleRegionField();
+            });
             rebuildSections();
+            toggleRegionField();
         })();
     </script>
 {% endblock %}

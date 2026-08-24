@@ -1,14 +1,45 @@
 {# Боковое меню «О федерации» — общее для страницы обзора федерации
-   (regions/detail.html) и страниц её разделов (regions/section.html).
+   (regions/detail.html), страниц её функциональных разделов
+   (regions/section.html) и страницы документов (regions/documents.html).
    sidebar_items — список пунктов (первый — «Федерация», затем разделы),
    собранный в routes/regions.py._sidebar_items(). Текущий пункт
    выводится не строкой списка, а плашкой-заголовком (синий фон, белый
-   текст) — как раньше был статичный заголовок «О ФЕДЕРАЦИИ». #}
+   текст) — как раньше был статичный заголовок «О ФЕДЕРАЦИИ».
+
+   Пункт kind='link' — обычная ссылка. kind='category' — категория
+   документов страницы федерации с разделами внутри: раскрывается по
+   клику на шеврон (не по клику на само название — оно сразу ведёт на
+   список документов категории), тот же приём и те же CSS-классы, что
+   doc-category-panel на «Соревнования → Нормативные документы»
+   (templates/competitions/documents.html); клик обрабатывается общим
+   делегированным обработчиком в main.js. #}
 <div class="doc-category-panel">
     {% for item in sidebar_items %}
-        <div class="doc-category-item">
-            <a class="{{ 'fed-sidebar-active' if item.active else 'doc-category-toggle' }}"
-               href="{{ item.url }}">{{ item.label }}</a>
-        </div>
+        {% if item.kind == 'category' %}
+            <div class="doc-category-item">
+                <div class="doc-category-toggle {{ 'has-active' if item.active }}">
+                    <a class="doc-category-toggle-link" href="{{ item.url }}">{{ item.label }}</a>
+                    <button type="button" class="doc-category-chevron-btn"
+                            data-target="fed-doc-cat-{{ loop.index }}" aria-expanded="{{ 'true' if item.active else 'false' }}"
+                            aria-label="Показать разделы">
+                        <svg class="doc-category-chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                    </button>
+                </div>
+                <ul class="doc-section-list {{ 'is-open' if item.active }}" id="fed-doc-cat-{{ loop.index }}">
+                    {% for doc_section in item.sections %}
+                        <li>
+                            <a class="{{ 'active' if doc_section.active }}" href="{{ doc_section.url }}">{{ doc_section.label }}</a>
+                        </li>
+                    {% else %}
+                        <li class="text-muted">Разделов нет</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% else %}
+            <div class="doc-category-item">
+                <a class="{{ 'fed-sidebar-active' if item.active else 'doc-category-toggle' }}"
+                   href="{{ item.url }}">{{ item.label }}</a>
+            </div>
+        {% endif %}
     {% endfor %}
 </div>

@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% from "_athletes_table.html" import athletes_table %}
-{% from "_referees_table.html" import referees_table %}
 {% from "clubs/_cards.html" import club_cards, club_cards_script %}
 
 {% block title %}{{ section_label }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
@@ -16,8 +15,6 @@
 
                 {% if section == 'team' %}
                     {{ athletes_table(team_athletes) }}
-                {% elif section == 'referees' %}
-                    {{ referees_table(region_referees) }}
                 {% elif section == 'clubs' %}
                     {% if region_clubs %}
                         {{ club_cards(region_clubs) }}
@@ -26,13 +23,7 @@
                     {% endif %}
                 {% else %}
                     <div class="fed-text-block">
-                        {% if section == 'goals' %}
-                            {% if region.goals_text %}
-                                <div class="fed-intro">{{ region.goals_text }}</div>
-                            {% else %}
-                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
-                            {% endif %}
-                        {% elif section == 'contacts' %}
+                        {% if section == 'contacts' %}
                             {% if region.contact_phone or region.contact_email or region.contact_address %}
                                 <ul class="list-unstyled mb-0">
                                     {% if region.contact_address %}<li class="mb-2"><span aria-hidden="true">📍</span> {{ region.contact_address }}</li>{% endif %}

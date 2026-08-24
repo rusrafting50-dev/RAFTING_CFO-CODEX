@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}{{ selected_section.name if selected_section else (selected_category.name if selected_category else 'Документы') }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Документы федерации: {{ region.name }}{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        {% include "regions/_page_title.html" with context %}
+
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <div class="news-search-row doc-search-panel mb-0">
+                    <h2 class="h5 mb-3">{{ selected_section.name if selected_section else (selected_category.name if selected_category else 'Все документы') }}</h2>
+                    <form method="get" action="{{ url_for('regions.documents', region_id=region.id) }}" class="news-search-input-form">
+                        {% if selected_section %}<input type="hidden" name="section" value="{{ selected_section.id }}">{% endif %}
+                        {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category.id }}">{% endif %}
+                        <label class="news-search-input news-search-input-icon-right news-search-input-icon-lg news-search-input-icon-outline">
+                            <svg viewBox="0 0 24 24" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="10" cy="10" r="7"></circle>
+                                <line x1="21" y1="21" x2="15.5" y2="15.5"></line>
+                            </svg>
+                            <input type="text" id="doc-search" placeholder="Поиск...">
+                        </label>
+                    </form>
+                </div>
+
+                <p class="doc-count-bar">Найдено документов: <span id="doc-count">{{ documents|length }}</span></p>
+
+                {% if documents %}
+                    <div id="doc-list">
+                        {% for document in documents %}
+                            {% set ext = document.file_path|file_extension %}
+                            {% set icon_file = 'pdf_icon_48.png' if ext == 'pdf' else ('word_icon_48.png' if ext in ('doc', 'docx') else ('excel_icon_48.png' if ext in ('xls', 'xlsx') else None)) %}
+                            <div class="doc-list-item" id="doc-{{ document.id }}" data-title="{{ document.title|lower }}">
+                                <p class="news-row-date">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</p>
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div>
+                                        <h3 class="doc-list-title">{{ document.title }}</h3>
+                                        <button type="button" class="btn btn-sm btn-primary doc-copy-link"
+                                                data-url="{{ url_for('static', filename=document.file_path, _external=True) }}">
+                                            Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                    <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=document.file_path) }}"
+                                       target="_blank" rel="noopener">
+                                        {% if icon_file %}
+                                            <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt=".{{ ext }}">
+                                        {% else %}
+                                            <svg class="doc-file-icon-generic" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path d="M6 2h8l5 5v15H6z" fill="#8a9199"/>
+                                                <path d="M14 2v5h5z" fill="#c2c7cc"/>
+                                            </svg>
+                                        {% endif %}
+                                        <span class="d-block small">Открыть</span>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted mb-0">Документы пока не загружены.</p>
+                {% endif %}
+            </div>
+
+            <div class="col-lg-3">
+                {% include "regions/_sidebar.html" with context %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            var input = document.getElementById('doc-search');
+            var countEl = document.getElementById('doc-count');
+            if (!input) return;
+            var items = document.querySelectorAll('#doc-list .doc-list-item');
+            input.addEventListener('input', function () {
+                var q = input.value.trim().toLowerCase();
+                var visible = 0;
+                items.forEach(function (item) {
+                    var match = item.dataset.title.indexOf(q) !== -1;
+                    item.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                countEl.textContent = visible;
+            });
+        })();
+
+        (function () {
+            document.querySelectorAll('.doc-copy-link').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    navigator.clipboard.writeText(btn.dataset.url).then(function () {
+                        var original = btn.innerHTML;
+                        btn.innerHTML = 'Скопировано';
+                        setTimeout(function () { btn.innerHTML = original; }, 1500);
+                    });
+                });
+            });
+        })();
+
+        (function () {
+            /* Центрирование заголовка — см. подробный комментарий в
+               documents/list.html, тот же приём один в один. */
+            var panel = document.querySelector('.doc-search-panel');
+            var heading = panel && panel.querySelector('h2');
+            var field = panel && panel.querySelector('.news-search-input');
+            if (!panel || !heading || !field) return;
+
+            function textRect(el) {
+                var range = document.createRange();
+                range.selectNodeContents(el);
+                return range.getBoundingClientRect();
+            }
+
+            function centerHeading() {
+                panel.style.paddingTop = '';
+                panel.style.gap = '';
+
+                var panelTop = panel.getBoundingClientRect().top;
+                var fieldTop = field.getBoundingClientRect().top;
+                var headingBox = heading.getBoundingClientRect();
+                var text = textRect(heading);
+
+                var extraTop = text.top - headingBox.top;
+                var extraBottom = headingBox.bottom - text.bottom;
+
+                var available = Math.max(0, (fieldTop - panelTop) - headingBox.height);
+                var paddingTop = Math.max(0, Math.min(available, (available + extraBottom - extraTop) / 2));
+                var gap = Math.max(0, available - paddingTop);
+
+                panel.style.paddingTop = paddingTop + 'px';
+                panel.style.gap = gap + 'px';
+            }
+
+            centerHeading();
+            window.addEventListener('resize', centerHeading);
+            if (window.document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(centerHeading);
+            }
+        })();
+    </script>
+{% endblock %}

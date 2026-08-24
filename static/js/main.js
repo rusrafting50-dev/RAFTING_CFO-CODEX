@@ -282,3 +282,19 @@
         closeAll(null);
     });
 })();
+
+// Шеврон-раскрывашка категории документов (боковая панель категорий
+// «Соревнования → Нормативные документы» и такая же панель на странице
+// федерации, regions/_sidebar.html) — один общий обработчик на весь
+// сайт вместо копии инлайн-скрипта на каждой странице, где встречается
+// класс .doc-category-chevron-btn.
+(function () {
+    document.querySelectorAll('.doc-category-chevron-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var list = document.getElementById(btn.dataset.target);
+            var expanded = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', String(!expanded));
+            list.classList.toggle('is-open', !expanded);
+        });
+    });
+})();

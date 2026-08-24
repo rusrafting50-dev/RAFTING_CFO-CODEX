@@ -128,17 +128,6 @@
         })();
 
         (function () {
-            document.querySelectorAll('.doc-category-chevron-btn').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    var list = document.getElementById(btn.dataset.target);
-                    var expanded = btn.getAttribute('aria-expanded') === 'true';
-                    btn.setAttribute('aria-expanded', String(!expanded));
-                    list.classList.toggle('is-open', !expanded);
-                });
-            });
-        })();
-
-        (function () {
             /* Центрирование заголовка «Все документы» — см. подробный
                комментарий в documents/list.html, тот же приём один в один. */
             var panel = document.querySelector('.doc-search-panel');

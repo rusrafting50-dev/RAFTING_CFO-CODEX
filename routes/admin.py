@@ -498,14 +498,59 @@ def news_level_delete(level_id):
 # ---------- Документы ----------
 
 def document_category_choices():
-    return [c.name for c in DocumentCategory.query.order_by(DocumentCategory.name).all()]
+    """Категории для формы загрузки документа — с 2024 года название
+    категории уникально только в пределах своего scope (см.
+    DocumentCategory), поэтому в разных scope могут быть одинаково
+    названные категории («Основополагающие документы» и у Соревнований,
+    и у страницы федерации) — <select> в форме поэтому использует id
+    категории как значение (не название, оно больше не гарантированно
+    уникально)."""
+    return DocumentCategory.query.order_by(DocumentCategory.name).all()
 
 
 def document_sections_by_category():
     return {
-        category.name: [{'id': s.id, 'name': s.name} for s in category.sections]
-        for category in DocumentCategory.query.order_by(DocumentCategory.name).all()
+        category.id: [{'id': s.id, 'name': s.name} for s in category.sections]
+        for category in DocumentCategory.query.all()
     }
+
+
+def document_category_scopes():
+    """Категория (id) -> scope (см. DocumentCategory) — нужно форме
+    загрузки документа, чтобы показывать поле «Регион» только для
+    категорий страницы федерации (scope='федерация'); для остальных
+    документ общий на весь сайт, региона у него нет."""
+    return {c.id: c.scope for c in DocumentCategory.query.all()}
+
+
+def document_category_name_from_form():
+    """<select name="doc_category"> в форме передаёт id категории (см.
+    document_category_choices) — здесь превращаем его обратно в название,
+    которое и хранится в Document.doc_category (см. модель)."""
+    category_id = request.form.get('doc_category', type=int)
+    if not category_id:
+        return None
+    category = DocumentCategory.query.get(category_id)
+    return category.name if category else None
+
+
+def document_category_id_for(document):
+    """id категории уже сохранённого документа — для формы редактирования
+    (какая опция в <select> должна быть выбрана изначально). document.
+    doc_category хранит только НАЗВАНИЕ категории (см. Document), а оно
+    не гарантированно уникально глобально — если у документа есть раздел
+    (section), его category_id однозначен; если раздела нет, а название
+    совпадает у категорий из разных scope — берём первую попавшуюся
+    (редкий случай: категория без разделов, название которой к тому же
+    совпало с чужим scope; для остальных случаев это точный выбор)."""
+    if not document:
+        return None
+    if document.section:
+        return document.section.category_id
+    if not document.doc_category:
+        return None
+    category = DocumentCategory.query.filter_by(name=document.doc_category).first()
+    return category.id if category else None
 
 
 @bp.route('/documents')
@@ -581,23 +626,24 @@ def document_section_delete(section_id):
 @section_required('documents')
 @roles_required('admin', 'editor')
 def documents_new():
+    form_kwargs = dict(
+        active='documents',
+        category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
+        category_scopes=document_category_scopes(),
+        region_choices=RegionalFederation.query.order_by(RegionalFederation.name).all(),
+    )
+
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         file = request.files.get('file')
 
         if not title or not file or file.filename == '':
             flash('Название и файл документа обязательны.', 'error')
-            return render_template(
-                'admin/document_form.html', active='documents',
-                category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
-            )
+            return render_template('admin/document_form.html', **form_kwargs)
 
         if not allowed_document(file.filename):
             flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
-            return render_template(
-                'admin/document_form.html', active='documents',
-                category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
-            )
+            return render_template('admin/document_form.html', **form_kwargs)
 
         filename = safe_upload_filename(file.filename)
         unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
@@ -607,8 +653,9 @@ def documents_new():
 
         document = Document(
             title=title,
-            doc_category=request.form.get('doc_category') or None,
+            doc_category=document_category_name_from_form(),
             section_id=request.form.get('section_id', type=int),
+            region_id=request.form.get('region_id', type=int),
             file_path=f"uploads/{unique_name}",
         )
         db.session.add(document)
@@ -616,10 +663,7 @@ def documents_new():
         flash('Документ загружен.', 'success')
         return redirect(url_for('admin.documents_list'))
 
-    return render_template(
-        'admin/document_form.html', active='documents',
-        category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
-    )
+    return render_template('admin/document_form.html', **form_kwargs)
 
 
 @bp.route('/documents/<int:document_id>/edit', methods=['GET', 'POST'])
@@ -627,6 +671,13 @@ def documents_new():
 @roles_required('admin', 'editor')
 def documents_edit(document_id):
     document = Document.query.get_or_404(document_id)
+    form_kwargs = dict(
+        active='documents', document=document,
+        category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
+        category_scopes=document_category_scopes(),
+        region_choices=RegionalFederation.query.order_by(RegionalFederation.name).all(),
+        selected_category_id=document_category_id_for(document),
+    )
 
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
@@ -634,18 +685,12 @@ def documents_edit(document_id):
 
         if not title:
             flash('Название документа обязательно.', 'error')
-            return render_template(
-                'admin/document_form.html', active='documents', document=document,
-                category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
-            )
+            return render_template('admin/document_form.html', **form_kwargs)
 
         if file and file.filename:
             if not allowed_document(file.filename):
                 flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
-                return render_template(
-                    'admin/document_form.html', active='documents', document=document,
-                    category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
-                )
+                return render_template('admin/document_form.html', **form_kwargs)
 
             filename = safe_upload_filename(file.filename)
             unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
@@ -659,16 +704,14 @@ def documents_edit(document_id):
             document.file_path = f"uploads/{unique_name}"
 
         document.title = title
-        document.doc_category = request.form.get('doc_category') or None
+        document.doc_category = document_category_name_from_form()
         document.section_id = request.form.get('section_id', type=int)
+        document.region_id = request.form.get('region_id', type=int)
         db.session.commit()
         flash('Документ изменён.', 'success')
         return redirect(url_for('admin.documents_list'))
 
-    return render_template(
-        'admin/document_form.html', active='documents', document=document,
-        category_choices=document_category_choices(), sections_by_category=document_sections_by_category(),
-    )
+    return render_template('admin/document_form.html', **form_kwargs)
 
 
 @bp.route('/documents/<int:document_id>/delete', methods=['POST'])

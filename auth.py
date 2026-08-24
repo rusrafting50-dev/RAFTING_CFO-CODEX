@@ -60,6 +60,52 @@ def _ensure_nullable(inspector, table, column):
     print(f'[auth] В таблице {table} снято ограничение NOT NULL с колонки {column}.')
 
 
+def _ensure_document_category_scoped_unique():
+    """DocumentCategory.name раньше был уникален глобально (across всех
+    scope сразу) — с добавлением категорий страницы федерации
+    понадобилось, чтобы одно и то же название (например,
+    «Основополагающие документы») могло независимо существовать в
+    разных scope сразу (см. models.py: DocumentCategory). SQLite не
+    поддерживает снятие/замену UNIQUE через ALTER TABLE — таблица
+    пересоздаётся заново по текущей модели (уже с составным
+    UNIQUE(name, scope) вместо старого UNIQUE(name)) с переносом всех
+    данных, тем же приёмом, что _ensure_nullable."""
+    from sqlalchemy import text
+
+    table = 'document_category'
+    with db.engine.connect() as conn:
+        exists = conn.execute(
+            text("SELECT name FROM sqlite_master WHERE type='table' AND name=:table"), {'table': table}
+        ).fetchone()
+        if not exists:
+            return
+
+        has_old_single_column_unique = False
+        for _, index_name, is_unique, *_rest in conn.execute(text(f"PRAGMA index_list('{table}')")).fetchall():
+            if not is_unique:
+                continue
+            columns = {
+                row[2] for row in conn.execute(text(f"PRAGMA index_info('{index_name}')")).fetchall()
+            }
+            if columns == {'name'}:
+                has_old_single_column_unique = True
+                break
+
+    if not has_old_single_column_unique:
+        return
+
+    with db.engine.begin() as conn:
+        conn.execute(text('PRAGMA foreign_keys=OFF'))
+        conn.execute(text(f'ALTER TABLE {table} RENAME TO {table}_old'))
+        db.metadata.tables[table].create(bind=conn)
+        conn.execute(text(
+            f'INSERT INTO {table} (id, name, scope) SELECT id, name, scope FROM {table}_old'
+        ))
+        conn.execute(text(f'DROP TABLE {table}_old'))
+        conn.execute(text('PRAGMA foreign_keys=ON'))
+    print(f'[auth] Таблица {table}: UNIQUE(name) заменён на UNIQUE(name, scope).')
+
+
 def ensure_schema():
     """Догоняет схему уже существующей базы под текущие модели.
 
@@ -106,6 +152,8 @@ def ensure_schema():
     _ensure_column(inspector, 'referee', 'is_active', 'BOOLEAN NOT NULL DEFAULT 1')
     _ensure_column(inspector, 'referee', 'municipality', 'VARCHAR(150)')
     _ensure_column(inspector, 'referee', 'specialization', 'VARCHAR(300)')
+    _ensure_column(inspector, 'document', 'region_id', 'INTEGER')
+    _ensure_document_category_scoped_unique()
 
 
 def seed_news_taxonomy():
@@ -228,6 +276,38 @@ def seed_equipment_document_taxonomy():
             'Программное обеспечение для секретариата',
         ):
             db.session.add(DocumentCategory(name=name, scope='оборудование_организаторы'))
+        db.session.commit()
+
+
+# Категории и их разделы бокового меню страницы конкретной региональной
+# федерации (scope='федерация') — общий для всех федераций список
+# категорий/разделов (см. routes/regions.py: FEDERATION_SIDEBAR_LAYOUT),
+# а сами загруженные документы у каждой федерации свои (Document.region_id).
+FEDERATION_DOCUMENT_TAXONOMY = [
+    ('Направления деятельности', []),
+    ('Основополагающие документы', [
+        'Уставные документы', 'Программы', 'Членство в ФРР', 'Государственная аккредитация',
+    ]),
+    ('Структура Федерации', [
+        'Положение о структуре Федерации', 'Местные отделения Федерации',
+        'Коллегия судей', 'Тренерский совет', 'Совет клубов',
+    ]),
+    ('Лицензирование и сертификация', []),
+    ('Положение о межмуниципальных и региональных спортивных соревнованиях по виду спорта «рафтинг»', []),
+]
+
+
+def seed_federation_document_taxonomy():
+    """Начальное заполнение категорий и разделов бокового меню страницы
+    конкретной федерации (scope='федерация') — тот же приём, что
+    seed_competition_document_taxonomy."""
+    if DocumentCategory.query.filter_by(scope='федерация').count() == 0:
+        for name, section_names in FEDERATION_DOCUMENT_TAXONOMY:
+            category = DocumentCategory(name=name, scope='федерация')
+            db.session.add(category)
+            db.session.flush()
+            for section_name in section_names:
+                db.session.add(DocumentSection(category_id=category.id, name=section_name))
         db.session.commit()
 
 

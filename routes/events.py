@@ -93,7 +93,13 @@ def documents():
     категорию из этого меню (Document.doc_category — совпадение по
     названию категории) и/или конкретный раздел внутри неё
     (Document.section_id) — раздел не обязателен, самой категории
-    достаточно."""
+    достаточно.
+
+    Имя категории уникально только в пределах своего scope (см.
+    DocumentCategory) — у страницы федерации (scope='федерация') есть
+    категории с такими же названиями, поэтому здесь дополнительно
+    исключаются документы, у которых задан region_id (те принадлежат
+    конкретной федерации, а не этой, общей для всего сайта, странице)."""
     categories = (
         DocumentCategory.query.filter_by(scope='мероприятия')
         .order_by(DocumentCategory.name)
@@ -111,7 +117,10 @@ def documents():
         if selected_category_id:
             selected_category = next((c for c in categories if c.id == selected_category_id), None)
 
-    query = Document.query.order_by(Document.uploaded_at.desc(), Document.title)
+    query = (
+        Document.query.filter(Document.region_id.is_(None))
+        .order_by(Document.uploaded_at.desc(), Document.title)
+    )
 
     if selected_section:
         documents_ = query.filter_by(section_id=selected_section.id).all()

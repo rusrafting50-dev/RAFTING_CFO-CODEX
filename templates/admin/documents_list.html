@@ -22,6 +22,7 @@
                         <th>Название</th>
                         <th>Категория</th>
                         <th>Раздел</th>
+                        <th>Федерация</th>
                         <th>Загружен</th>
                         {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
                     </tr>
@@ -32,6 +33,7 @@
                             <td>{{ document.title }}</td>
                             <td>{{ document.doc_category }}</td>
                             <td>{{ document.section.name if document.section else '' }}</td>
+                            <td>{{ document.region.name if document.region else '' }}</td>
                             <td>{{ document.uploaded_at.strftime('%d.%m.%Y') if document.uploaded_at else '' }}</td>
                             {% if current_user.role in ('admin', 'editor') %}
                                 <td>

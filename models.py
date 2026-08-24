@@ -182,14 +182,32 @@ class DocumentCategory(db.Model):
 
     scope разделяет один и тот же список категорий на независимые боковые
     меню — сейчас используется 'соревнования' (страница «Нормативные
-    документы» под Соревнования, competitions.documents). 'цфо' — то же
-    самое для бывшей страницы «Рафтинг ЦФО» (documents.index, страница
-    удалена), значение оставлено на случай будущей аналогичной страницы.
-    Раздел (DocumentSection) наследует scope родительской категории."""
+    документы» под Соревнования, competitions.documents), 'мероприятия',
+    'оборудование_спортсмены'/'оборудование_организаторы', 'федерация'
+    (страница конкретной региональной федерации, regions.documents —
+    там же общий список категорий/разделов, а сами документы у каждой
+    федерации свои, см. Document.region_id). 'цфо' — то же самое для
+    бывшей страницы «Рафтинг ЦФО» (documents.index, страница удалена),
+    значение оставлено на случай будущей аналогичной страницы.
+    Раздел (DocumentSection) наследует scope родительской категории.
+
+    name уникально только в пределах своего scope (не глобально) —
+    разным страницам нужны одинаково называющиеся категории (например,
+    «Основополагающие документы» есть и у Соревнований, и у страницы
+    федерации). Из-за этого все view, читающие Document.doc_category по
+    названию категории (competitions.documents/equipment,
+    events.documents, regions.documents), обязаны дополнительно
+    ограничивать выборку тем же признаком, что разделяет сами scope у
+    Document — то есть либо Document.region_id.is_(None) (для всех
+    scope, кроме 'федерация'), либо Document.region_id == region.id
+    (для 'федерация') — иначе одинаково названная категория из другого
+    scope перепутает документы между страницами."""
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
     scope = db.Column(db.String(30), nullable=False, default='цфо')
+
+    __table_args__ = (db.UniqueConstraint('name', 'scope', name='uq_document_category_name_scope'),)
 
 
 class DocumentSection(db.Model):
@@ -215,9 +233,17 @@ class Document(db.Model):
     doc_category = db.Column(db.String(50))  # см. DocumentCategory — список редактируется в админке
     file_path = db.Column(db.String(500))
     section_id = db.Column(db.Integer, db.ForeignKey('document_section.id'))  # см. DocumentSection, привязан к doc_category
+    # Только для документов страницы конкретной федерации (doc_category со
+    # scope='федерация') — категории/разделы там общие для всех федераций,
+    # а сами документы у каждой федерации свои, поэтому нужна ещё и
+    # привязка к конкретной RegionalFederation. Для остальных областей сайта
+    # (соревнования/мероприятия/оборудование) документы общие на всех, там
+    # region_id остаётся пустым.
+    region_id = db.Column(db.Integer, db.ForeignKey('regional_federation.id'))
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     section = db.relationship('DocumentSection')
+    region = db.relationship('RegionalFederation')
 
 
 class User(UserMixin, db.Model):
