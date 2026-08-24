@@ -2,7 +2,7 @@
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager
 
-from models import Document, DocumentCategory, DocumentSection, NewsCategory, NewsLevel, db, User
+from models import Document, DocumentCategory, DocumentSection, News, NewsCategory, NewsLevel, db, User
 
 login_manager = LoginManager()
 login_manager.login_view = 'admin.login'
@@ -171,13 +171,41 @@ def seed_news_taxonomy():
         # Значения совпадают с пунктами второй строки меню фильтра новостей
         # (routes/main.py: NEWS_MENU) — редактор выбирает категорию из этого
         # же списка в форме новости, поэтому текст должен быть один в один.
-        for name in ('Официально', 'Соревнования', 'Семинары', 'Люди и даты', 'Комитеты и комиссии'):
+        for name in ('Официально', 'Соревнования', 'Мероприятия', 'Люди и даты'):
             db.session.add(NewsCategory(name=name))
 
     if NewsLevel.query.count() == 0:
         for name in ('цфо', 'регион', 'отделение', 'клуб'):
             db.session.add(NewsLevel(name=name))
 
+    db.session.commit()
+
+
+def rename_seminar_news_category():
+    """Разовое переименование категории новостей «Семинары» в
+    «Мероприятия» — вторую строку меню фильтра новостей (routes/main.py:
+    NEWS_MENU) сделали одинаковой у ЦФО и Региона под этим новым именем,
+    а «Комитеты и комиссии» (была только у Региона) убрали из меню
+    совсем. Переименовывает и уже опубликованные новости (News.category
+    хранит название строкой, а не ссылкой — при переименовании
+    NewsCategory он сам не меняется), чтобы они остались доступны через
+    переименованный пункт меню. «Комитеты и комиссии» не трогает —
+    удаление/переименование категории безопасно для существующих
+    новостей (см. NewsCategory), но никакой готовой замены для нового
+    пункта меню для них нет, отвязывать от категории вручную не наше
+    решение."""
+    category = NewsCategory.query.filter_by(name='Семинары').first()
+    if not category:
+        return
+    if NewsCategory.query.filter_by(name='Мероприятия').first():
+        return
+    # LOWER() в SQLite не сворачивает регистр кириллицы — сравнение
+    # делается в Python, та же причина, что у фильтра новостей в
+    # routes/main.py: news().
+    for item in News.query.all():
+        if (item.category or '').strip().lower() == 'семинары':
+            item.category = 'Мероприятия'
+    category.name = 'Мероприятия'
     db.session.commit()
 
 
