@@ -2,7 +2,7 @@
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager
 
-from models import DocumentCategory, DocumentSection, NewsCategory, NewsLevel, db, User
+from models import Document, DocumentCategory, DocumentSection, NewsCategory, NewsLevel, db, User
 
 login_manager = LoginManager()
 login_manager.login_view = 'admin.login'
@@ -200,11 +200,43 @@ COMPETITION_DOCUMENT_TAXONOMY = [
         'Правила вида спорта «рафтинг»', 'Единая всероссийская спортивная классификация',
         'Спортивные судьи', 'Спортивная подготовка', 'Иное',
     ]),
-    ('Положение о межрегиональных и всероссийских спортивных соревнованиях по виду спорта «рафтинг»', []),
+    ('Положение о соревнованиях', []),
     ('Методические материалы', []),
     ('Календарный план', []),
     ('Документы WRF', []),
 ]
+
+# Прежнее название категории «Положение о соревнованиях» — нужно только
+# rename_competition_regulations_category(), чтобы разово переименовать
+# уже существующую категорию (и документы под ней) на уже работающих
+# сайтах, а не только в новых, которые ещё ни разу не сидировались.
+_OLD_COMPETITION_REGULATIONS_NAME = 'Положение о межрегиональных и всероссийских спортивных соревнованиях по виду спорта «рафтинг»'
+
+
+def rename_competition_regulations_category():
+    """Разовое переименование категории «Положение о межрегиональных и
+    всероссийских спортивных соревнованиях по виду спорта «рафтинг»»
+    (scope='соревнования') в короткое «Положение о соревнованиях» — на
+    неё теперь ведёт отдельная ссылка во второй строке меню страницы
+    «Спортивные соревнования» (competitions/calendar.html). Переносит и
+    уже загруженные документы (Document.doc_category хранит название
+    категории строкой, а не ссылкой — при переименовании категории он
+    сам не меняется). Не трогает ничего, если категория уже
+    переименована (обычный случай при повторных запусках) или названа
+    по-другому вручную."""
+    category = DocumentCategory.query.filter_by(
+        scope='соревнования', name=_OLD_COMPETITION_REGULATIONS_NAME,
+    ).first()
+    if not category:
+        return
+    if DocumentCategory.query.filter_by(scope='соревнования', name='Положение о соревнованиях').first():
+        return
+    Document.query.filter_by(doc_category=_OLD_COMPETITION_REGULATIONS_NAME).update(
+        {'doc_category': 'Положение о соревнованиях'}
+    )
+    category.name = 'Положение о соревнованиях'
+    db.session.commit()
+
 
 def ensure_competition_document_taxonomy():
     """Гарантирует, что все категории и разделы из COMPETITION_DOCUMENT_TAXONOMY

@@ -79,9 +79,18 @@ def calendar():
     )
     archive_years = [year - 1, year - 2, year - 3]
 
+    # Ссылка «Положение о соревнованиях» во второй строке меню ведёт на
+    # конкретную категорию страницы «Нормативные документы» (не на общий
+    # список без фильтра) — тогда заголовок «Все документы» на той
+    # странице меняется на название категории, как на странице
+    # федерации. См. auth.py: rename_competition_regulations_category.
+    regulations_category = DocumentCategory.query.filter_by(
+        scope='соревнования', name='Положение о соревнованиях',
+    ).first()
+
     return render_template(
         'competitions/calendar.html', competitions=competitions, year=year,
-        archive_years=archive_years,
+        archive_years=archive_years, regulations_category=regulations_category,
     )
 
 

@@ -11,7 +11,7 @@
         <div class="row g-4">
             <div class="col-lg-9">
                 <div class="news-search-row doc-search-panel mb-0">
-                    <h2 class="h5 mb-3">{{ (selected_section.name|cap_first) if selected_section else 'Все документы' }}</h2>
+                    <h2 class="h5 mb-3">{{ (selected_section.name|cap_first) if selected_section else ((selected_category.name|cap_first) if selected_category else 'Все документы') }}</h2>
                     <form method="get" action="{{ url_for('competitions.documents') }}" class="news-search-input-form">
                         {% if selected_section %}<input type="hidden" name="section" value="{{ selected_section.id }}">{% endif %}
                         <label class="news-search-input news-search-input-icon-right news-search-input-icon-lg news-search-input-icon-outline">

@@ -18,7 +18,7 @@
                         data-bs-target="#tab-forming" type="button" role="tab">Формирование календарного плана</button>
             </li>
             <li role="presentation">
-                <a href="{{ url_for('competitions.documents') }}">ПОЛОЖЕНИЕ О СОРЕВНОВАНИЯХ</a>
+                <a href="{{ url_for('competitions.documents', category=regulations_category.id) if regulations_category else url_for('competitions.documents') }}">Положение о соревнованиях</a>
             </li>
         </ul>
 
