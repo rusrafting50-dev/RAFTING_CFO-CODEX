@@ -71,24 +71,29 @@
                     {% set category_selected = (selected_section and selected_section.category_id == category.id)
                         or (selected_category and selected_category.id == category.id) %}
                     <div class="doc-category-item">
-                        <div class="doc-category-toggle {{ 'has-active' if category_selected }}">
-                            <a class="doc-category-toggle-link" href="{{ url_for('competitions.documents', category=category.id) }}">{{ category.name }}</a>
-                            <button type="button" class="doc-category-chevron-btn"
-                                    data-target="doc-cat-{{ category.id }}" aria-expanded="{{ 'true' if category_selected else 'false' }}"
-                                    aria-label="Показать разделы">
-                                <svg class="doc-category-chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
-                            </button>
-                        </div>
-                        <ul class="doc-section-list {{ 'is-open' if category_selected }}" id="doc-cat-{{ category.id }}">
-                            {% for section in category.sections %}
-                                <li>
-                                    <a class="{{ 'active' if selected_section and selected_section.id == section.id }}"
-                                       href="{{ url_for('competitions.documents', section=section.id) }}">{{ section.name }}</a>
-                                </li>
-                            {% else %}
-                                <li class="text-muted">Разделов нет</li>
-                            {% endfor %}
-                        </ul>
+                        {% if category.sections %}
+                            <div class="doc-category-toggle {{ 'has-active' if category_selected }}">
+                                <a class="doc-category-toggle-link" href="{{ url_for('competitions.documents', category=category.id) }}">{{ category.name }}</a>
+                                <button type="button" class="doc-category-chevron-btn"
+                                        data-target="doc-cat-{{ category.id }}" aria-expanded="{{ 'true' if category_selected else 'false' }}"
+                                        aria-label="Показать разделы">
+                                    <svg class="doc-category-chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4"/></svg>
+                                </button>
+                            </div>
+                            <ul class="doc-section-list {{ 'is-open' if category_selected }}" id="doc-cat-{{ category.id }}">
+                                {% for section in category.sections %}
+                                    <li>
+                                        <a class="{{ 'active' if selected_section and selected_section.id == section.id }}"
+                                           href="{{ url_for('competitions.documents', section=section.id) }}">{{ section.name }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            {# Категория без разделов — обычная ссылка-фильтр,
+                               без шеврона и пустой раскрывашки «Разделов нет». #}
+                            <a class="doc-category-toggle {{ 'has-active' if category_selected }}"
+                               href="{{ url_for('competitions.documents', category=category.id) }}">{{ category.name }}</a>
+                        {% endif %}
                     </div>
                 {% endfor %}
                     <a class="doc-category-all {{ 'has-active' if not selected_section and not selected_category }}" href="{{ url_for('competitions.documents') }}">Все</a>
