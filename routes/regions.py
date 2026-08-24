@@ -48,12 +48,14 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
     «Контакты» и «Все» (сбрасывает фильтр документов) — самыми
     последними.
 
-    Категории документов (scope='федерация') рендерятся как
+    Категории документов (scope='федерация') с разделами рендерятся как
     раскрывающиеся пункты со своими разделами внутри (kind='category') —
     тот же приём, что doc-category-panel на «Соревнования → Нормативные
-    документы»; функциональные разделы и «Контакты» — обычные ссылки
-    (kind='link'). Текущий пункт выводится не строкой списка, а
-    плашкой-заголовком (см. regions/_sidebar.html)."""
+    документы»; категории без единого раздела (например, «Направления
+    деятельности») — обычная ссылка-фильтр, без шеврона и пустой
+    раскрывашки, как и функциональные разделы и «Контакты» (kind='link').
+    Текущий пункт выводится не строкой списка, а плашкой-заголовком
+    (см. regions/_sidebar.html)."""
     fed_categories = {
         category.name: category
         for category in DocumentCategory.query.filter_by(scope='федерация').all()
@@ -72,6 +74,17 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
             category = fed_categories.get(key)
             if not category:
                 continue
+            category_url = url_for('regions.documents', region_id=region.id, category=category.id)
+            category_active = (
+                (active_category is not None and active_category.id == category.id)
+                or (active_doc_section is not None and active_doc_section.category_id == category.id)
+            )
+            if not category.sections:
+                # Категория без разделов — обычная ссылка-фильтр, без
+                # шеврона и пустой раскрывашки «Разделов нет» (Направления
+                # деятельности, Лицензирование и сертификация и т.п.).
+                items.append({'kind': 'link', 'label': category.name, 'url': category_url, 'active': category_active})
+                continue
             sections = [{
                 'label': doc_section.name,
                 'url': url_for('regions.documents', region_id=region.id, section=doc_section.id),
@@ -80,9 +93,8 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
             items.append({
                 'kind': 'category',
                 'label': category.name,
-                'url': url_for('regions.documents', region_id=region.id, category=category.id),
-                'active': (active_category is not None and active_category.id == category.id)
-                    or (active_doc_section is not None and active_doc_section.category_id == category.id),
+                'url': category_url,
+                'active': category_active,
                 'sections': sections,
             })
         else:
