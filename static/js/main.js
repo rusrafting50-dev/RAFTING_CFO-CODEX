@@ -343,3 +343,54 @@
         document.fonts.ready.then(fit);
     }
 })();
+
+// Логотип на баннере странице федерации/клуба (.fed-banner-logo img):
+// увеличиваем по высоте только длинные горизонтальные логотипы (ширина
+// файла минимум вдвое больше высоты) — именно такие в круглой
+// миниатюре карточки клуба сжимаются в едва заметную узкую полоску, а
+// на прямоугольном баннере под них есть место. Для них высота
+// подгоняется под 1/2 высоты баннера. Остальные логотипы (квадратные,
+// вертикальные, умеренно вытянутые) не трогаем — они и так помещаются
+// в круглой миниатюре нормально, растягивать их не нужно (см. пример:
+// широкий wordmark-логотип "Академия" растягивался почти на всю
+// ширину баннера при подгонке под 1/3 высоты для всех подряд —
+// компактный логотип "Раменский клуб туристов" в этом не нуждался).
+// Считаем по naturalWidth/naturalHeight — это соотношение сторон файла,
+// не зависит от того, как логотип отрисован сейчас.
+(function () {
+    var images = document.querySelectorAll('.fed-banner-logo img');
+    if (!images.length) {
+        return;
+    }
+
+    function apply(img) {
+        if (img.naturalWidth < img.naturalHeight * 2) {
+            return;
+        }
+        var banner = img.closest('.fed-banner');
+        if (!banner) {
+            return;
+        }
+        var target = banner.getBoundingClientRect().height / 2;
+        img.style.height = target + 'px';
+        img.style.width = 'auto';
+    }
+
+    images.forEach(function (img) {
+        if (img.complete && img.naturalWidth) {
+            apply(img);
+        } else {
+            img.addEventListener('load', function () {
+                apply(img);
+            });
+        }
+    });
+
+    window.addEventListener('resize', function () {
+        images.forEach(function (img) {
+            if (img.complete && img.naturalWidth) {
+                apply(img);
+            }
+        });
+    });
+})();
