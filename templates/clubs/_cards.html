@@ -41,11 +41,16 @@
                по максимуму, не трогая поле и остальные логотипы. */
             function fitLogo(img) {
                 var circle = img.closest('.club-card-logo');
-                if (!circle) return;
+                // Видимым логотип делаем только после расчёта (в каждой
+                // ветке ниже) — по умолчанию visibility: hidden в
+                // style.css, иначе виден «скачок»: сначала полноразмерный
+                // логотип 85.5% поля, потом резко уменьшается для тех
+                // картинок, что не помещались в круг.
+                if (!circle) { img.style.visibility = 'visible'; return; }
                 var size = circle.getBoundingClientRect().width;
                 var natW = img.naturalWidth;
                 var natH = img.naturalHeight;
-                if (!size || !natW || !natH) return;
+                if (!size || !natW || !natH) { img.style.visibility = 'visible'; return; }
 
                 var boxSide = size * 0.855;
                 var scaleToBox = Math.min(boxSide / natW, boxSide / natH);
@@ -63,6 +68,7 @@
                     img.style.width = '';
                     img.style.height = '';
                 }
+                img.style.visibility = 'visible';
             }
 
             function fitAll() {
@@ -74,6 +80,9 @@
                     fitLogo(img);
                 } else {
                     img.addEventListener('load', function () { fitLogo(img); });
+                    // Битая картинка не загрузится никогда — не оставляем
+                    // логотип невидимым навсегда.
+                    img.addEventListener('error', function () { img.style.visibility = 'visible'; });
                 }
             });
             window.addEventListener('resize', fitAll);

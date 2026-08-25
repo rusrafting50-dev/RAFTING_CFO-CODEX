@@ -364,16 +364,17 @@
     }
 
     function apply(img) {
-        if (img.naturalWidth < img.naturalHeight * 2) {
-            return;
-        }
         var banner = img.closest('.fed-banner');
-        if (!banner) {
-            return;
+        if (banner && img.naturalWidth >= img.naturalHeight * 2) {
+            var target = banner.getBoundingClientRect().height / 2;
+            img.style.height = target + 'px';
+            img.style.width = 'auto';
         }
-        var target = banner.getBoundingClientRect().height / 2;
-        img.style.height = target + 'px';
-        img.style.width = 'auto';
+        // Видимым делаем только здесь, уже после решения — нужный размер
+        // логотип получает раньше, чем зритель успевает его увидеть,
+        // без «скачка» между исходным и пересчитанным размером
+        // (visibility: hidden по умолчанию задан в style.css).
+        img.style.visibility = 'visible';
     }
 
     images.forEach(function (img) {
@@ -382,6 +383,11 @@
         } else {
             img.addEventListener('load', function () {
                 apply(img);
+            });
+            // Битая картинка не загрузится никогда — не оставляем логотип
+            // невидимым навсегда, снимаем visibility и в этом случае.
+            img.addEventListener('error', function () {
+                img.style.visibility = 'visible';
             });
         }
     });
