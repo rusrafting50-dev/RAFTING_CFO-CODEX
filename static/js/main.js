@@ -298,3 +298,48 @@
         });
     });
 })();
+
+// Название федерации в шапке (страница конкретной федерации,
+// .org-name-left .org-title) — логотип центрирован абсолютно по всей
+// шапке и не резервирует место в потоке, поэтому длинное название
+// ничем не ограничено и может залезать под логотип. Если натуральная
+// ширина названия не помещается до начала логотипа с отступом 16px,
+// уменьшаем шрифт ровно настолько, чтобы поместилось — вычисляется
+// один раз по соотношению доступной ширины к фактической (без цикла
+// "уменьшить -> перемерить"), поэтому не дёргается. Только на широких
+// экранах (>=992px) — на мобильной раскладке логотип не поверх текста
+// (см. media max-width: 991.98px в style.css), там текст просто
+// переносится по ширине контейнера как обычно.
+(function () {
+    var title = document.querySelector('.org-name-left .org-title');
+    var logoLink = document.querySelector('.logo-link');
+    if (!title || !logoLink) {
+        return;
+    }
+
+    function fit() {
+        if (window.innerWidth < 992) {
+            title.style.fontSize = '';
+            return;
+        }
+
+        // Сброс перед замером — иначе повторный вызов (resize) мерил бы
+        // уже уменьшенный текст вместо исходного.
+        title.style.fontSize = '';
+
+        var logoLeft = logoLink.getBoundingClientRect().left;
+        var titleRect = title.getBoundingClientRect();
+        var available = logoLeft - 16 - titleRect.left;
+
+        if (available > 0 && titleRect.width > available) {
+            var baseFontSize = parseFloat(window.getComputedStyle(title).fontSize);
+            title.style.fontSize = (baseFontSize * (available / titleRect.width)) + 'px';
+        }
+    }
+
+    fit();
+    window.addEventListener('resize', fit);
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(fit);
+    }
+})();
