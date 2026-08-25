@@ -8,7 +8,7 @@
 <h1 class="fed-page-title">
     <span class="fed-page-title-full">{{ region.name }}</span>
     {% if region.name_before_quote %}
-        <span class="fed-page-title-split" hidden>
+        <span class="fed-page-title-split">
             <span class="fed-page-title-line">{{ region.name_before_quote }}</span>
             <span class="fed-page-title-line">{{ region.name_quoted_full }}</span>
         </span>
@@ -23,11 +23,14 @@
         var full = title.querySelector('.fed-page-title-full');
 
         function apply() {
-            // display через .hidden (атрибут [hidden]) здесь не работает:
-            // .fed-page-title-full задаёт свой display: block с той же
-            // специфичностью, что и стандартное правило [hidden] { display:
-            // none } — и, идя позже в каскаде, перебивает его. Инлайновый
-            // style.display побеждает оба правила и работает надёжно.
+            // .fed-page-title-split скрыт по умолчанию через CSS
+            // (display: none в style.css), а не атрибут [hidden]: в
+            // современных браузерах правило [hidden] в UA-стилях идёт с
+            // !important и побеждает даже инлайновый style.display —
+            // элемент с атрибутом hidden было невозможно показать обратно
+            // через JS ниже (ни один из двух вариантов заголовка в итоге
+            // не показывался вообще, реальный баг, из-за которого длинные
+            // названия федераций пропадали целиком).
             full.style.display = 'block';
             split.style.display = 'none';
             var fits = full.scrollWidth <= full.clientWidth + 1;
