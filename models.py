@@ -309,7 +309,7 @@ class RegionalFederation(db.Model):
     # Общая информация под баннером на странице федерации.
     intro_text = db.Column(db.Text)
     # Разделы бокового меню «О федерации».
-    goals_text = db.Column(db.Text)  # Цели и задачи
+    goals_text = db.Column(db.Text)  # Направления деятельности
     contact_phone = db.Column(db.String(100))
     contact_email = db.Column(db.String(150))
     contact_address = db.Column(db.String(500))
