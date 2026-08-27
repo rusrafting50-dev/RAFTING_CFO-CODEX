@@ -512,6 +512,24 @@ def news_level_delete(level_id):
 
 # ---------- Документы ----------
 
+# Разделы сайта, для которых вообще показываются категории документов
+# (DocumentCategory.scope) — 'цфо' сюда не входит: это scope бывшей
+# страницы «Рафтинг ЦФО», удалённой со всей своей навигацией (см.
+# комментарий у DocumentCategory.scope в models.py), но оставленной
+# значением по умолчанию в модели на случай похожей страницы в будущем.
+# Именно то, что этот default молча подставлялся категории, для которой
+# админ не мог выбрать раздел явно (в форме «Новая категория» не было
+# самого поля выбора), и было причиной, почему новая категория никогда
+# не появлялась ни в одном настоящем меню сайта.
+DOCUMENT_CATEGORY_SCOPE_CHOICES = [
+    ('соревнования', 'Соревнования — Документы'),
+    ('мероприятия', 'Мероприятия — Методические материалы'),
+    ('оборудование_спортсмены', 'Оборудование и снаряжение — Для спортсменов'),
+    ('оборудование_организаторы', 'Оборудование и снаряжение — Для организаторов'),
+    ('федерация', 'Страница региональной федерации'),
+]
+
+
 def document_category_choices():
     """Категории для формы загрузки документа — с 2024 года название
     категории уникально только в пределах своего scope (см.
@@ -583,7 +601,10 @@ def document_taxonomy():
         .order_by(DocumentCategory.scope, DocumentCategory.sort_order, DocumentCategory.name)
         .all()
     )
-    return render_template('admin/document_taxonomy.html', active='documents', categories=categories)
+    return render_template(
+        'admin/document_taxonomy.html', active='documents', categories=categories,
+        scope_choices=DOCUMENT_CATEGORY_SCOPE_CHOICES,
+    )
 
 
 @bp.route('/documents/taxonomy/categories/reorder', methods=['POST'])
@@ -636,12 +657,19 @@ def document_section_reorder():
 @roles_required('admin', 'editor')
 def document_category_new():
     name = request.form.get('name', '').strip()
-    if not name:
-        flash('Название категории обязательно.', 'error')
-    elif any(c.name.lower() == name.lower() for c in DocumentCategory.query.all()):
-        flash('Такая категория уже есть.', 'error')
+    scope = request.form.get('scope', '').strip()
+    valid_scopes = {value for value, _ in DOCUMENT_CATEGORY_SCOPE_CHOICES}
+
+    if not name or scope not in valid_scopes:
+        flash('Название и раздел категории обязательны.', 'error')
+    elif any(c.name.lower() == name.lower() for c in DocumentCategory.query.filter_by(scope=scope).all()):
+        # Уникальность — в пределах scope (см. UniqueConstraint у
+        # DocumentCategory), а не глобально: та же по названию категория
+        # в другом разделе — не дубликат, а обычный случай («Основополагающие
+        # документы» есть и у Соревнований, и у страницы федерации).
+        flash('Такая категория в этом разделе уже есть.', 'error')
     else:
-        db.session.add(DocumentCategory(name=name))
+        db.session.add(DocumentCategory(name=name, scope=scope))
         db.session.commit()
         flash('Категория добавлена.', 'success')
     return redirect(url_for('admin.document_taxonomy'))
