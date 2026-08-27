@@ -5,6 +5,7 @@ from datetime import datetime
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, url_for
+from markupsafe import Markup, escape
 
 from auth import (
     create_default_admin, ensure_competition_document_taxonomy, ensure_schema,
@@ -154,6 +155,28 @@ def cap_first(value):
     return text[0].upper() + text[1:]
 
 
+_RICHTEXT_TAG_RE = re.compile(r'<[a-zA-Zа-яА-Я][^>]*>')
+
+
+def richtext_filter(value):
+    """Поля вроде RegionalFederation.intro_text/goals_text, Club.*_text,
+    News.content — раньше обычный текст (выводился экранированным, переносы
+    строк — через CSS white-space: pre-line у .fed-intro/.news-detail-content).
+    С добавлением редактора форматированного текста в панели управления
+    (static/js/main.js: initRichTextEditors) новые значения — уже HTML,
+    очищенный на сервере при сохранении (routes/admin.py через
+    richtext.sanitize_rich_text) — его можно выводить как есть, без
+    экранирования. Значение, сохранённое до этого изменения, тегов не
+    содержит — считаем его таким при отсутствии похожего на тег фрагмента
+    (не просто «есть ли в тексте символ <», чтобы не принять за HTML
+    случайное «x < 5» в старом тексте) и экранируем как раньше."""
+    if not value:
+        return ''
+    if _RICHTEXT_TAG_RE.search(value):
+        return Markup(value)
+    return Markup(escape(value))
+
+
 def media_thumb(path):
     """Путь к превью видео/фото: обычно локальный файл в static/uploads
     (резолвится как обычно), но для видео с YouTube-обложкой (см.
@@ -241,6 +264,7 @@ def create_app():
     app.jinja_env.filters['seminar_category_badge'] = seminar_category_badge
     app.jinja_env.filters['event_status_label'] = event_status_label
     app.jinja_env.filters['media_thumb'] = media_thumb
+    app.jinja_env.filters['richtext'] = richtext_filter
     app.jinja_env.filters['video_embed_url'] = video_embed_url
     app.jinja_env.tests['time_or_roman'] = is_time_or_roman
     app.jinja_env.globals['asset_url'] = asset_url

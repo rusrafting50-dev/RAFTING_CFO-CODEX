@@ -17,6 +17,7 @@ from models import (
     MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel, PartnerLogo,
     PasswordResetRequest, Referee, RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
 )
+from richtext import sanitize_rich_text
 from sync_to_referee import отправить_заявку, обновить_заявку
 from sync_to_corez import отправить_заявку_команды, обновить_заявку_команды
 from utils import safe_upload_filename
@@ -320,7 +321,7 @@ def news_new():
 
         news_item = News(
             title=title,
-            content=content,
+            content=sanitize_rich_text(content) or '',
             description=description or None,
             category=request.form.get('category') or None,
             level=request.form.get('level') or None,
@@ -372,7 +373,7 @@ def news_edit(news_id):
             )
 
         news_item.title = title
-        news_item.content = content
+        news_item.content = sanitize_rich_text(content) or ''
         news_item.description = description or None
         news_item.category = request.form.get('category') or None
         news_item.level = request.form.get('level') or None
@@ -976,8 +977,8 @@ def regions_new():
             subject_name=request.form.get('subject_name', '').strip() or None,
             logo_path=save_upload(logo) if logo and logo.filename else None,
             logo_white_path=save_upload(logo_white) if logo_white and logo_white.filename else None,
-            intro_text=request.form.get('intro_text', '').strip() or None,
-            goals_text=request.form.get('goals_text', '').strip() or None,
+            intro_text=sanitize_rich_text(request.form.get('intro_text', '')),
+            goals_text=sanitize_rich_text(request.form.get('goals_text', '')),
             contact_phone=request.form.get('contact_phone', '').strip() or None,
             contact_email=request.form.get('contact_email', '').strip() or None,
             contact_address=request.form.get('contact_address', '').strip() or None,
@@ -1019,8 +1020,8 @@ def regions_edit(region_id):
             region.logo_path = save_upload(logo)
         if logo_white and logo_white.filename:
             region.logo_white_path = save_upload(logo_white)
-        region.intro_text = request.form.get('intro_text', '').strip() or None
-        region.goals_text = request.form.get('goals_text', '').strip() or None
+        region.intro_text = sanitize_rich_text(request.form.get('intro_text', ''))
+        region.goals_text = sanitize_rich_text(request.form.get('goals_text', ''))
         region.contact_phone = request.form.get('contact_phone', '').strip() or None
         region.contact_email = request.form.get('contact_email', '').strip() or None
         region.contact_address = request.form.get('contact_address', '').strip() or None
@@ -1047,12 +1048,12 @@ def regions_delete(region_id):
 def _club_form_fields(club, form):
     club.name = form.get('name', '').strip()
     club.region_id = form.get('region_id', type=int)
-    club.intro_text = form.get('intro_text', '').strip() or None
-    club.leadership_text = form.get('leadership_text', '').strip() or None
-    club.coaches_text = form.get('coaches_text', '').strip() or None
-    club.athletes_text = form.get('athletes_text', '').strip() or None
-    club.schedule_text = form.get('schedule_text', '').strip() or None
-    club.achievements_text = form.get('achievements_text', '').strip() or None
+    club.intro_text = sanitize_rich_text(form.get('intro_text', ''))
+    club.leadership_text = sanitize_rich_text(form.get('leadership_text', ''))
+    club.coaches_text = sanitize_rich_text(form.get('coaches_text', ''))
+    club.athletes_text = sanitize_rich_text(form.get('athletes_text', ''))
+    club.schedule_text = sanitize_rich_text(form.get('schedule_text', ''))
+    club.achievements_text = sanitize_rich_text(form.get('achievements_text', ''))
     club.contact_phone = form.get('contact_phone', '').strip() or None
     club.contact_email = form.get('contact_email', '').strip() or None
     club.contact_address = form.get('contact_address', '').strip() or None

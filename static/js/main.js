@@ -400,3 +400,182 @@
         });
     });
 })();
+
+// Редактор форматированного текста в панели управления — заменяет
+// собой textarea[data-rich-text] (RegionalFederation.intro_text/
+// goals_text, Club.*_text, News.content) на contenteditable-поле с
+// тулбаром: заголовок/подзаголовок, выравнивание, отступ абзаца.
+// Исходная textarea не удаляется — только прячется (display: none,
+// поэтому продолжает участвовать в отправке формы под тем же name) и
+// на каждое изменение получает актуальный HTML из contenteditable.
+// Само значение на сервере ещё раз чистится (routes/admin.py через
+// richtext.sanitize_rich_text) — доверять тому, что пришло в
+// POST-запросе, нельзя, даже если его собрал этот же редактор.
+(function () {
+    var textareas = document.querySelectorAll('textarea[data-rich-text]');
+    if (!textareas.length) {
+        return;
+    }
+    // Иначе Enter в contenteditable у части браузеров создаёт <div>
+    // вместо <p> — с <p> предсказуемо работает и логика отступа/
+    // выравнивания ниже (она берёт блоки — прямые дети редактора), и
+    // серверная санитизация (richtext.py разрешает только p/h2/h3/br).
+    document.execCommand('defaultParagraphSeparator', false, 'p');
+
+    var INDENT_STEP = 40;
+    var MAX_INDENT = 160;
+    var HEADING_OPTIONS = [
+        ['P', 'Обычный текст'],
+        ['H2', 'Заголовок'],
+        ['H3', 'Подзаголовок'],
+    ];
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Значение, сохранённое до появления этого редактора, — обычный
+    // текст (в нём нет тегов) — оборачиваем в один абзац с <br> вместо
+    // переносов строк, чтобы визуально осталось как было (переносы
+    // строк, не пустые отступы между «абзацами»), но при этом контент
+    // сразу стал понятной редактору структурой (блок, к которому можно
+    // применить заголовок/выравнивание/отступ).
+    function toEditableHtml(value) {
+        if (!value) {
+            return '';
+        }
+        if (/<[a-zA-Zа-яА-Я][^>]*>/.test(value)) {
+            return value;
+        }
+        return '<p>' + value.split(/\r\n|\r|\n/).map(escapeHtml).join('<br>') + '</p>';
+    }
+
+    // Блоки (прямые дети редактора — p/h2/h3), затронутые текущим
+    // выделением — к ним применяется отступ. Если по каким-то причинам
+    // выделения нет (редактор ещё пуст, фокуса не было), откатываемся
+    // на первый блок, чтобы кнопки не оказывались просто нерабочими.
+    function selectedBlocks(editor) {
+        var selection = window.getSelection();
+        var blocks = [];
+        if (selection.rangeCount) {
+            var range = selection.getRangeAt(0);
+            Array.prototype.forEach.call(editor.children, function (node) {
+                if (range.intersectsNode(node)) {
+                    blocks.push(node);
+                }
+            });
+        }
+        if (!blocks.length && editor.firstElementChild) {
+            blocks.push(editor.firstElementChild);
+        }
+        return blocks;
+    }
+
+    function buildEditor(textarea) {
+        var wrapper = document.createElement('div');
+        wrapper.className = 'rich-text-editor';
+
+        var toolbar = document.createElement('div');
+        toolbar.className = 'rich-text-toolbar';
+
+        var editor = document.createElement('div');
+        editor.className = 'rich-text-editable form-control';
+        editor.contentEditable = 'true';
+
+        function sync() {
+            textarea.value = editor.innerHTML;
+        }
+
+        function toolbarAction(action) {
+            editor.focus();
+            action();
+            sync();
+        }
+
+        var headingSelect = document.createElement('select');
+        headingSelect.className = 'form-select form-select-sm rich-text-toolbar-select';
+        headingSelect.title = 'Заголовок';
+        HEADING_OPTIONS.forEach(function (item) {
+            var option = document.createElement('option');
+            option.value = item[0];
+            option.textContent = item[1];
+            headingSelect.appendChild(option);
+        });
+        headingSelect.addEventListener('mousedown', function () {
+            // Клик по <select> сам по себе фокус с редактора не снимает
+            // до открытия списка — без явного focus() тут execCommand
+            // на change сработал бы уже без выделения в редакторе.
+            editor.focus();
+        });
+        headingSelect.addEventListener('change', function () {
+            toolbarAction(function () {
+                document.execCommand('formatBlock', false, headingSelect.value);
+            });
+        });
+        toolbar.appendChild(headingSelect);
+
+        function addButton(label, title, action) {
+            var button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-outline-secondary btn-sm';
+            button.textContent = label;
+            button.title = title;
+            // mousedown, а не click: click срабатывает после mouseup,
+            // к этому моменту contenteditable уже потерял выделение
+            // текста (фокус ушёл на кнопку) — execCommand отработал бы
+            // без выделения. preventDefault здесь же не даёт кнопке
+            // забрать фокус у редактора.
+            button.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+                toolbarAction(action);
+            });
+            toolbar.appendChild(button);
+        }
+
+        addButton('По левому краю', 'Выравнивание по левому краю', function () {
+            document.execCommand('justifyLeft');
+        });
+        addButton('По центру', 'Выравнивание по центру', function () {
+            document.execCommand('justifyCenter');
+        });
+        addButton('По правому краю', 'Выравнивание по правому краю', function () {
+            document.execCommand('justifyRight');
+        });
+        addButton('Отступ −', 'Уменьшить отступ абзаца', function () {
+            selectedBlocks(editor).forEach(function (block) {
+                var current = parseInt(block.style.marginLeft, 10) || 0;
+                var next = Math.max(0, current - INDENT_STEP);
+                block.style.marginLeft = next ? next + 'px' : '';
+            });
+        });
+        addButton('Отступ +', 'Увеличить отступ абзаца', function () {
+            selectedBlocks(editor).forEach(function (block) {
+                var current = parseInt(block.style.marginLeft, 10) || 0;
+                var next = Math.min(MAX_INDENT, current + INDENT_STEP);
+                block.style.marginLeft = next + 'px';
+            });
+        });
+
+        editor.innerHTML = toEditableHtml(textarea.value);
+        editor.addEventListener('input', sync);
+        editor.addEventListener('blur', sync);
+        sync();
+
+        wrapper.appendChild(toolbar);
+        wrapper.appendChild(editor);
+        textarea.style.display = 'none';
+        textarea.parentNode.insertBefore(wrapper, textarea);
+
+        var form = textarea.closest('form');
+        if (form) {
+            // На случай, если ни одно событие редактора не долетело
+            // (например, правку отменили сразу после фокуса) — перед
+            // отправкой формы значение синхронизируется в любом случае.
+            form.addEventListener('submit', sync);
+        }
+    }
+
+    textareas.forEach(buildEditor);
+})();

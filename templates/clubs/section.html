@@ -35,7 +35,7 @@
                                 'achievements': club.achievements_text,
                             }[section] %}
                             {% if section_text %}
-                                <div class="fed-intro">{{ section_text }}</div>
+                                <div class="fed-intro">{{ section_text|richtext }}</div>
                             {% else %}
                                 <p class="text-muted mb-0">Материалы пока не добавлены.</p>
                             {% endif %}

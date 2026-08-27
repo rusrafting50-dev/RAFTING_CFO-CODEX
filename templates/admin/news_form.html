@@ -16,13 +16,18 @@
             <label for="description" class="form-label">Описание новости</label>
             <textarea class="form-control" id="description" name="description" rows="3">{{ (news.description or '') if news else '' }}</textarea>
             <div class="form-text">
-                Краткое описание для карточки новости (выводится после заголовка). Если оставить
+                Краткое описание для карточки новости (выводится после заголовка) и для ссылки
+                на новость в соцсетях/поиске — обычный текст, без форматирования. Если оставить
                 пустым, на карточке будет показан обрезанный текст новости.
             </div>
         </div>
         <div class="mb-3">
             <label for="content" class="form-label">Текст новости</label>
-            <textarea class="form-control" id="content" name="content" rows="6" required>{{ news.content if news else '' }}</textarea>
+            <!-- required снят: поле скрывается редактором форматированного текста
+                 (static/js/main.js), а скрытое обязательное поле браузер не может
+                 показать пользователю при неудачной валидации — пустой текст и так
+                 отклоняется на сервере (см. routes/admin.py: news_new/news_edit). -->
+            <textarea class="form-control" id="content" name="content" rows="6" data-rich-text="1">{{ news.content if news else '' }}</textarea>
         </div>
         <div class="mb-3">
             <label for="image" class="form-label">Фотография</label>

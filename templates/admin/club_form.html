@@ -39,27 +39,27 @@
         </div>
         <div class="mb-3">
             <label for="intro_text" class="form-label">Общая информация (на странице клуба, под баннером)</label>
-            <textarea class="form-control" id="intro_text" name="intro_text" rows="4">{{ club.intro_text or '' if club else '' }}</textarea>
+            <textarea class="form-control" id="intro_text" name="intro_text" rows="4" data-rich-text="1">{{ club.intro_text or '' if club else '' }}</textarea>
         </div>
         <div class="mb-3">
             <label for="leadership_text" class="form-label">Руководство</label>
-            <textarea class="form-control" id="leadership_text" name="leadership_text" rows="3">{{ club.leadership_text or '' if club else '' }}</textarea>
+            <textarea class="form-control" id="leadership_text" name="leadership_text" rows="3" data-rich-text="1">{{ club.leadership_text or '' if club else '' }}</textarea>
         </div>
         <div class="mb-3">
             <label for="coaches_text" class="form-label">Тренеры</label>
-            <textarea class="form-control" id="coaches_text" name="coaches_text" rows="3">{{ club.coaches_text or '' if club else '' }}</textarea>
+            <textarea class="form-control" id="coaches_text" name="coaches_text" rows="3" data-rich-text="1">{{ club.coaches_text or '' if club else '' }}</textarea>
         </div>
         <div class="mb-3">
             <label for="athletes_text" class="form-label">Спортсмены</label>
-            <textarea class="form-control" id="athletes_text" name="athletes_text" rows="3">{{ club.athletes_text or '' if club else '' }}</textarea>
+            <textarea class="form-control" id="athletes_text" name="athletes_text" rows="3" data-rich-text="1">{{ club.athletes_text or '' if club else '' }}</textarea>
         </div>
         <div class="mb-3">
             <label for="schedule_text" class="form-label">Расписание занятий</label>
-            <textarea class="form-control" id="schedule_text" name="schedule_text" rows="3">{{ club.schedule_text or '' if club else '' }}</textarea>
+            <textarea class="form-control" id="schedule_text" name="schedule_text" rows="3" data-rich-text="1">{{ club.schedule_text or '' if club else '' }}</textarea>
         </div>
         <div class="mb-3">
             <label for="achievements_text" class="form-label">Достижения</label>
-            <textarea class="form-control" id="achievements_text" name="achievements_text" rows="3">{{ club.achievements_text or '' if club else '' }}</textarea>
+            <textarea class="form-control" id="achievements_text" name="achievements_text" rows="3" data-rich-text="1">{{ club.achievements_text or '' if club else '' }}</textarea>
         </div>
         <h2 class="h6 mb-3">Контакты</h2>
         <div class="row mb-3">

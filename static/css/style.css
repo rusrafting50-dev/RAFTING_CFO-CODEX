@@ -2600,6 +2600,33 @@ footer hr {
     line-height: 1.6;
 }
 
+/* Заголовки/абзацы, расставленные редактором форматированного текста в
+   панели управления (static/js/main.js, textarea[data-rich-text]) —
+   общий вид для всех мест вывода такого текста на сайте (.fed-intro,
+   .news-detail-content). text-align/margin-left у конкретных
+   абзацев — инлайновый style от самого редактора, тут заданы только
+   размер/отступы самих тегов, которые редактор не трогает. */
+.fed-intro h2, .news-detail-content h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 12px;
+}
+
+.fed-intro h3, .news-detail-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.fed-intro p, .news-detail-content p {
+    margin: 0 0 12px;
+}
+
+.fed-intro p:last-child, .fed-intro h2:last-child, .fed-intro h3:last-child,
+.news-detail-content p:last-child, .news-detail-content h2:last-child, .news-detail-content h3:last-child {
+    margin-bottom: 0;
+}
+
 /* Белая карточка вокруг текста под баннером (детальная страница) или
    под заголовком раздела (страницы разделов) — тот же приём, что у
    белых панелей на других страницах сайта. */
@@ -2820,4 +2847,55 @@ table.table-zebra tbody tr:nth-child(even) {
 
 .video-lightbox-link:hover {
     text-decoration: underline;
+}
+
+/* Редактор форматированного текста в панели управления (static/js/main.js —
+   заменяет собой textarea[data-rich-text]). Тулбар — обычные Bootstrap-
+   кнопки/select, contenteditable-поле оформлено под тот же вид, что и
+   form-control у обычных textarea, чтобы визуально не выделялось среди
+   остальных полей формы. */
+.rich-text-editor {
+    margin-bottom: 0;
+}
+
+.rich-text-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.rich-text-toolbar-select {
+    width: auto;
+}
+
+.rich-text-editable {
+    min-height: 120px;
+    overflow-y: auto;
+}
+
+.rich-text-editable:focus {
+    outline: 0;
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.rich-text-editable h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 12px;
+}
+
+.rich-text-editable h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.rich-text-editable p {
+    margin: 0 0 12px;
+}
+
+.rich-text-editable p:last-child, .rich-text-editable h2:last-child, .rich-text-editable h3:last-child {
+    margin-bottom: 0;
 }

@@ -25,7 +25,7 @@
                     <div class="fed-text-block">
                         {% if section == 'goals' %}
                             {% if region.goals_text %}
-                                <div class="fed-intro">{{ region.goals_text }}</div>
+                                <div class="fed-intro">{{ region.goals_text|richtext }}</div>
                             {% else %}
                                 <p class="text-muted mb-0">Материалы пока не добавлены.</p>
                             {% endif %}

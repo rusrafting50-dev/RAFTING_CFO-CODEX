@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}{{ item.title }} — Федерация рафтинга ЦФО{% endblock %}
-{% block description %}{{ (item.description or item.content)[:160] }}{% endblock %}
+{% block description %}{{ ((item.description or item.content)|striptags)[:160] }}{% endblock %}
 
 {% block content %}
     <div class="container py-5">
@@ -27,7 +27,7 @@
                     {% endif %}
 
                     <h1 class="news-detail-title">{{ item.title }}</h1>
-                    <div class="news-detail-content">{{ item.content }}</div>
+                    <div class="news-detail-content">{{ item.content|richtext }}</div>
 
                     {% if item.gallery_images %}
                         <div class="news-gallery">

@@ -50,11 +50,11 @@
         </div>
         <div class="mb-3">
             <label for="intro_text" class="form-label">Общая информация (на странице федерации, под баннером)</label>
-            <textarea class="form-control" id="intro_text" name="intro_text" rows="4">{{ region.intro_text or '' if region else '' }}</textarea>
+            <textarea class="form-control" id="intro_text" name="intro_text" rows="4" data-rich-text="1">{{ region.intro_text or '' if region else '' }}</textarea>
         </div>
         <div class="mb-3">
             <label for="goals_text" class="form-label">Направления деятельности</label>
-            <textarea class="form-control" id="goals_text" name="goals_text" rows="4">{{ region.goals_text or '' if region else '' }}</textarea>
+            <textarea class="form-control" id="goals_text" name="goals_text" rows="4" data-rich-text="1">{{ region.goals_text or '' if region else '' }}</textarea>
         </div>
         <h2 class="h6 mb-3">Контакты</h2>
         <div class="row mb-3">

@@ -19,7 +19,7 @@
 
                 <div class="fed-text-block">
                     {% if club.intro_text %}
-                        <div class="fed-intro">{{ club.intro_text }}</div>
+                        <div class="fed-intro">{{ club.intro_text|richtext }}</div>
                     {% else %}
                         <p class="text-muted mb-0">Общая информация о клубе пока не добавлена.</p>
                     {% endif %}

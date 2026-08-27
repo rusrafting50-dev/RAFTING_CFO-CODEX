@@ -21,7 +21,7 @@
                                     <a class="news-row-text-link" href="{{ url_for('main.news_detail', news_id=item.id) }}">
                                         <p class="news-row-date">{{ item.published_at|ru_date }}</p>
                                         <h2 class="news-row-title">{{ item.title }}</h2>
-                                        {% set excerpt = item.description or item.content %}
+                                        {% set excerpt = (item.description or item.content)|striptags %}
                                         <p class="news-row-excerpt">{{ excerpt[:220] }}{% if excerpt|length > 220 %}…{% endif %}</p>
                                     </a>
                                     <div class="news-row-tags">
