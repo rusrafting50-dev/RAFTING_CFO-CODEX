@@ -404,7 +404,8 @@
 // Редактор форматированного текста в панели управления — заменяет
 // собой textarea[data-rich-text] (RegionalFederation.intro_text/
 // goals_text, Club.*_text, News.content) на contenteditable-поле с
-// тулбаром: заголовок/подзаголовок, выравнивание, отступ абзаца.
+// тулбаром: заголовок/подзаголовок, полужирный/курсив, выравнивание
+// (включая по ширине), отступ абзаца.
 // Исходная textarea не удаляется — только прячется (display: none,
 // поэтому продолжает участвовать в отправке формы под тем же name) и
 // на каждое изменение получает актуальный HTML из contenteditable.
@@ -444,7 +445,15 @@
     // применить заголовок/выравнивание/отступ).
     function toEditableHtml(value) {
         if (!value) {
-            return '';
+            // Не оставляем редактор совсем пустым (без единого блочного
+            // элемента) — иначе первый же символ, набранный пользователем,
+            // ложится прямо в контейнер редактора без обёртки <p>, и
+            // execCommand('justifyFull')/formatBlock, встретив такое
+            // выравнивание/заголовок позже, сами оборачивают текст в
+            // блок не совсем чисто (Chromium попутно добавляет лишний
+            // инлайновый style вроде font-size). Пустой абзац с самого
+            // начала даёт предсказуемую структуру для всех команд тулбара.
+            return '<p><br></p>';
         }
         if (/<[a-zA-Zа-яА-Я][^>]*>/.test(value)) {
             return value;
@@ -485,7 +494,13 @@
         editor.contentEditable = 'true';
 
         function sync() {
-            textarea.value = editor.innerHTML;
+            // Пустой абзац-заглушка (см. toEditableHtml) не должен
+            // притворяться сохранённым текстом — если пользователь ничего
+            // не набрал (или стёр всё обратно), в textarea, а значит и в
+            // БД, должна попасть пустая строка, а не «<p><br></p>»/пустые
+            // теги, которые прошли бы проверку {% if поле %} в шаблонах
+            // как заполненное значение.
+            textarea.value = editor.textContent.trim() ? editor.innerHTML : '';
         }
 
         function toolbarAction(action) {
@@ -532,7 +547,17 @@
                 toolbarAction(action);
             });
             toolbar.appendChild(button);
+            return button;
         }
+
+        var boldButton = addButton('Ж', 'Полужирный', function () {
+            document.execCommand('bold');
+        });
+        boldButton.style.fontWeight = 'bold';
+        var italicButton = addButton('К', 'Курсив', function () {
+            document.execCommand('italic');
+        });
+        italicButton.style.fontStyle = 'italic';
 
         addButton('По левому краю', 'Выравнивание по левому краю', function () {
             document.execCommand('justifyLeft');
@@ -542,6 +567,9 @@
         });
         addButton('По правому краю', 'Выравнивание по правому краю', function () {
             document.execCommand('justifyRight');
+        });
+        addButton('По ширине', 'Выравнивание по ширине', function () {
+            document.execCommand('justifyFull');
         });
         addButton('Отступ −', 'Уменьшить отступ абзаца', function () {
             selectedBlocks(editor).forEach(function (block) {
