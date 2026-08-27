@@ -40,8 +40,24 @@
             <div class="form-text">Только для категорий страницы конкретной федерации — какой федерации принадлежит документ.</div>
         </div>
         <div class="mb-3">
-            <label for="file" class="form-label">Файл (PDF, DOCX){{ ' — оставьте пустым, чтобы не менять' if document }}</label>
-            <input type="file" class="form-control" id="file" name="file" accept=".pdf,.docx" {{ 'required' if not document }}>
+            <label class="form-label d-block">Что прикрепить</label>
+            <div class="btn-group" role="group">
+                <input type="radio" class="btn-check" name="attachment_type" id="attachment-file" value="file"
+                       {{ 'checked' if not (document and document.link_url) }} autocomplete="off">
+                <label class="btn btn-outline-secondary btn-sm" for="attachment-file">Файл</label>
+                <input type="radio" class="btn-check" name="attachment_type" id="attachment-link" value="link"
+                       {{ 'checked' if document and document.link_url }} autocomplete="off">
+                <label class="btn btn-outline-secondary btn-sm" for="attachment-link">Ссылка</label>
+            </div>
+        </div>
+        <div class="mb-3" id="file-field">
+            <label for="file" class="form-label">Файл (PDF, DOCX){{ ' — оставьте пустым, чтобы не менять' if document and document.file_path }}</label>
+            <input type="file" class="form-control" id="file" name="file" accept=".pdf,.docx">
+        </div>
+        <div class="mb-3" id="link-field" hidden>
+            <label for="link_url" class="form-label">Ссылка</label>
+            <input type="url" class="form-control" id="link_url" name="link_url" placeholder="https://..."
+                   value="{{ document.link_url if document else '' }}">
         </div>
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">{{ 'Сохранить' if document else 'Загрузить' }}</button>
@@ -85,6 +101,29 @@
             });
             rebuildSections();
             toggleRegionField();
+
+            // Файл/Ссылка — взаимоисключающие поля: скрытое ещё и
+            // disabled, чтобы не улетело в POST вместе с выбранным
+            // вариантом (иначе на сервере пришлось бы выдумывать, какое
+            // из двух непустых значений главнее).
+            var fileRadio = document.getElementById('attachment-file');
+            var linkRadio = document.getElementById('attachment-link');
+            var fileField = document.getElementById('file-field');
+            var linkField = document.getElementById('link-field');
+            var fileInput = document.getElementById('file');
+            var linkInput = document.getElementById('link_url');
+
+            function applyAttachmentType() {
+                var isLink = linkRadio.checked;
+                fileField.hidden = isLink;
+                linkField.hidden = !isLink;
+                fileInput.disabled = isLink;
+                linkInput.disabled = !isLink;
+            }
+
+            fileRadio.addEventListener('change', applyAttachmentType);
+            linkRadio.addEventListener('change', applyAttachmentType);
+            applyAttachmentType();
         })();
     </script>
 {% endblock %}

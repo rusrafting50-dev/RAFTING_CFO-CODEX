@@ -245,6 +245,11 @@ class Document(db.Model):
     title = db.Column(db.String(255), nullable=False)
     doc_category = db.Column(db.String(50))  # см. DocumentCategory — список редактируется в админке
     file_path = db.Column(db.String(500))
+    # Вместо загруженного файла в панели управления можно указать внешнюю
+    # ссылку — тогда file_path остаётся пустым. Ровно одно из двух должно
+    # быть заполнено (проверяется в routes/admin.py, не на уровне БД —
+    # там же, где остальные подобные проверки по этой таблице).
+    link_url = db.Column(db.String(1000))
     section_id = db.Column(db.Integer, db.ForeignKey('document_section.id'))  # см. DocumentSection, привязан к doc_category
     # Только для документов страницы конкретной федерации (doc_category со
     # scope='федерация') — категории/разделы там общие для всех федераций,

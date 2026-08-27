@@ -24,22 +24,21 @@
                 {% if documents %}
                     <div id="doc-list-{{ category.id }}" class="mb-4">
                         {% for document in documents %}
-                            {% set ext = document.file_path|file_extension %}
-                            {% set icon_file = 'pdf_icon_48.png' if ext == 'pdf' else ('word_icon_48.png' if ext in ('doc', 'docx') else ('excel_icon_48.png' if ext in ('xls', 'xlsx') else None)) %}
+                            {% set icon_file = document|document_icon %}
                             <div class="doc-list-item" id="doc-{{ document.id }}">
                                 <p class="news-row-date">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</p>
                                 <div class="d-flex justify-content-between align-items-start gap-3">
                                     <div>
                                         <h3 class="doc-list-title">{{ document.title }}</h3>
                                         <button type="button" class="btn btn-sm btn-primary doc-copy-link"
-                                                data-url="{{ url_for('static', filename=document.file_path, _external=True) }}">
+                                                data-url="{{ document|document_href(external=True) }}">
                                             Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
                                         </button>
                                     </div>
-                                    <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=document.file_path) }}"
+                                    <a class="doc-open-link text-center text-nowrap" href="{{ document|document_href }}"
                                        target="_blank" rel="noopener">
                                         {% if icon_file %}
-                                            <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt=".{{ ext }}">
+                                            <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt="{{ 'Ссылка' if document.link_url else ('.' + (document.file_path|file_extension)) }}">
                                         {% else %}
                                             <svg class="doc-file-icon-generic" viewBox="0 0 24 24" aria-hidden="true">
                                                 <path d="M6 2h8l5 5v15H6z" fill="#8a9199"/>

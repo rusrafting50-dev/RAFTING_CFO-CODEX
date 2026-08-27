@@ -145,6 +145,35 @@ def file_extension(path):
     return path.rsplit('.', 1)[1].lower()
 
 
+_DOCUMENT_EXTENSION_ICONS = {
+    'pdf': 'pdf_icon_48.png',
+    'doc': 'word_icon_48.png',
+    'docx': 'word_icon_48.png',
+    'xls': 'excel_icon_48.png',
+    'xlsx': 'excel_icon_48.png',
+}
+
+
+def document_icon(document):
+    """Значок карточки документа на страницах со списком документов —
+    по расширению файла (см. _DOCUMENT_EXTENSION_ICONS), а для документа
+    со ссылкой вместо файла (Document.link_url, панель управления) —
+    всегда link_icon_48.png, независимо от того, что за страница на том
+    конце ссылки. None — нет иконки под расширение, значит в шаблоне
+    используется общая заглушка."""
+    if document.link_url:
+        return 'link_icon_48.png'
+    return _DOCUMENT_EXTENSION_ICONS.get(file_extension(document.file_path))
+
+
+def document_href(document, external=False):
+    """Куда ведёт открытие/скачивание документа — внешняя ссылка как
+    есть (Document.link_url), либо обычный путь до файла в static/uploads."""
+    if document.link_url:
+        return document.link_url
+    return url_for('static', filename=document.file_path, _external=external)
+
+
 def cap_first(value):
     """Первая буква прописная, остальной текст не трогаем (в отличие от
     str.capitalize(), который заодно понижает регистр всего остального —
@@ -261,6 +290,8 @@ def create_app():
     app.jinja_env.filters['cap_first'] = cap_first
     app.jinja_env.filters['ru_plural'] = ru_plural
     app.jinja_env.filters['file_extension'] = file_extension
+    app.jinja_env.filters['document_icon'] = document_icon
+    app.jinja_env.filters['document_href'] = document_href
     app.jinja_env.filters['seminar_category_badge'] = seminar_category_badge
     app.jinja_env.filters['event_status_label'] = event_status_label
     app.jinja_env.filters['media_thumb'] = media_thumb

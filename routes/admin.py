@@ -140,6 +140,20 @@ def allowed_document(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_DOCUMENT_EXTENSIONS
 
 
+def looks_like_url(value):
+    return value.startswith('http://') or value.startswith('https://')
+
+
+def delete_document_file(document):
+    """Удаляет файл документа с диска, если он был (у документа-ссылки
+    file_path пустой — нечего удалять)."""
+    if not document.file_path:
+        return
+    path = os.path.join(current_app.root_path, 'static', document.file_path)
+    if os.path.exists(path):
+        os.remove(path)
+
+
 def allowed_image(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
 
@@ -686,31 +700,45 @@ def documents_new():
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         file = request.files.get('file')
+        has_file = bool(file and file.filename)
+        link_url = request.form.get('link_url', '').strip()
 
-        if not title or not file or file.filename == '':
-            flash('Название и файл документа обязательны.', 'error')
+        if not title or (not has_file and not link_url):
+            flash('Название и файл или ссылка на документ обязательны.', 'error')
             return render_template('admin/document_form.html', **form_kwargs)
 
-        if not allowed_document(file.filename):
-            flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
+        if has_file and link_url:
+            flash('Выберите файл или ссылку — не то и другое сразу.', 'error')
             return render_template('admin/document_form.html', **form_kwargs)
 
-        filename = safe_upload_filename(file.filename)
-        unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
-        upload_dir = current_app.config['UPLOAD_FOLDER']
-        os.makedirs(upload_dir, exist_ok=True)
-        file.save(os.path.join(upload_dir, unique_name))
+        if link_url and not looks_like_url(link_url):
+            flash('Ссылка должна начинаться с http:// или https://.', 'error')
+            return render_template('admin/document_form.html', **form_kwargs)
+
+        file_path = None
+        if has_file:
+            if not allowed_document(file.filename):
+                flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
+                return render_template('admin/document_form.html', **form_kwargs)
+
+            filename = safe_upload_filename(file.filename)
+            unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
+            upload_dir = current_app.config['UPLOAD_FOLDER']
+            os.makedirs(upload_dir, exist_ok=True)
+            file.save(os.path.join(upload_dir, unique_name))
+            file_path = f"uploads/{unique_name}"
 
         document = Document(
             title=title,
             doc_category=document_category_name_from_form(),
             section_id=request.form.get('section_id', type=int),
             region_id=request.form.get('region_id', type=int),
-            file_path=f"uploads/{unique_name}",
+            file_path=file_path,
+            link_url=link_url or None,
         )
         db.session.add(document)
         db.session.commit()
-        flash('Документ загружен.', 'success')
+        flash('Документ добавлен.', 'success')
         return redirect(url_for('admin.documents_list'))
 
     return render_template('admin/document_form.html', **form_kwargs)
@@ -732,12 +760,22 @@ def documents_edit(document_id):
     if request.method == 'POST':
         title = request.form.get('title', '').strip()
         file = request.files.get('file')
+        has_file = bool(file and file.filename)
+        link_url = request.form.get('link_url', '').strip()
 
         if not title:
             flash('Название документа обязательно.', 'error')
             return render_template('admin/document_form.html', **form_kwargs)
 
-        if file and file.filename:
+        if has_file and link_url:
+            flash('Выберите файл или ссылку — не то и другое сразу.', 'error')
+            return render_template('admin/document_form.html', **form_kwargs)
+
+        if link_url and not looks_like_url(link_url):
+            flash('Ссылка должна начинаться с http:// или https://.', 'error')
+            return render_template('admin/document_form.html', **form_kwargs)
+
+        if has_file:
             if not allowed_document(file.filename):
                 flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
                 return render_template('admin/document_form.html', **form_kwargs)
@@ -748,10 +786,15 @@ def documents_edit(document_id):
             os.makedirs(upload_dir, exist_ok=True)
             file.save(os.path.join(upload_dir, unique_name))
 
-            old_path = os.path.join(current_app.root_path, 'static', document.file_path)
-            if os.path.exists(old_path):
-                os.remove(old_path)
+            delete_document_file(document)
             document.file_path = f"uploads/{unique_name}"
+            document.link_url = None
+        elif link_url:
+            delete_document_file(document)
+            document.file_path = None
+            document.link_url = link_url
+        # иначе — ни файл, ни ссылка не переданы: как и раньше у файла,
+        # это значит «не менять», а не «удалить прикреплённое».
 
         document.title = title
         document.doc_category = document_category_name_from_form()
@@ -769,9 +812,7 @@ def documents_edit(document_id):
 @roles_required('admin', 'editor')
 def documents_delete(document_id):
     document = Document.query.get_or_404(document_id)
-    file_path = os.path.join(current_app.root_path, 'static', document.file_path)
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    delete_document_file(document)
     db.session.delete(document)
     db.session.commit()
     flash('Документ удалён.', 'success')
