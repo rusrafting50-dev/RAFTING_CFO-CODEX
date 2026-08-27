@@ -343,7 +343,6 @@ def seed_equipment_document_taxonomy():
 # категорий/разделов (см. routes/regions.py: FEDERATION_SIDEBAR_LAYOUT),
 # а сами загруженные документы у каждой федерации свои (Document.region_id).
 FEDERATION_DOCUMENT_TAXONOMY = [
-    ('Направления деятельности', []),
     ('Основополагающие документы', [
         'Уставные документы', 'Программы', 'Членство в ФРР', 'Государственная аккредитация',
     ]),
@@ -370,6 +369,30 @@ def seed_federation_document_taxonomy():
             for section_order, section_name in enumerate(section_names):
                 db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=section_order))
         db.session.commit()
+
+
+def restore_federation_goals_section():
+    """Разовая миграция: пункт бокового меню «О федерации» «Направления
+    деятельности» возвращается к тому, чем он был до категории документов
+    из FEDERATION_DOCUMENT_TAXONOMY (см. routes/regions.py:
+    FUNCTIONAL_SECTIONS/FEDERATION_SIDEBAR_LAYOUT) — свободный текст
+    (RegionalFederation.goals_text, поле «Направления деятельности» в
+    админке), как раньше был раздел «Цели и задачи».
+
+    Категория DocumentCategory «Направления деятельности»
+    (scope='федерация'), которую сеяла seed_federation_document_taxonomy
+    до этой миграции, удаляется — но только если у неё, как и было
+    изначально, нет разделов: если админ вручную добавил в неё разделы,
+    это уже не тот дефолтный пустой пункт, трогать его не нужно.
+    Документы, если они успели куда-то загрузиться под этой категорией
+    (Document.doc_category хранится строкой, а не ссылкой), никуда не
+    делись — сама категория удаляется, а не они, документы останутся
+    видны в списке «Все» на странице федерации."""
+    category = DocumentCategory.query.filter_by(name='Направления деятельности', scope='федерация').first()
+    if not category or category.sections:
+        return
+    db.session.delete(category)
+    db.session.commit()
 
 
 def _apply_initial_order(rows, name_order):

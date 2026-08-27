@@ -10,8 +10,8 @@ from auth import (
     create_default_admin, ensure_competition_document_taxonomy, ensure_schema,
     fix_legacy_document_taxonomy_order, login_manager,
     rename_competition_regulations_category, rename_seminar_news_category,
-    seed_equipment_document_taxonomy, seed_event_document_taxonomy,
-    seed_federation_document_taxonomy, seed_news_taxonomy,
+    restore_federation_goals_section, seed_equipment_document_taxonomy,
+    seed_event_document_taxonomy, seed_federation_document_taxonomy, seed_news_taxonomy,
 )
 from models import PartnerLogo, db
 from routes import register_blueprints
@@ -259,6 +259,7 @@ def create_app():
         seed_event_document_taxonomy()
         seed_equipment_document_taxonomy()
         seed_federation_document_taxonomy()
+        restore_federation_goals_section()
         fix_legacy_document_taxonomy_order()
 
     @app.context_processor
