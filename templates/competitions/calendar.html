@@ -38,7 +38,7 @@
                         {% for competition in competitions %}
                             <div class="col">
                                 <a class="comp-card" href="{{ url_for('competitions.detail', competition_id=competition.id) }}">
-                                    <div class="comp-card-photo">
+                                    <div class="comp-card-photo{{ '' if competition.logo_path else ' comp-card-photo-empty' }}">
                                         {% if competition.logo_path %}
                                             <div class="comp-card-logo">
                                                 <img src="{{ url_for('static', filename=competition.logo_path) }}" alt="{{ competition.name }}">
