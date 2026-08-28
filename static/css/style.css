@@ -2560,6 +2560,14 @@ footer hr {
     background: center/cover no-repeat url('../img/Фон серый треугольник.webp');
 }
 
+/* Логотип с прозрачным фоном (PNG с альфа-каналом — проверяется на
+   сервере, app.py: static_image_has_transparency) на тёмном градиенте
+   просвечивал бы им сквозь прозрачные места — на них у большинства
+   логотипов рассчитан белый фон, не тёмный. */
+.comp-card-photo-white {
+    background: #fff;
+}
+
 .comp-card-logo {
     width: 100%;
     height: 100%;

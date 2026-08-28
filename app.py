@@ -271,6 +271,43 @@ def static_image_size(filename):
     return size
 
 
+_STATIC_IMAGE_TRANSPARENCY_CACHE = {}
+
+
+def static_image_has_transparency(filename):
+    """Есть ли у файла реально прозрачные пиксели — не просто режим с
+    альфа-каналом (PNG часто хранит его даже у полностью непрозрачных
+    картинок), а хотя бы один пиксель с альфой меньше 255. Нужно карточке
+    соревнования (competitions/calendar.html) — логотип с прозрачным фоном
+    на тёмном градиенте .comp-card-photo просвечивает тёмным, вместо
+    градиента в этом случае показывается белый фон. Кэш по (файл, mtime) —
+    тот же приём, что static_image_size."""
+    if not filename:
+        return False
+    path = os.path.join(BASE_DIR, 'static', filename)
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        return False
+
+    cached = _STATIC_IMAGE_TRANSPARENCY_CACHE.get(filename)
+    if cached and cached[0] == mtime:
+        return cached[1]
+
+    try:
+        from PIL import Image
+        with Image.open(path) as img:
+            if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+                has_alpha = img.convert('RGBA').getchannel('A').getextrema()[0] < 255
+            else:
+                has_alpha = False
+    except Exception:
+        has_alpha = False
+
+    _STATIC_IMAGE_TRANSPARENCY_CACHE[filename] = (mtime, has_alpha)
+    return has_alpha
+
+
 def create_app():
     app = Flask(__name__)
 
@@ -300,6 +337,7 @@ def create_app():
     app.jinja_env.tests['time_or_roman'] = is_time_or_roman
     app.jinja_env.globals['asset_url'] = asset_url
     app.jinja_env.globals['static_image_size'] = static_image_size
+    app.jinja_env.globals['static_image_has_transparency'] = static_image_has_transparency
 
     register_blueprints(app)
 

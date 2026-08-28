@@ -38,7 +38,14 @@
                         {% for competition in competitions %}
                             <div class="col">
                                 <a class="comp-card" href="{{ url_for('competitions.detail', competition_id=competition.id) }}">
-                                    <div class="comp-card-photo{{ '' if competition.logo_path else ' comp-card-photo-empty' }}">
+                                    {% if not competition.logo_path %}
+                                        {% set photo_class = ' comp-card-photo-empty' %}
+                                    {% elif static_image_has_transparency(competition.logo_path) %}
+                                        {% set photo_class = ' comp-card-photo-white' %}
+                                    {% else %}
+                                        {% set photo_class = '' %}
+                                    {% endif %}
+                                    <div class="comp-card-photo{{ photo_class }}">
                                         {% if competition.logo_path %}
                                             <div class="comp-card-logo">
                                                 <img src="{{ url_for('static', filename=competition.logo_path) }}" alt="{{ competition.name }}">
