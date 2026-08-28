@@ -24,37 +24,39 @@
 
         <div class="tab-content" id="calendarSubTabsContent">
             <div class="tab-pane fade show active" id="tab-official" role="tabpanel">
+                <ul class="news-submenu mb-4">
+                    {% for value, label in level_tabs %}
+                        <li role="presentation">
+                            <a class="{{ 'active' if selected_level == value }}"
+                               href="{{ url_for('competitions.calendar', level=value) }}">{{ label }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+
                 {% if competitions %}
-                    <div class="table-responsive">
-                        <table class="table table-zebra align-middle">
-                            <thead>
-                                <tr class="site-table-header">
-                                    <th>№ ЕКП/КП</th>
-                                    <th>Наименование соревнований</th>
-                                    <th>Виды программы</th>
-                                    <th>Сроки проведения</th>
-                                    <th>Место проведения</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for competition in competitions %}
-                                    <tr>
-                                        <td>{{ competition.registration_number or '' }}</td>
-                                        <td>
-                                            <a class="comp-calendar-link" href="{{ url_for('competitions.detail', competition_id=competition.id) }}">{{ competition.name }}</a>
-                                        </td>
-                                        <td>{{ competition.disciplines or '' }}</td>
-                                        <td>
+                    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+                        {% for competition in competitions %}
+                            <div class="col">
+                                <a class="comp-card" href="{{ url_for('competitions.detail', competition_id=competition.id) }}">
+                                    <div class="comp-card-photo">
+                                        {% if competition.logo_path %}
+                                            <div class="comp-card-logo">
+                                                <img src="{{ url_for('static', filename=competition.logo_path) }}" alt="{{ competition.name }}">
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="comp-card-body">
+                                        <h3 class="comp-card-name">{{ competition.name }}</h3>
+                                        <p class="comp-card-dates">
                                             {{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}
                                             {% if competition.end_date and competition.end_date != competition.start_date %}
                                                 &ndash; {{ competition.end_date.strftime('%d.%m.%Y') }}
                                             {% endif %}
-                                        </td>
-                                        <td>{{ competition.location }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        </p>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
                     </div>
                 {% else %}
                     <p class="text-muted">На {{ year }} год соревнования пока не запланированы.</p>
