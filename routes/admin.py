@@ -856,6 +856,44 @@ def competitions_list():
     return render_template('admin/competitions_list.html', active='competitions', competitions=competitions)
 
 
+@bp.route('/competitions/<int:competition_id>/logo', methods=['POST'])
+@section_required('competitions')
+@roles_required('admin', 'editor')
+def competition_logo_upload(competition_id):
+    competition = Competition.query.get_or_404(competition_id)
+    logo = request.files.get('logo')
+
+    if not logo or not logo.filename:
+        flash('Выберите файл логотипа.', 'error')
+    elif not allowed_image(logo.filename):
+        flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
+    else:
+        competition.logo_path = save_upload(logo)
+        # С этого момента синхронизация из COREZ логотип не трогает (см.
+        # routes/api.py: sync_competitions) — иначе загруженный вручную
+        # файл пропал бы при следующей же отправке оттуда.
+        competition.logo_is_manual = True
+        db.session.commit()
+        flash('Логотип загружен.', 'success')
+
+    return redirect(url_for('admin.competition_documents', competition_id=competition.id))
+
+
+@bp.route('/competitions/<int:competition_id>/logo/delete', methods=['POST'])
+@section_required('competitions')
+@roles_required('admin', 'editor')
+def competition_logo_delete(competition_id):
+    competition = Competition.query.get_or_404(competition_id)
+    competition.logo_path = None
+    # Снимаем ручной флаг — следующая синхронизация из COREZ снова сможет
+    # проставить логотип автоматически (пока флаг стоит, sync_competitions
+    # это поле не трогает).
+    competition.logo_is_manual = False
+    db.session.commit()
+    flash('Логотип удалён — при следующей синхронизации из COREZ будет проставлен автоматически, если он там есть.', 'success')
+    return redirect(url_for('admin.competition_documents', competition_id=competition.id))
+
+
 @bp.route('/competitions/<int:competition_id>/documents')
 @section_required('competitions')
 def competition_documents(competition_id):

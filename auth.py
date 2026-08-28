@@ -158,6 +158,7 @@ def ensure_schema():
     _ensure_column(inspector, 'document_category', 'sort_order', 'INTEGER NOT NULL DEFAULT 0')
     _ensure_column(inspector, 'document', 'link_url', 'VARCHAR(1000)')
     _ensure_column(inspector, 'athlete', 'photo_path', 'VARCHAR(500)')
+    _ensure_column(inspector, 'competition', 'logo_is_manual', 'BOOLEAN NOT NULL DEFAULT 0')
 
 
 def seed_news_taxonomy():

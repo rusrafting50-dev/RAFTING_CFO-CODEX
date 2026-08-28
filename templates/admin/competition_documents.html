@@ -7,6 +7,38 @@
     <p class="mb-1"><a href="{{ url_for('admin.competitions_list') }}">&laquo; Соревнования</a></p>
     <h1 class="h4 mb-4">Документы: {{ competition.name }}</h1>
 
+    <div class="card p-4 mb-4">
+        <h2 class="h5 mb-3">Логотип соревнования</h2>
+        <div class="d-flex align-items-center gap-4 flex-wrap">
+            {% if competition.logo_path %}
+                <img src="{{ url_for('static', filename=competition.logo_path) }}" alt="{{ competition.name }}"
+                     style="height: 90px; width: 90px; object-fit: contain;">
+            {% else %}
+                <span class="text-muted">Логотип не задан.</span>
+            {% endif %}
+            {% if current_user.role in ('admin', 'editor') %}
+                <form method="post" enctype="multipart/form-data"
+                      action="{{ url_for('admin.competition_logo_upload', competition_id=competition.id) }}"
+                      class="d-flex align-items-center gap-2">
+                    <input type="file" class="form-control" name="logo" accept=".jpg,.jpeg,.png,.webp" required>
+                    <button type="submit" class="btn btn-primary text-nowrap">Загрузить</button>
+                </form>
+                {% if competition.logo_path %}
+                    <form method="post" action="{{ url_for('admin.competition_logo_delete', competition_id=competition.id) }}"
+                          onsubmit="return confirm('Удалить логотип?');">
+                        <button type="submit" class="btn btn-outline-danger">Удалить</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% if competition.logo_is_manual %}
+            <p class="form-text mb-0 mt-2">
+                Логотип загружен вручную — синхронизация из COREZ его не заменит. «Удалить» возвращает
+                автоматическое обновление логотипа из COREZ.
+            </p>
+        {% endif %}
+    </div>
+
     {% if documents %}
         <div class="table-responsive mb-4">
             <table class="table table-zebra align-middle">

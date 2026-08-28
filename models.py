@@ -85,6 +85,11 @@ class Competition(db.Model):
     head_judge = db.Column(db.String(255))  # гл. судья соревнований
     registration_number = db.Column(db.String(100))  # № ЕКП
     logo_path = db.Column(db.String(500))  # логотип соревнования (относительно static/)
+    # Логотип загружен вручную в панели управления (routes/admin.py:
+    # competition_logo_upload) — тогда синхронизация из COREZ его не
+    # перезаписывает (см. routes/api.py: sync_competitions), иначе
+    # загруженный логотип пропадал бы при следующей же синхронизации.
+    logo_is_manual = db.Column(db.Boolean, nullable=False, default=False)
     disciplines = db.Column(db.String(255))  # виды программы (напр. "Слалом, Спринт")
 
     documents = db.relationship(

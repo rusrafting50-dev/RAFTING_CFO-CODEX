@@ -162,19 +162,26 @@ def sync_competitions():
         competition.head_judge = item.get('head_judge')
         competition.registration_number = item.get('registration_number')
 
-        logo_filename = item.get('logo_filename')
-        logo_base64 = item.get('logo_base64')
-        if logo_filename and logo_base64:
-            saved_path = save_logo_from_base64(logo_filename, logo_base64)
-            if saved_path:
-                competition.logo_path = saved_path
-            else:
-                errors.append(f'source_id={source_id}: логотип не сохранён (неверный формат/данные)')
+        if competition.logo_is_manual:
+            # Логотип загружен вручную в панели управления (см.
+            # routes/admin.py: competition_logo_upload) — синхронизация
+            # его не трогает, иначе он пропадал бы при следующей же
+            # отправке из COREZ.
+            pass
         else:
-            # COREZ шлёт logo_filename/logo_base64 в каждой отправке (null,
-            # если у соревнования логотип убрали) — раз их нет и сейчас,
-            # это значит логотип убрали, а не что поле просто не пришло.
-            competition.logo_path = None
+            logo_filename = item.get('logo_filename')
+            logo_base64 = item.get('logo_base64')
+            if logo_filename and logo_base64:
+                saved_path = save_logo_from_base64(logo_filename, logo_base64)
+                if saved_path:
+                    competition.logo_path = saved_path
+                else:
+                    errors.append(f'source_id={source_id}: логотип не сохранён (неверный формат/данные)')
+            else:
+                # COREZ шлёт logo_filename/logo_base64 в каждой отправке (null,
+                # если у соревнования логотип убрали) — раз их нет и сейчас,
+                # это значит логотип убрали, а не что поле просто не пришло.
+                competition.logo_path = None
 
     db.session.commit()
     log_sync('competitions', created + updated,
