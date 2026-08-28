@@ -1,6 +1,6 @@
 {% extends "base.html" %}
-{% from "_athletes_table.html" import athletes_table %}
 {% from "clubs/_cards.html" import club_cards, club_cards_script %}
+{% from "regions/_athlete_photo.html" import athlete_photo %}
 
 {% block title %}{{ section_label }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}{{ section_label }}: {{ region.name }}{% endblock %}
@@ -14,7 +14,46 @@
                 <h2 class="h5 mb-3">{{ section_label }}</h2>
 
                 {% if section == 'team' %}
-                    {{ athletes_table(team_athletes) }}
+                    <ul class="news-submenu mb-3">
+                        {% for value, label in team_genders %}
+                            <li role="presentation">
+                                <a class="{{ 'active' if team_gender == value }}"
+                                   href="{{ url_for('regions.section', region_id=region.id, section='team', gender=value) }}">{{ label }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <ul class="news-submenu mb-4">
+                        {% for category in team_categories %}
+                            <li role="presentation">
+                                <a class="{{ 'active' if team_category == category }}"
+                                   href="{{ url_for('regions.section', region_id=region.id, section='team', gender=team_gender, category=category) }}">{{ category }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    {% if team_roster %}
+                        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-4">
+                            {% for entry in team_roster %}
+                                <div class="col">
+                                    <a class="athlete-card" href="{{ url_for('regions.team_athlete', region_id=region.id, athlete_id=entry.athlete.id) }}">
+                                        <div class="athlete-card-photo-wrap">
+                                            <div class="athlete-card-photo">
+                                                {{ athlete_photo(entry.athlete, team_gender) }}
+                                            </div>
+                                            {% if entry.club and entry.club.logo_path %}
+                                                <span class="athlete-card-club-badge">
+                                                    <img src="{{ url_for('static', filename=entry.club.logo_path) }}" alt="{{ entry.club.name }}">
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="athlete-card-name">{{ entry.athlete.full_name }}</p>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Состав пока не добавлен.</p>
+                    {% endif %}
                 {% elif section == 'clubs' %}
                     {% if region_clubs %}
                         {{ club_cards(region_clubs) }}

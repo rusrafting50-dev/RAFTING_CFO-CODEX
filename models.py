@@ -133,6 +133,11 @@ class Athlete(db.Model):
     organization = db.Column(db.String(255))
     territory = db.Column(db.String(255))
     national_team = db.Column(db.String(100))
+    # Фото спортсмена — из REGTEAM_RAFTING, как и остальные поля (сайт
+    # данные не редактирует, только показывает). Пока REGTEAM_RAFTING
+    # фото не присылает, поле остаётся пустым — карточка/страница
+    # спортсмена в этом случае показывает силуэт-заглушку.
+    photo_path = db.Column(db.String(500))
     source_id = db.Column(db.Integer)  # ID в базе REGTEAM_RAFTING
     # Включён ли сейчас в состав сборной (ChangeLog «включён»/«исключён»
     # в REGTEAM_RAFTING) — исключённые не показываются в разделах

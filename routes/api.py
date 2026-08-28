@@ -235,6 +235,7 @@ def sync_athletes():
         athlete.organization = item.get('organization')
         athlete.territory = item.get('territory')
         athlete.national_team = item.get('national_team')
+        athlete.photo_path = item.get('photo_path')
         athlete.is_active = bool(item.get('is_active', True))
 
     db.session.commit()

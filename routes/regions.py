@@ -49,6 +49,55 @@ FEDERATION_SIDEBAR_LAYOUT = [
     'category', ('functional', 'team'),
 ]
 
+# Раздел «Сборная команда»: верхняя строка — пол (мужские/женские),
+# вторая — возрастная категория внутри выбранного пола. Значения
+# категорий сравниваются с Athlete.national_team («Состав сборной РФ» —
+# REGTEAM_RAFTING присылает уже готовую строку одной из этих восьми, тот
+# же приём, что и остальные поля Athlete, сайт их не редактирует, только
+# показывает). Пол сам по себе отдельным полем не хранится — выводится
+# из того, какой из двух списков содержит категорию спортсмена.
+TEAM_GENDERS = [
+    ('мужские', 'Мужские'),
+    ('женские', 'Женские'),
+]
+TEAM_CATEGORIES_BY_GENDER = {
+    'мужские': ['Мужчины', 'Юниоры до 24 лет', 'Юниоры до 20 лет', 'Юноши'],
+    'женские': ['Женщины', 'Юниорки до 24 лет', 'Юниорки до 20 лет', 'Девушки до 16 лет'],
+}
+TEAM_GENDER_BY_CATEGORY = {
+    category.lower(): gender
+    for gender, categories in TEAM_CATEGORIES_BY_GENDER.items()
+    for category in categories
+}
+
+
+def _clubs_by_name():
+    """Клубы по названию в нижнем регистре — Athlete.organization
+    сопоставляется с Club.name строкой, а не внешним ключом (REGTEAM_RAFTING
+    не знает внутренних id сайта). Сравнение без учёта регистра — в
+    Python, не в SQL: LOWER() в SQLite не работает с кириллицей."""
+    return {c.name.strip().lower(): c for c in Club.query.all()}
+
+
+def _team_roster(region, category, clubs_by_name):
+    """Спортсмены сборной команды региона в заданной возрастной категории
+    (Athlete.national_team), отсортированные по алфавиту — общий список
+    для сетки карточек (section(), 'team') и бокового списка на странице
+    отдельного спортсмена (team_athlete())."""
+    if not region.subject_name or not category:
+        return []
+    subject_name = region.subject_name.strip().lower()
+    category_lower = category.strip().lower()
+    return sorted(
+        (
+            a for a in Athlete.query.filter(Athlete.is_active.is_(True)).all()
+            if a.territory and a.territory.strip().lower() == subject_name
+            and a.organization and a.organization.strip().lower() in clubs_by_name
+            and a.national_team and a.national_team.strip().lower() == category_lower
+        ),
+        key=lambda a: a.full_name,
+    )
+
 
 def _category_sidebar_item(region, category, active_category, active_doc_section):
     """Один пункт меню для категории документов страницы федерации —
@@ -156,32 +205,49 @@ def section(region_id, section):
     if section == 'clubs':
         region_clubs = Club.query.filter_by(region_id=region.id).order_by(Club.name).all()
 
-    team_athletes = []
-    if section == 'team' and region.subject_name:
-        # Сравнение без учёта регистра делается в Python, а не в SQL —
-        # LOWER() в SQLite работает только для ASCII и не переводит
-        # кириллицу в нижний регистр, из-за чего сравнение по regionу
-        # молча не находило бы совпадений.
-        subject_name = region.subject_name.strip().lower()
-        # В сборную команду попадают только те, кто состоит в каком-то
-        # клубе (Club.name совпадает с Athlete.organization) — состав
-        # клуба первичен, включение в сборную зависит от него, а не
-        # наоборот (см. соответствующие разделы «Тренеры»/«Спортсмены»
-        # на странице клуба, routes/clubs.py.section()).
-        club_names = {c.name.strip().lower() for c in Club.query.all()}
-        team_athletes = sorted(
-            (
-                a for a in Athlete.query.filter(Athlete.is_active.is_(True)).all()
-                if a.territory and a.territory.strip().lower() == subject_name
-                and a.organization and a.organization.strip().lower() in club_names
-            ),
-            key=lambda a: (a.role or '', a.full_name),
-        )
+    team_roster = []
+    team_gender = None
+    team_category = None
+    if section == 'team':
+        team_gender = request.args.get('gender')
+        if team_gender not in TEAM_CATEGORIES_BY_GENDER:
+            team_gender = 'мужские'
+        categories = TEAM_CATEGORIES_BY_GENDER[team_gender]
+        team_category = request.args.get('category')
+        if team_category not in categories:
+            team_category = categories[0]
+
+        clubs_by_name = _clubs_by_name()
+        team_roster = [
+            {'athlete': athlete, 'club': clubs_by_name.get((athlete.organization or '').strip().lower())}
+            for athlete in _team_roster(region, team_category, clubs_by_name)
+        ]
 
     return render_template(
         'regions/section.html', region=region, sidebar_items=_sidebar_items(region, active_section=section),
-        section=section, section_label=section_label, team_athletes=team_athletes,
-        region_clubs=region_clubs,
+        section=section, section_label=section_label, region_clubs=region_clubs,
+        team_roster=team_roster, team_gender=team_gender, team_category=team_category,
+        team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(team_gender, []),
+    )
+
+
+@bp.route('/<int:region_id>/team/<int:athlete_id>')
+def team_athlete(region_id, athlete_id):
+    """Страница отдельного спортсмена сборной команды федерации — справа
+    вместо обычного меню «О федерации» список остального состава той же
+    возрастной категории (см. regions/team_athlete.html)."""
+    region = RegionalFederation.query.get_or_404(region_id)
+    athlete = Athlete.query.get_or_404(athlete_id)
+
+    clubs_by_name = _clubs_by_name()
+    club = clubs_by_name.get((athlete.organization or '').strip().lower())
+    category = athlete.national_team.strip() if athlete.national_team else None
+    gender = TEAM_GENDER_BY_CATEGORY.get(category.lower()) if category else None
+    roster = _team_roster(region, category, clubs_by_name)
+
+    return render_template(
+        'regions/team_athlete.html', region=region, athlete=athlete, club=club,
+        roster=roster, gender=gender, category=category,
     )
 
 

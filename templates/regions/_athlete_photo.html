@@ -1,0 +1,23 @@
+{# Фото спортсмена сборной — если не заполнено (REGTEAM_RAFTING фото
+   пока не присылает, см. Athlete.photo_path), силуэт-заглушка: мужской
+   или женский по полу возрастной категории (gender — 'мужские'/'женские',
+   см. routes/regions.py: TEAM_GENDER_BY_CATEGORY). Общий макрос — карточка
+   в сетке (regions/section.html) и страница отдельного спортсмена
+   (regions/team_athlete.html) используют один и тот же силуэт. #}
+{% macro athlete_photo(athlete, gender) %}
+    {% if athlete.photo_path %}
+        <img src="{{ url_for('static', filename=athlete.photo_path) }}" alt="{{ athlete.full_name }}">
+    {% elif gender == 'женские' %}
+        <svg class="athlete-photo-placeholder" viewBox="0 0 120 120" aria-hidden="true">
+            <ellipse cx="38" cy="52" rx="10" ry="16"/>
+            <ellipse cx="82" cy="52" rx="10" ry="16"/>
+            <circle cx="60" cy="40" r="22"/>
+            <path d="M16 118c0-28 20-48 44-48s44 20 44 48z"/>
+        </svg>
+    {% else %}
+        <svg class="athlete-photo-placeholder" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="42" r="24"/>
+            <path d="M14 118c0-30 20-52 46-52s46 22 46 52z"/>
+        </svg>
+    {% endif %}
+{% endmacro %}

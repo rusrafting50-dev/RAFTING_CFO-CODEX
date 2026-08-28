@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "regions/_athlete_photo.html" import athlete_photo %}
+
+{% block title %}{{ athlete.full_name }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ athlete.full_name }}{{ ' — ' + category if category else '' }}, {{ region.name }}{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        {% include "regions/_page_title.html" with context %}
+
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <a class="athlete-detail-back" href="{{ url_for('regions.section', region_id=region.id, section='team', gender=gender, category=category) }}">&larr; Сборная команда</a>
+
+                <div class="athlete-detail card p-4 mt-3">
+                    <div class="row g-4">
+                        <div class="col-sm-4 col-md-3">
+                            <div class="athlete-detail-photo-wrap">
+                                <div class="athlete-detail-photo">
+                                    {{ athlete_photo(athlete, gender) }}
+                                </div>
+                                {% if club and club.logo_path %}
+                                    <span class="athlete-detail-club-badge">
+                                        <img src="{{ url_for('static', filename=club.logo_path) }}" alt="{{ club.name }}">
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-sm-8 col-md-9">
+                            <h1 class="athlete-detail-name">{{ athlete.full_name }}</h1>
+                            {% if athlete.role %}<span class="athlete-detail-role-badge">{{ athlete.role|cap_first }}</span>{% endif %}
+                            <dl class="athlete-detail-facts">
+                                {% if category %}
+                                    <div><dt>Сборная</dt><dd>{{ category }}</dd></div>
+                                {% endif %}
+                                {% if athlete.discipline %}
+                                    <div><dt>Дисциплина</dt><dd>{{ athlete.discipline }}</dd></div>
+                                {% endif %}
+                                {% if athlete.rank %}
+                                    <div><dt>Разряд / звание</dt><dd>{{ athlete.rank }}</dd></div>
+                                {% endif %}
+                                {% if club %}
+                                    <div><dt>Клуб</dt><dd><a href="{{ url_for('clubs.detail', club_id=club.id) }}">{{ club.name }}</a></dd></div>
+                                {% elif athlete.organization %}
+                                    <div><dt>Организация</dt><dd>{{ athlete.organization }}</dd></div>
+                                {% endif %}
+                                {% if athlete.territory %}
+                                    <div><dt>Территория</dt><dd>{{ athlete.territory }}</dd></div>
+                                {% endif %}
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3">
+                <div class="athlete-roster-panel">
+                    <h2 class="athlete-roster-title">{{ category or 'Состав' }}</h2>
+                    {% if roster %}
+                        <div class="list-group">
+                            {% for member in roster %}
+                                <a class="list-group-item list-group-item-action {{ 'active' if member.id == athlete.id }}"
+                                   href="{{ url_for('regions.team_athlete', region_id=region.id, athlete_id=member.id) }}">{{ member.full_name }}</a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small mb-0">Состав пока не добавлен.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
