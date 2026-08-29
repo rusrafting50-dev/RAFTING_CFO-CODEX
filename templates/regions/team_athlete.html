@@ -34,7 +34,7 @@
                     <div class="row g-4">
                         <div class="col-sm-4 col-md-3">
                             <div class="athlete-detail-photo-wrap">
-                                <div class="athlete-detail-photo">
+                                <div class="athlete-detail-photo{{ ' athlete-detail-photo-male' if menu_gender == 'мужские' }}">
                                     {{ athlete_photo(athlete, gender) }}
                                 </div>
                                 {% if club and club.logo_path %}
