@@ -12,11 +12,11 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from models import (
-    Athlete, Banner, Club, Competition, CompetitionApplication, CompetitionDocument, Document,
-    DocumentCategory, DocumentSection, Event, FederationMember, FederationRegistrationRequest,
-    LocalFederation, MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel,
-    PartnerLogo, PasswordResetRequest, Referee, RegionalFederation, SeminarApplicationSubmission,
-    SyncLog, User, db,
+    Athlete, Banner, Club, Competition, CompetitionApplication, CompetitionDocument, Council,
+    CouncilCategory, CouncilMember, CouncilPage, Document, DocumentCategory, DocumentSection, Event,
+    FederationMember, FederationRegistrationRequest, LocalFederation, MediaAlbum, MediaAlbumPhoto,
+    MediaVideo, News, NewsCategory, NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee,
+    RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
 )
 from richtext import sanitize_rich_text
 from sync_to_referee import отправить_заявку, обновить_заявку
@@ -67,6 +67,12 @@ def news_category_choices():
 
 def news_level_choices():
     return [lvl.name for lvl in NewsLevel.query.order_by(NewsLevel.name).all()]
+
+
+def council_choices():
+    """Категории коллегий/советов с их советами — для выпадающего списка
+    «Коллегия / совет» в форме новости (admin/news_form.html)."""
+    return CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all()
 # Разделы панели, доступ к которым назначается сотруднику индивидуально
 # (роль admin получает их все автоматически, см. User.can_access).
 SECTION_CHOICES = [
@@ -77,6 +83,7 @@ SECTION_CHOICES = [
     ('regions', 'Регионы ЦФО'),
     ('clubs', 'Клубы'),
     ('local_federations', 'Местные федерации'),
+    ('councils', 'Коллегии и советы'),
     ('banners', 'Баннеры'),
     ('media', 'Медиа'),
     ('partners', 'Логотипы партнёров'),
@@ -334,6 +341,7 @@ def news_new():
             return render_template(
                 'admin/news_form.html', active='news', news=None,
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
+                council_choices=council_choices(),
             )
 
         bad_images = [f for f in [image, *gallery_files] if f and f.filename and not allowed_image(f.filename)]
@@ -342,6 +350,7 @@ def news_new():
             return render_template(
                 'admin/news_form.html', active='news', news=None,
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
+                council_choices=council_choices(),
             )
 
         news_item = News(
@@ -350,6 +359,7 @@ def news_new():
             description=description or None,
             category=request.form.get('category') or None,
             level=request.form.get('level') or None,
+            council_id=request.form.get('council_id', type=int),
             photo_author=request.form.get('photo_author', '').strip() or None,
             organization=request.form.get('organization', '').strip() or None,
             is_published=bool(request.form.get('is_published')),
@@ -366,6 +376,7 @@ def news_new():
     return render_template(
         'admin/news_form.html', active='news', news=None,
         category_choices=news_category_choices(), level_choices=news_level_choices(),
+        council_choices=council_choices(),
     )
 
 
@@ -387,6 +398,7 @@ def news_edit(news_id):
             return render_template(
                 'admin/news_form.html', active='news', news=news_item,
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
+                council_choices=council_choices(),
             )
 
         bad_images = [f for f in [image, *gallery_files] if f and f.filename and not allowed_image(f.filename)]
@@ -395,6 +407,7 @@ def news_edit(news_id):
             return render_template(
                 'admin/news_form.html', active='news', news=news_item,
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
+                council_choices=council_choices(),
             )
 
         news_item.title = title
@@ -402,6 +415,7 @@ def news_edit(news_id):
         news_item.description = description or None
         news_item.category = request.form.get('category') or None
         news_item.level = request.form.get('level') or None
+        news_item.council_id = request.form.get('council_id', type=int)
         news_item.photo_author = request.form.get('photo_author', '').strip() or None
         news_item.organization = request.form.get('organization', '').strip() or None
         news_item.is_published = bool(request.form.get('is_published'))
@@ -416,6 +430,7 @@ def news_edit(news_id):
     return render_template(
         'admin/news_form.html', active='news', news=news_item,
         category_choices=news_category_choices(), level_choices=news_level_choices(),
+        council_choices=council_choices(),
     )
 
 
@@ -1136,6 +1151,7 @@ def regions_new():
             logo_white_path=save_upload(logo_white) if logo_white and logo_white.filename else None,
             intro_text=sanitize_rich_text(request.form.get('intro_text', '')),
             goals_text=sanitize_rich_text(request.form.get('goals_text', '')),
+            councils_intro_text=sanitize_rich_text(request.form.get('councils_intro_text', '')),
             contact_phone=request.form.get('contact_phone', '').strip() or None,
             contact_email=request.form.get('contact_email', '').strip() or None,
             contact_address=request.form.get('contact_address', '').strip() or None,
@@ -1179,6 +1195,7 @@ def regions_edit(region_id):
             region.logo_white_path = save_upload(logo_white)
         region.intro_text = sanitize_rich_text(request.form.get('intro_text', ''))
         region.goals_text = sanitize_rich_text(request.form.get('goals_text', ''))
+        region.councils_intro_text = sanitize_rich_text(request.form.get('councils_intro_text', ''))
         region.contact_phone = request.form.get('contact_phone', '').strip() or None
         region.contact_email = request.form.get('contact_email', '').strip() or None
         region.contact_address = request.form.get('contact_address', '').strip() or None
@@ -1484,6 +1501,282 @@ def local_federation_members_delete(local_federation_id, member_id):
     db.session.commit()
     flash('Запись удалена.', 'success')
     return redirect(url_for('admin.local_federation_members_list', local_federation_id=local_federation_id))
+
+
+# ---------- Коллегии и советы: общий список категорий/советов ----------
+# Категории (CouncilCategory) и советы внутри них (Council) — общий
+# список для всех региональных федераций, тот же приём и та же
+# страница-конструктор, что «Категории документов»
+# (admin/document_taxonomy.html) — добавление/переименование/удаление/
+# перетаскивание. Наполнение конкретного совета для конкретной
+# федерации — отдельно, см. ниже «Коллегии и советы региональной
+# федерации» (region_councils_*).
+
+@bp.route('/councils/taxonomy')
+@section_required('councils')
+def council_taxonomy():
+    categories = (
+        CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all()
+    )
+    return render_template('admin/council_taxonomy.html', active='councils', categories=categories)
+
+
+@bp.route('/councils/taxonomy/categories/reorder', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def council_category_reorder():
+    payload = request.get_json(silent=True) or {}
+    order = payload.get('order') or []
+    if not order:
+        return jsonify({'ok': False}), 400
+    categories = {c.id: c for c in CouncilCategory.query.all()}
+    for index, category_id in enumerate(order):
+        category = categories.get(category_id)
+        if category:
+            category.sort_order = index
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@bp.route('/councils/taxonomy/councils/reorder', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def council_reorder():
+    payload = request.get_json(silent=True) or {}
+    category_id = payload.get('category_id')
+    order = payload.get('order') or []
+    if not category_id or not order:
+        return jsonify({'ok': False}), 400
+    councils = {c.id: c for c in Council.query.filter_by(category_id=category_id).all()}
+    for index, council_id in enumerate(order):
+        council = councils.get(council_id)
+        if council:
+            council.sort_order = index
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@bp.route('/councils/taxonomy/categories/new', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def council_category_new():
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название категории обязательно.', 'error')
+    elif CouncilCategory.query.filter(db.func.lower(CouncilCategory.name) == name.lower()).first():
+        flash('Такая категория уже есть.', 'error')
+    else:
+        db.session.add(CouncilCategory(name=name))
+        db.session.commit()
+        flash('Категория добавлена.', 'success')
+    return redirect(url_for('admin.council_taxonomy'))
+
+
+@bp.route('/councils/taxonomy/categories/<int:category_id>/edit', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def council_category_edit(category_id):
+    category = CouncilCategory.query.get_or_404(category_id)
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название категории обязательно.', 'error')
+    elif CouncilCategory.query.filter(
+        CouncilCategory.id != category.id, db.func.lower(CouncilCategory.name) == name.lower(),
+    ).first():
+        flash('Такая категория уже есть.', 'error')
+    else:
+        category.name = name
+        db.session.commit()
+        flash('Категория переименована.', 'success')
+    return redirect(url_for('admin.council_taxonomy'))
+
+
+@bp.route('/councils/taxonomy/categories/<int:category_id>/delete', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def council_category_delete(category_id):
+    category = CouncilCategory.query.get_or_404(category_id)
+    db.session.delete(category)
+    db.session.commit()
+    flash('Категория удалена вместе со всеми советами внутри неё.', 'success')
+    return redirect(url_for('admin.council_taxonomy'))
+
+
+@bp.route('/councils/taxonomy/categories/<int:category_id>/councils/new', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def council_new(category_id):
+    category = CouncilCategory.query.get_or_404(category_id)
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название совета обязательно.', 'error')
+    elif any(c.name.lower() == name.lower() for c in category.councils):
+        flash('Такой совет в этой категории уже есть.', 'error')
+    else:
+        db.session.add(Council(category_id=category.id, name=name))
+        db.session.commit()
+        flash('Совет добавлен.', 'success')
+    return redirect(url_for('admin.council_taxonomy'))
+
+
+@bp.route('/councils/taxonomy/councils/<int:council_id>/edit', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def council_edit(council_id):
+    council = Council.query.get_or_404(council_id)
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название совета обязательно.', 'error')
+    elif any(c.id != council.id and c.name.lower() == name.lower() for c in council.category.councils):
+        flash('Такой совет в этой категории уже есть.', 'error')
+    else:
+        council.name = name
+        db.session.commit()
+        flash('Совет переименован.', 'success')
+    return redirect(url_for('admin.council_taxonomy'))
+
+
+@bp.route('/councils/taxonomy/councils/<int:council_id>/delete', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def council_delete(council_id):
+    council = Council.query.get_or_404(council_id)
+    db.session.delete(council)
+    db.session.commit()
+    flash('Совет удалён вместе со всем его содержимым во всех федерациях.', 'success')
+    return redirect(url_for('admin.council_taxonomy'))
+
+
+# ---------- Коллегии и советы: наполнение у конкретной региональной федерации ----------
+# Категории/советы — общий список выше; здесь — вкладка «Общая
+# информация» (CouncilPage.intro_text) и вкладка «Состав»
+# (CouncilMember) для одной пары (совет, региональная федерация).
+
+@bp.route('/regions/<int:region_id>/councils')
+@section_required('councils')
+def region_councils_list(region_id):
+    region = RegionalFederation.query.get_or_404(region_id)
+    categories = CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all()
+    pages_by_council = {
+        page.council_id: page for page in CouncilPage.query.filter_by(region_id=region.id).all()
+    }
+    member_counts = dict(
+        db.session.query(CouncilMember.council_id, db.func.count(CouncilMember.id))
+        .filter(CouncilMember.region_id == region.id)
+        .group_by(CouncilMember.council_id)
+        .all()
+    )
+    return render_template(
+        'admin/region_councils_list.html', active='councils', region=region, categories=categories,
+        pages_by_council=pages_by_council, member_counts=member_counts,
+    )
+
+
+@bp.route('/regions/<int:region_id>/councils/<int:council_id>', methods=['GET', 'POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def region_council_edit(region_id, council_id):
+    region = RegionalFederation.query.get_or_404(region_id)
+    council = Council.query.get_or_404(council_id)
+    page = CouncilPage.query.filter_by(region_id=region.id, council_id=council.id).first()
+    members = (
+        CouncilMember.query.filter_by(region_id=region.id, council_id=council.id)
+        .order_by(CouncilMember.is_chairman.desc(), CouncilMember.sort_order, CouncilMember.full_name)
+        .all()
+    )
+
+    if request.method == 'POST':
+        intro_text = sanitize_rich_text(request.form.get('intro_text', ''))
+        if page is None:
+            page = CouncilPage(region_id=region.id, council_id=council.id)
+            db.session.add(page)
+        page.intro_text = intro_text
+        db.session.commit()
+        flash('Данные обновлены.', 'success')
+        return redirect(url_for('admin.region_council_edit', region_id=region.id, council_id=council.id))
+
+    return render_template(
+        'admin/region_council_form.html', active='councils', region=region, council=council,
+        page=page, members=members,
+    )
+
+
+@bp.route('/regions/<int:region_id>/councils/<int:council_id>/members/new', methods=['GET', 'POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def region_council_members_new(region_id, council_id):
+    region = RegionalFederation.query.get_or_404(region_id)
+    council = Council.query.get_or_404(council_id)
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        photo = request.files.get('photo')
+
+        if not full_name:
+            flash('ФИО обязательно.', 'error')
+            return render_template('admin/region_council_member_form.html', active='councils', region=region, council=council, member=None)
+
+        if photo and photo.filename and not allowed_image(photo.filename):
+            flash('Допустимые форматы фото: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/region_council_member_form.html', active='councils', region=region, council=council, member=None)
+
+        member = CouncilMember(
+            region_id=region.id,
+            council_id=council.id,
+            full_name=full_name,
+            position=request.form.get('position', '').strip() or None,
+            is_chairman=bool(request.form.get('is_chairman')),
+            photo_path=save_upload(photo) if photo and photo.filename else None,
+        )
+        db.session.add(member)
+        db.session.commit()
+        flash('Член совета добавлен.', 'success')
+        return redirect(url_for('admin.region_council_edit', region_id=region.id, council_id=council.id))
+
+    return render_template('admin/region_council_member_form.html', active='councils', region=region, council=council, member=None)
+
+
+@bp.route('/regions/<int:region_id>/councils/<int:council_id>/members/<int:member_id>/edit', methods=['GET', 'POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def region_council_members_edit(region_id, council_id, member_id):
+    region = RegionalFederation.query.get_or_404(region_id)
+    council = Council.query.get_or_404(council_id)
+    member = CouncilMember.query.filter_by(id=member_id, region_id=region.id, council_id=council.id).first_or_404()
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        photo = request.files.get('photo')
+
+        if not full_name:
+            flash('ФИО обязательно.', 'error')
+            return render_template('admin/region_council_member_form.html', active='councils', region=region, council=council, member=member)
+
+        if photo and photo.filename and not allowed_image(photo.filename):
+            flash('Допустимые форматы фото: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/region_council_member_form.html', active='councils', region=region, council=council, member=member)
+
+        member.full_name = full_name
+        member.position = request.form.get('position', '').strip() or None
+        member.is_chairman = bool(request.form.get('is_chairman'))
+        if photo and photo.filename:
+            member.photo_path = save_upload(photo)
+        db.session.commit()
+        flash('Данные обновлены.', 'success')
+        return redirect(url_for('admin.region_council_edit', region_id=region.id, council_id=council.id))
+
+    return render_template('admin/region_council_member_form.html', active='councils', region=region, council=council, member=member)
+
+
+@bp.route('/regions/<int:region_id>/councils/<int:council_id>/members/<int:member_id>/delete', methods=['POST'])
+@section_required('councils')
+@roles_required('admin', 'editor')
+def region_council_members_delete(region_id, council_id, member_id):
+    member = CouncilMember.query.filter_by(id=member_id, region_id=region_id, council_id=council_id).first_or_404()
+    db.session.delete(member)
+    db.session.commit()
+    flash('Запись удалена.', 'success')
+    return redirect(url_for('admin.region_council_edit', region_id=region_id, council_id=council_id))
 
 
 # ---------- Баннеры ----------

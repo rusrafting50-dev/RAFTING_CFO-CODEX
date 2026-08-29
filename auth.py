@@ -160,6 +160,8 @@ def ensure_schema():
     _ensure_column(inspector, 'athlete', 'photo_path', 'VARCHAR(500)')
     _ensure_column(inspector, 'competition', 'logo_is_manual', 'BOOLEAN NOT NULL DEFAULT 0')
     _ensure_column(inspector, 'federation_member', 'local_federation_id', 'INTEGER')
+    _ensure_column(inspector, 'regional_federation', 'councils_intro_text', 'TEXT')
+    _ensure_column(inspector, 'news', 'council_id', 'INTEGER')
 
 
 def seed_news_taxonomy():

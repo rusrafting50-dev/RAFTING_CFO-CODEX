@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}{{ council.name }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ council.name }}: {{ region.name }}{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="fed-page-title">Коллегии и советы</h1>
+
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <div class="card p-4 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <h2 class="h5 mb-0">{{ council.name }}</h2>
+                        <ul class="news-filter-menu comp-tabs-menu mb-0">
+                            <li role="presentation">
+                                <a class="active" href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">Общая информация</a>
+                            </li>
+                            <li role="presentation">
+                                <a href="{{ url_for('regions.council_members', region_id=region.id, council_id=council.id) }}">Состав</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="fed-text-block mb-4">
+                    {% if page and page.intro_text %}
+                        <div class="fed-intro">{{ page.intro_text|richtext }}</div>
+                    {% else %}
+                        <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                    {% endif %}
+                </div>
+
+                {% if tagged_news %}
+                    <h3 class="h6 mb-3">Новости</h3>
+                    <div class="row row-cols-1 row-cols-sm-2 g-4">
+                        {% for item in tagged_news %}
+                            <div class="col">
+                                <a href="{{ url_for('main.news_detail', news_id=item.id) }}" class="news-card-link">
+                                    <div class="card h-100 news-card">
+                                        <div class="card-img-placeholder"
+                                             {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
+                                        <div class="card-body">
+                                            <h3 class="h6 news-card-title">{{ item.title }}</h3>
+                                            {% set item_excerpt = (item.description or item.content)|striptags %}
+                                            <p class="news-card-excerpt">{{ item_excerpt[:120] }}{% if item_excerpt|length > 120 %}…{% endif %}</p>
+                                            <p class="news-card-date">
+                                                {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-3">
+                {% include "regions/_sidebar.html" with context %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

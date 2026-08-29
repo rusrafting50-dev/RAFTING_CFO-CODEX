@@ -31,8 +31,13 @@ class News(db.Model):
     # Подпись под фото на странице новости ("Автор фото: X, Организация").
     photo_author = db.Column(db.String(255))
     organization = db.Column(db.String(255))
+    # Тег «эта новость про такой-то комитет» — новостные карточки на
+    # странице конкретной коллегии/совета региональной федерации
+    # (routes/regions.py: council_detail(), вкладка «Общая информация»).
+    council_id = db.Column(db.Integer, db.ForeignKey('council.id'))
 
     author = db.relationship('User', backref='news_items')
+    council = db.relationship('Council', backref='tagged_news')
 
 
 class NewsImage(db.Model):
@@ -339,6 +344,7 @@ class RegionalFederation(db.Model):
     intro_text = db.Column(db.Text)
     # Разделы бокового меню «О федерации».
     goals_text = db.Column(db.Text)  # Направления деятельности
+    councils_intro_text = db.Column(db.Text)  # Коллегии и советы — вводный текст над списком категорий
     contact_phone = db.Column(db.String(100))
     contact_email = db.Column(db.String(150))
     contact_address = db.Column(db.String(500))
@@ -381,6 +387,76 @@ class RegionalFederation(db.Model):
         строку по границе кавычек, а не режется браузером как попало.
         В отличие от name_quoted (для шапки сайта), кавычки не убираются."""
         return self._split_name()[2]
+
+
+class CouncilCategory(db.Model):
+    """Категория коллегий и советов («Постоянные», «Юрисдикционные» и
+    т.п.) — общий список для всех региональных федераций (тот же приём,
+    что DocumentCategory: разделы бокового меню общие, а наполнение —
+    своё у каждой федерации). Управляется в панели управления
+    (admin/council_taxonomy.html) — то же добавление/переименование/
+    удаление/перетаскивание, что и у категорий документов."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False, unique=True)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+
+
+class Council(db.Model):
+    """Коллегия/совет/комитет внутри категории — название общее для всех
+    региональных федераций (как раздел документов, DocumentSection), а
+    содержимое для конкретной федерации — CouncilPage (вкладка «Общая
+    информация») и CouncilMember (вкладка «Состав»), оба со своим
+    region_id."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('council_category.id'), nullable=False)
+    name = db.Column(db.String(255), nullable=False)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+
+    category = db.relationship(
+        'CouncilCategory',
+        backref=db.backref('councils', cascade='all, delete-orphan', order_by='Council.sort_order, Council.name'),
+    )
+
+
+class CouncilPage(db.Model):
+    """Содержимое вкладки «Общая информация» одной коллегии/совета для
+    одной конкретной региональной федерации — текст из админки. Строка
+    создаётся по требованию (при первом сохранении текста для этой пары
+    в админке), поэтому у части (совет, федерация) её может не быть —
+    тогда вкладка показывает «Материалы пока не добавлены», как и другие
+    ещё не заполненные разделы сайта."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    council_id = db.Column(db.Integer, db.ForeignKey('council.id'), nullable=False)
+    region_id = db.Column(db.Integer, db.ForeignKey('regional_federation.id'), nullable=False)
+    intro_text = db.Column(db.Text)
+
+    council = db.relationship('Council', backref=db.backref('pages', cascade='all, delete-orphan'))
+    region = db.relationship('RegionalFederation')
+
+    __table_args__ = (db.UniqueConstraint('council_id', 'region_id', name='uq_council_page_council_region'),)
+
+
+class CouncilMember(db.Model):
+    """Член коллегии/совета одной конкретной региональной федерации.
+
+    is_chairman — выводится не строкой в списке, а отдельным баннером с
+    фото и должностью в заголовке на вкладке «Состав» (обычно один
+    человек, но поле не ограничивает количество)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    council_id = db.Column(db.Integer, db.ForeignKey('council.id'), nullable=False)
+    region_id = db.Column(db.Integer, db.ForeignKey('regional_federation.id'), nullable=False)
+    full_name = db.Column(db.String(255), nullable=False)
+    position = db.Column(db.String(255))
+    photo_path = db.Column(db.String(500))
+    is_chairman = db.Column(db.Boolean, nullable=False, default=False)
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+
+    council = db.relationship('Council', backref=db.backref('members', cascade='all, delete-orphan'))
+    region = db.relationship('RegionalFederation')
 
 
 class LocalFederation(db.Model):

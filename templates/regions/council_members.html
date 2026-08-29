@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Состав — {{ council.name }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Состав: {{ council.name }}, {{ region.name }}{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="fed-page-title">Коллегии и советы</h1>
+
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <div class="card p-4 mb-4">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <h2 class="h5 mb-0">{{ council.name }}</h2>
+                        <ul class="news-filter-menu comp-tabs-menu mb-0">
+                            <li role="presentation">
+                                <a href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">Общая информация</a>
+                            </li>
+                            <li role="presentation">
+                                <a class="active" href="{{ url_for('regions.council_members', region_id=region.id, council_id=council.id) }}">Состав</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                {% for chairman in chairmen %}
+                    <div class="council-chairman-card mb-4">
+                        <h3 class="council-chairman-position">{{ chairman.position or 'Руководитель' }}</h3>
+                        <div class="council-chairman-photo">
+                            {% if chairman.photo_path %}
+                                <img src="{{ url_for('static', filename=chairman.photo_path) }}" alt="{{ chairman.full_name }}">
+                            {% endif %}
+                        </div>
+                        <p class="council-chairman-name">{{ chairman.full_name }}</p>
+                    </div>
+                {% endfor %}
+
+                {% if other_members %}
+                    <div class="council-button-list">
+                        {% for member in other_members %}
+                            <div class="council-button council-button-static">
+                                <span class="council-button-title">{{ member.full_name }}</span>
+                                {% if member.position %}<span class="council-button-subtitle">{{ member.position }}</span>{% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% elif not chairmen %}
+                    <p class="text-muted mb-0">Состав пока не заполнен.</p>
+                {% endif %}
+            </div>
+            <div class="col-lg-3">
+                {% include "regions/_sidebar.html" with context %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

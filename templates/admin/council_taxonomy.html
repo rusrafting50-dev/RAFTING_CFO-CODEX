@@ -1,0 +1,204 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'councils' %}
+{% set can_edit = current_user.role in ('admin', 'editor') %}
+
+{% block title %}Коллегии и советы — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">Коллегии и советы — категории и список</h1>
+    <p class="text-muted">
+        Категории и советы внутри них — общий список для всех региональных федераций (пункты бокового меню и кнопки
+        на странице «Коллегии и советы»). Текст, руководитель и состав каждого совета для конкретной федерации —
+        в разделе «Регионы ЦФО» → карточка федерации → «Коллегии и советы».
+        {% if can_edit %}Порядок внутри группы меняется перетаскиванием за значок <span aria-hidden="true">⠿</span>.{% endif %}
+    </p>
+
+    {% if can_edit %}
+        <div class="card p-4 mb-4" style="max-width: 500px;">
+            <h2 class="h6 mb-3">Новая категория</h2>
+            <form method="post" action="{{ url_for('admin.council_category_new') }}" class="d-flex gap-2">
+                <input type="text" name="name" class="form-control" placeholder="Название категории" required>
+                <button type="submit" class="btn btn-primary">Добавить</button>
+            </form>
+        </div>
+    {% endif %}
+
+    {% if not categories %}
+        <p class="text-muted">Категорий пока нет.</p>
+    {% endif %}
+
+    <div class="taxonomy-reorder-group" data-reorder-categories="councils">
+        {% for category in categories %}
+            <div class="card p-4 mb-3 taxonomy-drag-item" style="max-width: 500px;"
+                 data-drag-item data-id="{{ category.id }}">
+                <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1">
+                        {% if can_edit %}<span class="taxonomy-drag-handle" aria-hidden="true">⠿</span>{% endif %}
+                        {% if can_edit %}
+                            <form method="post" action="{{ url_for('admin.council_category_edit', category_id=category.id) }}"
+                                  class="d-flex gap-2 flex-grow-1">
+                                <input type="text" name="name" class="form-control form-control-sm"
+                                       value="{{ category.name }}" required style="max-width: 260px;">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                            </form>
+                        {% else %}
+                            <h3 class="h6 mb-0">{{ category.name }}</h3>
+                        {% endif %}
+                    </div>
+                    {% if can_edit %}
+                        <form method="post" action="{{ url_for('admin.council_category_delete', category_id=category.id) }}"
+                              onsubmit="return confirm('Удалить категорию вместе со всеми советами внутри неё?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить категорию</button>
+                        </form>
+                    {% endif %}
+                </div>
+
+                {% if category.councils %}
+                    <h4 class="small text-uppercase text-muted mb-2">Советы</h4>
+                    <ul class="list-group mb-3 taxonomy-reorder-group" data-reorder-councils="{{ category.id }}">
+                        {% for council in category.councils %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center gap-2 taxonomy-drag-item"
+                                data-drag-item data-id="{{ council.id }}">
+                                <div class="d-flex align-items-center gap-2 flex-grow-1">
+                                    {% if can_edit %}<span class="taxonomy-drag-handle" aria-hidden="true">⠿</span>{% endif %}
+                                    {% if can_edit %}
+                                        <form method="post" action="{{ url_for('admin.council_edit', council_id=council.id) }}"
+                                              class="d-flex gap-2 flex-grow-1">
+                                            <input type="text" name="name" class="form-control form-control-sm"
+                                                   value="{{ council.name }}" required style="max-width: 220px;">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Сохранить</button>
+                                        </form>
+                                    {% else %}
+                                        <span>{{ council.name }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if can_edit %}
+                                    <form method="post" action="{{ url_for('admin.council_delete', council_id=council.id) }}"
+                                          onsubmit="return confirm('Удалить совет вместе со всем его содержимым во всех федерациях?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if can_edit %}
+                    <form method="post" action="{{ url_for('admin.council_new', category_id=category.id) }}" class="d-flex gap-2">
+                        <input type="text" name="name" class="form-control" placeholder="Новый совет" required>
+                        <button type="submit" class="btn btn-outline-primary">Добавить</button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <style>
+        .taxonomy-drag-handle {
+            display: inline-block;
+            margin-right: 6px;
+            color: #adb5bd;
+            cursor: grab;
+            font-size: 18px;
+            line-height: 1;
+            vertical-align: middle;
+            user-select: none;
+            touch-action: none;
+        }
+        .taxonomy-drag-item.taxonomy-dragging {
+            opacity: 0.5;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        body.taxonomy-drag-active {
+            cursor: grabbing !important;
+            user-select: none;
+        }
+    </style>
+
+    <script>
+        (function () {
+            // Тот же приём, что admin/document_taxonomy.html — перетаскивание
+            // за значок ⠿ через Pointer Events, сохранение одним запросом при
+            // отпускании мыши.
+            var CATEGORY_REORDER_URL = {{ url_for('admin.council_category_reorder')|tojson }};
+            var COUNCIL_REORDER_URL = {{ url_for('admin.council_reorder')|tojson }};
+
+            function items(container) {
+                return Array.prototype.slice.call(container.querySelectorAll(':scope > [data-drag-item]'));
+            }
+
+            function enableReorder(container, buildPayload) {
+                items(container).forEach(function (item) {
+                    var handle = item.querySelector('.taxonomy-drag-handle');
+                    if (!handle) return;
+
+                    handle.addEventListener('pointerdown', function (event) {
+                        if (event.button !== 0) return;
+                        event.preventDefault();
+                        startDrag(item, event.pointerId);
+                    });
+                });
+
+                function startDrag(item, pointerId) {
+                    item.classList.add('taxonomy-dragging');
+                    document.body.classList.add('taxonomy-drag-active');
+
+                    function onPointerMove(event) {
+                        if (event.pointerId !== pointerId) return;
+                        var siblings = items(container).filter(function (el) { return el !== item; });
+                        var target = null;
+                        for (var i = 0; i < siblings.length; i++) {
+                            var rect = siblings[i].getBoundingClientRect();
+                            if (event.clientY < rect.top + rect.height / 2) {
+                                target = siblings[i];
+                                break;
+                            }
+                        }
+                        if (target) {
+                            container.insertBefore(item, target);
+                        } else {
+                            container.appendChild(item);
+                        }
+                    }
+
+                    function onPointerUp(event) {
+                        if (event.pointerId !== pointerId) return;
+                        document.removeEventListener('pointermove', onPointerMove);
+                        document.removeEventListener('pointerup', onPointerUp);
+                        document.removeEventListener('pointercancel', onPointerUp);
+                        item.classList.remove('taxonomy-dragging');
+                        document.body.classList.remove('taxonomy-drag-active');
+                        save();
+                    }
+
+                    document.addEventListener('pointermove', onPointerMove);
+                    document.addEventListener('pointerup', onPointerUp);
+                    document.addEventListener('pointercancel', onPointerUp);
+                }
+
+                function save() {
+                    var order = items(container).map(function (el) { return parseInt(el.dataset.id, 10); });
+                    var payload = buildPayload(order);
+                    fetch(payload.url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload.body),
+                    });
+                }
+            }
+
+            document.querySelectorAll('[data-reorder-categories]').forEach(function (container) {
+                enableReorder(container, function (order) {
+                    return { url: CATEGORY_REORDER_URL, body: { order: order } };
+                });
+            });
+
+            document.querySelectorAll('[data-reorder-councils]').forEach(function (container) {
+                var categoryId = parseInt(container.dataset.reorderCouncils, 10);
+                enableReorder(container, function (order) {
+                    return { url: COUNCIL_REORDER_URL, body: { category_id: categoryId, order: order } };
+                });
+            });
+        })();
+    </script>
+{% endblock %}

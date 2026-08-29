@@ -1,0 +1,47 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'councils' %}
+
+{% block title %}{{ 'Редактирование записи' if member else 'Новый член совета' }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-2">
+        <a href="{{ url_for('admin.region_council_edit', region_id=region.id, council_id=council.id) }}">← {{ council.name }} — {{ region.name }}</a>
+    </p>
+    <h1 class="h4 mb-4">{{ 'Редактирование записи' if member else 'Новый член совета' }}</h1>
+
+    <form method="post" class="card p-4" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="full_name" class="form-label">ФИО</label>
+            <input type="text" class="form-control" id="full_name" name="full_name" required
+                   value="{{ member.full_name if member else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="position" class="form-label">Должность</label>
+            <input type="text" class="form-control" id="position" name="position"
+                   value="{{ (member.position or '') if member else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="photo" class="form-label">Фото</label>
+            {% if member and member.photo_path %}
+                <div class="mb-2">
+                    <img src="{{ url_for('static', filename=member.photo_path) }}" alt=""
+                         style="width: 140px; height: 140px; object-fit: cover; border-radius: 50%;" class="border">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="photo" name="photo" accept=".jpg,.jpeg,.png,.webp">
+            <div class="form-text">
+                Показывается на баннере, если отмечен «руководитель» ниже.
+                {% if member and member.photo_path %}Оставьте поле пустым, чтобы не менять текущее фото.{% endif %}
+            </div>
+        </div>
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="is_chairman" name="is_chairman" value="1"
+                   {{ 'checked' if member and member.is_chairman }}>
+            <label class="form-check-label" for="is_chairman">Руководитель (баннер с фото на странице совета)</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.region_council_edit', region_id=region.id, council_id=council.id) }}">Отмена</a>
+        </div>
+    </form>
+{% endblock %}

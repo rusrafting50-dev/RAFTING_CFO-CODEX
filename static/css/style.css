@@ -3129,3 +3129,84 @@ table.table-zebra tbody tr:nth-child(even) {
     color: var(--color-dark);
 }
 
+/* ===== Коллегии и советы региональной федерации ===== */
+
+/* Список кнопок-советов на странице «Коллегии и советы» (regions/section.html)
+   и список остального состава на вкладке «Состав» одного совета
+   (regions/council_members.html, .council-button-static — те же
+   размеры/фон, но не ссылка). */
+.council-button-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.council-button {
+    display: flex;
+    flex-direction: column;
+    background: #f5f5f5;
+    border-radius: 4px;
+    padding: 16px 20px;
+    color: var(--color-dark);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+a.council-button:hover {
+    background: #eef0f2;
+    color: var(--color-accent);
+}
+
+.council-button-static {
+    cursor: default;
+}
+
+.council-button-title {
+    font-weight: 600;
+}
+
+.council-button-subtitle {
+    font-weight: 400;
+    font-size: 14px;
+    color: #6c757d;
+    margin-top: 2px;
+}
+
+/* Баннер руководителя совета на вкладке «Состав» — фото по центру,
+   должность заголовком над карточкой, ФИО под фото. */
+.council-chairman-position {
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--color-dark);
+    margin: 0 0 12px;
+}
+
+.council-chairman-card {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    text-align: center;
+}
+
+.council-chairman-photo {
+    width: 160px;
+    height: 160px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: #eef0f2;
+    overflow: hidden;
+}
+
+.council-chairman-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.council-chairman-name {
+    margin: 14px 0 0;
+    font-weight: 700;
+    color: var(--color-dark);
+}
+

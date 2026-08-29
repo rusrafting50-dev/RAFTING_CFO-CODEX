@@ -18,6 +18,7 @@
                     <tr class="table-dark">
                         <th>Логотип</th>
                         <th>Название</th>
+                        <th>Коллегии и советы</th>
                         {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
                     </tr>
                 </thead>
@@ -31,6 +32,7 @@
                                 {% endif %}
                             </td>
                             <td>{{ region.name }}</td>
+                            <td><a href="{{ url_for('admin.region_councils_list', region_id=region.id) }}">Текст и состав</a></td>
                             {% if current_user.role in ('admin', 'editor') %}
                                 <td class="d-flex gap-1 flex-wrap">
                                     <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.regions_edit', region_id=region.id) }}">Изменить</a>

@@ -1,0 +1,69 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'councils' %}
+
+{% block title %}{{ council.name }} — {{ region.name }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-2">
+        <a href="{{ url_for('admin.region_councils_list', region_id=region.id) }}">← {{ region.name }}: коллегии и советы</a>
+    </p>
+    <h1 class="h4 mb-4">{{ council.name }} — {{ region.name }}</h1>
+
+    <form method="post" class="card p-4 mb-4">
+        <div class="mb-3">
+            <label for="intro_text" class="form-label">Общая информация</label>
+            <textarea class="form-control" id="intro_text" name="intro_text" rows="6" data-rich-text="1">{{ page.intro_text or '' if page else '' }}</textarea>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">Состав</h2>
+        <a class="btn btn-primary btn-sm"
+           href="{{ url_for('admin.region_council_members_new', region_id=region.id, council_id=council.id) }}">Добавить</a>
+    </div>
+    <p class="text-muted">Отмеченный «руководитель» выводится на сайте отдельным баннером с фото вместо строки в списке.</p>
+
+    {% if members %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Фото</th>
+                        <th>ФИО</th>
+                        <th>Должность</th>
+                        <th>Руководитель</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        <tr>
+                            <td>
+                                {% if member.photo_path %}
+                                    <img src="{{ url_for('static', filename=member.photo_path) }}" alt=""
+                                         style="width: 48px; height: 48px; object-fit: cover; border-radius: 50%;">
+                                {% endif %}
+                            </td>
+                            <td>{{ member.full_name }}</td>
+                            <td>{{ member.position }}</td>
+                            <td>{{ 'да' if member.is_chairman else '' }}</td>
+                            <td class="d-flex gap-1 flex-wrap">
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="{{ url_for('admin.region_council_members_edit', region_id=region.id, council_id=council.id, member_id=member.id) }}">Изменить</a>
+                                <form method="post" action="{{ url_for('admin.region_council_members_delete', region_id=region.id, council_id=council.id, member_id=member.id) }}"
+                                      onsubmit="return confirm('Удалить запись?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Состав пока не заполнен.</p>
+    {% endif %}
+{% endblock %}

@@ -56,6 +56,14 @@
             <label for="goals_text" class="form-label">Направления деятельности</label>
             <textarea class="form-control" id="goals_text" name="goals_text" rows="4" data-rich-text="1">{{ region.goals_text or '' if region else '' }}</textarea>
         </div>
+        <div class="mb-3">
+            <label for="councils_intro_text" class="form-label">Коллегии и советы — вводный текст</label>
+            <textarea class="form-control" id="councils_intro_text" name="councils_intro_text" rows="4" data-rich-text="1">{{ region.councils_intro_text or '' if region else '' }}</textarea>
+            <div class="form-text">
+                Текст над списком категорий на странице «Коллегии и советы». Наполнение самих советов (текст,
+                состав) — {% if region %}<a href="{{ url_for('admin.region_councils_list', region_id=region.id) }}">отдельная страница</a>{% else %}отдельная страница, доступна после сохранения{% endif %}.
+            </div>
+        </div>
         <h2 class="h6 mb-3">Контакты</h2>
         <div class="row mb-3">
             <div class="col-md-4">

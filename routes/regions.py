@@ -2,7 +2,8 @@
 from flask import Blueprint, abort, render_template, request, url_for
 
 from models import (
-    Athlete, Club, Document, DocumentCategory, DocumentSection, LocalFederation, RegionalFederation, db,
+    Athlete, Club, Council, CouncilCategory, CouncilMember, CouncilPage, Document, DocumentCategory,
+    DocumentSection, LocalFederation, News, RegionalFederation, db,
 )
 
 bp = Blueprint('regions', __name__)
@@ -25,6 +26,7 @@ FUNCTIONAL_SECTIONS = [
     ('goals', 'Направления деятельности'),
     ('leadership', 'Руководство'),
     ('local_federations', 'Местные спортивные федерации'),
+    ('councils', 'Коллегии и советы'),
     ('calendar', 'Календарный план'),
     ('team', 'Сборная команда'),
     ('contacts', 'Контакты'),
@@ -65,6 +67,7 @@ FEDERATION_SIDEBAR_LAYOUT = [
     ('functional', 'goals'),
     'category', ('functional', 'leadership'),
     ('functional', 'local_federations'),
+    ('functional', 'councils'),
     'category', 'category', ('functional', 'calendar'),
     'category', ('functional', 'team'),
 ]
@@ -350,6 +353,14 @@ def section(region_id, section):
             'gender': TEAM_GENDER_BY_CATEGORY.get((coach.national_team or '').strip().lower(), 'мужские'),
         } for coach in _team_coaches(region, clubs_by_name)]
 
+    council_categories = []
+    active_council_category_id = None
+    if section == 'councils':
+        council_categories = CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all()
+        active_council_category_id = request.args.get('category', type=int)
+        if active_council_category_id not in {c.id for c in council_categories}:
+            active_council_category_id = council_categories[0].id if council_categories else None
+
     if section in TEAM_MENU_SECTION_KEYS:
         sidebar_items = _team_sidebar_items(region, active_key=section, team_gender=team_gender, team_category=team_category)
     else:
@@ -361,6 +372,73 @@ def section(region_id, section):
         team_roster=team_roster, team_gender=team_gender, team_category=team_category,
         team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(team_gender, []),
         team_coaches=team_coaches, region_local_federations=region_local_federations,
+        council_categories=council_categories, active_council_category_id=active_council_category_id,
+    )
+
+
+def _councils_sidebar_items(region, active_council_id=None):
+    """Боковое меню страницы конкретной коллегии/совета — полностью
+    заменяет общее меню «О федерации» (тот же приём, что
+    _team_sidebar_items()): только категории (CouncilCategory) с
+    раскрывающимся списком советов внутри (kind='category', как
+    категории документов в _sidebar_items()), без «Федерация»/
+    «Руководство»/... Название категории само по себе ведёт на список
+    «Коллегии и советы» этой федерации, отфильтрованный по ней."""
+    items = []
+    for category in CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all():
+        sections = [{
+            'label': council.name,
+            'url': url_for('regions.council_detail', region_id=region.id, council_id=council.id),
+            'active': council.id == active_council_id,
+        } for council in category.councils]
+        items.append({
+            'kind': 'category',
+            'label': category.name,
+            'url': url_for('regions.section', region_id=region.id, section='councils', category=category.id),
+            'active': any(s['active'] for s in sections),
+            'sections': sections,
+        })
+    return items
+
+
+@bp.route('/<int:region_id>/councils/<int:council_id>')
+def council_detail(region_id, council_id):
+    """Страница конкретной коллегии/совета федерации — вкладка «Общая
+    информация»: текст из админки (CouncilPage) для этой пары (совет,
+    федерация) и новости, отмеченные этим советом (News.council_id)."""
+    region = RegionalFederation.query.get_or_404(region_id)
+    council = Council.query.get_or_404(council_id)
+    page = CouncilPage.query.filter_by(region_id=region.id, council_id=council.id).first()
+    tagged_news = (
+        News.query.filter_by(council_id=council.id, is_published=True)
+        .order_by(News.published_at.desc())
+        .all()
+    )
+    return render_template(
+        'regions/council_detail.html', region=region, council=council, page=page, tagged_news=tagged_news,
+        sidebar_items=_councils_sidebar_items(region, active_council_id=council.id),
+    )
+
+
+@bp.route('/<int:region_id>/councils/<int:council_id>/members')
+def council_members(region_id, council_id):
+    """Вкладка «Состав» страницы коллегии/совета — руководитель(и)
+    (CouncilMember.is_chairman) баннером с фото, остальной состав —
+    списком ФИО/должность в том же виде, что кнопки советов на списке
+    «Коллегии и советы» (regions/_council_button.html)."""
+    region = RegionalFederation.query.get_or_404(region_id)
+    council = Council.query.get_or_404(council_id)
+    members = (
+        CouncilMember.query.filter_by(region_id=region.id, council_id=council.id)
+        .order_by(CouncilMember.sort_order, CouncilMember.full_name)
+        .all()
+    )
+    chairmen = [m for m in members if m.is_chairman]
+    other_members = [m for m in members if not m.is_chairman]
+    return render_template(
+        'regions/council_members.html', region=region, council=council,
+        chairmen=chairmen, other_members=other_members,
+        sidebar_items=_councils_sidebar_items(region, active_council_id=council.id),
     )
 
 

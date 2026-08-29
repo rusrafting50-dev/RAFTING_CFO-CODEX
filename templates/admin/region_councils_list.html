@@ -1,0 +1,51 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'councils' %}
+
+{% block title %}Коллегии и советы — {{ region.name }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-2"><a href="{{ url_for('admin.regions_list') }}">← Регионы ЦФО</a></p>
+    <h1 class="h4 mb-4">Коллегии и советы: {{ region.name }}</h1>
+    <p class="text-muted">
+        Список категорий и советов — общий для всех федераций (редактируется в разделе
+        <a href="{{ url_for('admin.council_taxonomy') }}">«Коллегии и советы» → категории и список</a>).
+        Здесь — текст и состав каждого совета именно для этой федерации.
+    </p>
+
+    {% if not categories %}
+        <p class="text-muted">Категории пока не добавлены.</p>
+    {% endif %}
+
+    {% for category in categories %}
+        <h2 class="h6 mt-4 mb-2">{{ category.name }}</h2>
+        {% if category.councils %}
+            <div class="table-responsive">
+                <table class="table table-zebra align-middle">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>Совет</th>
+                            <th>Текст</th>
+                            <th>Состав</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for council in category.councils %}
+                            <tr>
+                                <td>{{ council.name }}</td>
+                                <td>{{ 'заполнен' if pages_by_council.get(council.id) and pages_by_council[council.id].intro_text else '—' }}</td>
+                                <td>{{ member_counts.get(council.id, 0) }}</td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ url_for('admin.region_council_edit', region_id=region.id, council_id=council.id) }}">Редактировать</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted">Советов в этой категории пока нет.</p>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

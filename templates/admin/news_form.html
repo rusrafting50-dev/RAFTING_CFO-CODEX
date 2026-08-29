@@ -104,6 +104,20 @@
                 </select>
             </div>
         </div>
+        <div class="mb-3">
+            <label for="council_id" class="form-label">Коллегия / совет</label>
+            <select class="form-select" id="council_id" name="council_id">
+                <option value="">—</option>
+                {% for category in council_choices %}
+                    <optgroup label="{{ category.name }}">
+                        {% for council in category.councils %}
+                            <option value="{{ council.id }}" {{ 'selected' if news and news.council_id == council.id }}>{{ council.name }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %}
+            </select>
+            <div class="form-text">Новость появится на странице этой коллегии/совета среди тегированных новостей.</div>
+        </div>
         <div class="form-check mb-3">
             <input type="checkbox" class="form-check-input" id="is_published" name="is_published"
                    {{ 'checked' if news and news.is_published }}>
