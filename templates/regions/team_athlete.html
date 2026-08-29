@@ -37,11 +37,6 @@
                                 <div class="athlete-detail-photo">
                                     {{ athlete_photo(athlete, gender, variant='detail') }}
                                 </div>
-                                {% if club and club.logo_path %}
-                                    <span class="athlete-detail-club-badge">
-                                        <img src="{{ url_for('static', filename=club.logo_path) }}" alt="{{ club.name }}">
-                                    </span>
-                                {% endif %}
                             </div>
                         </div>
                         <div class="col-sm-8 col-md-9">
