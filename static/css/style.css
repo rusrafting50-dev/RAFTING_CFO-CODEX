@@ -3032,17 +3032,6 @@ table.table-zebra tbody tr:nth-child(even) {
     object-fit: cover;
 }
 
-/* Мужская сборная — карточка спортсмена скруглённым прямоугольником, а
-   не кругом, как у образца (rfs.ru): весь ряд карточек там одной формы
-   независимо от того, есть ли реальное фото у конкретного спортсмена,
-   поэтому квадрат применяется и к фото, и к силуэту-заглушке разом, а
-   не только к заглушке. Женские сборные пока остаются кругом — просили
-   только для мужских. */
-.athlete-card-photo-male {
-    aspect-ratio: 4 / 5;
-    border-radius: 12px;
-}
-
 /* Логотип клуба спортсмена — кружком поверх нижнего левого края фото,
    тот же приём, что бейджи статуса на аватарках в соцсетях. */
 .athlete-card-club-badge {
@@ -3098,25 +3087,6 @@ table.table-zebra tbody tr:nth-child(even) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-/* Мужская сборная — тот же скруглённый прямоугольник, что у карточки в
-   сетке, плюс тёмный диагональный фон под силуэт/фото — тот же приём,
-   что .region-card-photo/.comp-card-photo в остальных местах сайта, для
-   единообразия. Силуэт-заглушка (.athlete-photo-placeholder) залит
-   тёмным на этом фоне уже по умолчанию, отдельно тут ничего не нужно. */
-.athlete-detail-photo-male {
-    aspect-ratio: 4 / 5;
-    border-radius: 12px;
-    background:
-        repeating-linear-gradient(
-            45deg,
-            rgba(255, 255, 255, 0.04) 0px,
-            rgba(255, 255, 255, 0.04) 2px,
-            transparent 2px,
-            transparent 26px
-        ),
-        linear-gradient(135deg, var(--color-dark) 0%, #3a3d6e 100%);
 }
 
 .athlete-detail-club-badge {

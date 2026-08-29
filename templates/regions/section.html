@@ -38,7 +38,7 @@
                                 <div class="col">
                                     <a class="athlete-card" href="{{ url_for('regions.team_athlete', region_id=region.id, athlete_id=entry.athlete.id) }}">
                                         <div class="athlete-card-photo-wrap">
-                                            <div class="athlete-card-photo{{ ' athlete-card-photo-male' if team_gender == 'мужские' }}">
+                                            <div class="athlete-card-photo">
                                                 {{ athlete_photo(entry.athlete, team_gender) }}
                                             </div>
                                             {% if entry.club and entry.club.logo_path %}
