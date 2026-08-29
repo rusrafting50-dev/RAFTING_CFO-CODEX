@@ -247,9 +247,19 @@ def team_athlete(region_id, athlete_id):
     gender = TEAM_GENDER_BY_CATEGORY.get(category.lower()) if category else None
     roster = _team_roster(region, category, clubs_by_name)
 
+    # Меню пола/категории — то же, что на странице сборной команды
+    # (section(), 'team'), сюда попадает как gender/category самого
+    # спортсмена (для подсветки активного пункта), так что если
+    # категория не распознана (не входит ни в один из списков
+    # TEAM_CATEGORIES_BY_GENDER), меню всё равно строится — по умолчанию
+    # 'мужские', как и на странице сборной команды.
+    menu_gender = gender or 'мужские'
+
     return render_template(
         'regions/team_athlete.html', region=region, athlete=athlete, club=club,
         roster=roster, gender=gender, category=category,
+        team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(menu_gender, []),
+        menu_gender=menu_gender,
     )
 
 

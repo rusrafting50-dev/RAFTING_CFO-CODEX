@@ -3066,17 +3066,6 @@ table.table-zebra tbody tr:nth-child(even) {
     text-decoration: underline;
 }
 
-.athlete-detail-back {
-    display: inline-block;
-    font-size: 14px;
-    color: var(--color-accent);
-    text-decoration: none;
-}
-
-.athlete-detail-back:hover {
-    text-decoration: underline;
-}
-
 .athlete-detail-photo-wrap {
     position: relative;
     width: 100%;

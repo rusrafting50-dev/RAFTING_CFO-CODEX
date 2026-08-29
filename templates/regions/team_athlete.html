@@ -10,9 +10,27 @@
 
         <div class="row g-4">
             <div class="col-lg-9">
-                <a class="athlete-detail-back" href="{{ url_for('regions.section', region_id=region.id, section='team', gender=gender, category=category) }}">&larr; Сборная команда</a>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
+                    <h2 class="h5 mb-0">Сборная команда</h2>
+                    <ul class="news-filter-menu comp-tabs-menu">
+                        {% for value, label in team_genders %}
+                            <li role="presentation">
+                                <a class="{{ 'active' if menu_gender == value }}"
+                                   href="{{ url_for('regions.section', region_id=region.id, section='team', gender=value) }}">{{ label }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <ul class="news-submenu mb-4">
+                    {% for team_category in team_categories %}
+                        <li role="presentation">
+                            <a class="{{ 'active' if category == team_category }}"
+                               href="{{ url_for('regions.section', region_id=region.id, section='team', gender=menu_gender, category=team_category) }}">{{ team_category }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
 
-                <div class="athlete-detail card p-4 mt-3">
+                <div class="athlete-detail card p-4">
                     <div class="row g-4">
                         <div class="col-sm-4 col-md-3">
                             <div class="athlete-detail-photo-wrap">
