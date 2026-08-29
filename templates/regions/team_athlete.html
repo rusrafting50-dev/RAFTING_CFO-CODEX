@@ -35,7 +35,7 @@
                         <div class="col-sm-4 col-md-3">
                             <div class="athlete-detail-photo-wrap">
                                 <div class="athlete-detail-photo">
-                                    {{ athlete_photo(athlete, gender) }}
+                                    {{ athlete_photo(athlete, gender, variant='detail') }}
                                 </div>
                                 {% if club and club.logo_path %}
                                     <span class="athlete-detail-club-badge">

@@ -2992,14 +2992,6 @@ table.table-zebra tbody tr:nth-child(even) {
 
 /* ===== Сборная команда региональной федерации ===== */
 
-/* Силуэт-заглушка (см. regions/_athlete_photo.html) — цвет общий что для
-   карточки в сетке, что для крупного фото на странице спортсмена. */
-.athlete-photo-placeholder {
-    width: 60%;
-    height: 60%;
-    fill: #b6bdc4;
-}
-
 .athlete-card {
     display: flex;
     flex-direction: column;
