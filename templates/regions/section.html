@@ -8,7 +8,11 @@
 
 {% block content %}
     <div class="container py-5">
-        {% include "regions/_page_title.html" with context %}
+        {% if section == 'councils' %}
+            <h1 class="fed-page-title">Коллегии и советы</h1>
+        {% else %}
+            {% include "regions/_page_title.html" with context %}
+        {% endif %}
 
         <div class="row g-4">
             <div class="col-lg-9">
@@ -99,12 +103,13 @@
                         <p class="text-muted mb-0">Местные спортивные федерации пока не добавлены.</p>
                     {% endif %}
                 {% elif section == 'councils' %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    {% if region.councils_intro_text %}
-                        <div class="fed-text-block mb-4">
+                    <div class="fed-text-block mb-4">
+                        {% if region.councils_intro_text %}
                             <div class="fed-intro">{{ region.councils_intro_text|richtext }}</div>
-                        </div>
-                    {% endif %}
+                        {% else %}
+                            <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                        {% endif %}
+                    </div>
                     {% if council_categories %}
                         <ul class="news-submenu mb-4">
                             {% for category in council_categories %}
