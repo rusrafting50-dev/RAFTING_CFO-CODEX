@@ -3119,16 +3119,3 @@ table.table-zebra tbody tr:nth-child(even) {
     color: var(--color-dark);
 }
 
-.athlete-roster-panel {
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 16px;
-}
-
-.athlete-roster-title {
-    font-size: 15px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--color-dark);
-    margin: 0 0 12px;
-}
