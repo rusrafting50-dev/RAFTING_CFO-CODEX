@@ -675,6 +675,28 @@ def document_category_new():
     return redirect(url_for('admin.document_taxonomy'))
 
 
+@bp.route('/documents/taxonomy/categories/<int:category_id>/edit', methods=['POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def document_category_edit(category_id):
+    category = DocumentCategory.query.get_or_404(category_id)
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название категории обязательно.', 'error')
+    elif any(
+        c.id != category.id and c.name.lower() == name.lower()
+        for c in DocumentCategory.query.filter_by(scope=category.scope).all()
+    ):
+        # Уникальность — в пределах scope, как и при создании (см.
+        # document_category_new).
+        flash('Такая категория в этом разделе уже есть.', 'error')
+    else:
+        category.name = name
+        db.session.commit()
+        flash('Категория переименована.', 'success')
+    return redirect(url_for('admin.document_taxonomy'))
+
+
 @bp.route('/documents/taxonomy/categories/<int:category_id>/delete', methods=['POST'])
 @section_required('documents')
 @roles_required('admin', 'editor')
@@ -700,6 +722,23 @@ def document_section_new(category_id):
         db.session.add(DocumentSection(category_id=category.id, name=name))
         db.session.commit()
         flash('Раздел добавлен.', 'success')
+    return redirect(url_for('admin.document_taxonomy'))
+
+
+@bp.route('/documents/taxonomy/sections/<int:section_id>/edit', methods=['POST'])
+@section_required('documents')
+@roles_required('admin', 'editor')
+def document_section_edit(section_id):
+    section = DocumentSection.query.get_or_404(section_id)
+    name = request.form.get('name', '').strip()
+    if not name:
+        flash('Название раздела обязательно.', 'error')
+    elif any(s.id != section.id and s.name.lower() == name.lower() for s in section.category.sections):
+        flash('Такой раздел в этой категории уже есть.', 'error')
+    else:
+        section.name = name
+        db.session.commit()
+        flash('Раздел переименован.', 'success')
     return redirect(url_for('admin.document_taxonomy'))
 
 
