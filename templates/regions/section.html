@@ -11,17 +11,18 @@
 
         <div class="row g-4">
             <div class="col-lg-9">
-                <h2 class="h5 mb-3">{{ section_label }}</h2>
-
                 {% if section == 'team' %}
-                    <ul class="news-submenu mb-3">
-                        {% for value, label in team_genders %}
-                            <li role="presentation">
-                                <a class="{{ 'active' if team_gender == value }}"
-                                   href="{{ url_for('regions.section', region_id=region.id, section='team', gender=value) }}">{{ label }}</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
+                        <h2 class="h5 mb-0">{{ section_label }}</h2>
+                        <ul class="news-filter-menu comp-tabs-menu">
+                            {% for value, label in team_genders %}
+                                <li role="presentation">
+                                    <a class="{{ 'active' if team_gender == value }}"
+                                       href="{{ url_for('regions.section', region_id=region.id, section='team', gender=value) }}">{{ label }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                     <ul class="news-submenu mb-4">
                         {% for category in team_categories %}
                             <li role="presentation">
@@ -55,12 +56,14 @@
                         <p class="text-muted mb-0">Состав пока не добавлен.</p>
                     {% endif %}
                 {% elif section == 'clubs' %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
                     {% if region_clubs %}
                         {{ club_cards(region_clubs) }}
                     {% else %}
                         <p class="text-muted mb-0">Клубы пока не добавлены.</p>
                     {% endif %}
                 {% else %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
                     <div class="fed-text-block">
                         {% if section == 'goals' %}
                             {% if region.goals_text %}
