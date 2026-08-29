@@ -1,0 +1,55 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'local_federations' %}
+
+{% block title %}Местные федерации — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Местные спортивные федерации</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.local_federations_new') }}">Добавить</a>
+        {% endif %}
+    </div>
+
+    {% if local_federations %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Логотип</th>
+                        <th>Название</th>
+                        <th>Регион</th>
+                        <th>Состав</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for local_federation in local_federations %}
+                        <tr>
+                            <td>
+                                {% if local_federation.logo_path %}
+                                    <img src="{{ url_for('static', filename=local_federation.logo_path) }}" alt=""
+                                         style="width: 48px; height: 48px; object-fit: contain; border-radius: 50%; background: #f5f5f5;">
+                                {% endif %}
+                            </td>
+                            <td>{{ local_federation.name }}</td>
+                            <td>{{ local_federation.region.name }}</td>
+                            <td><a href="{{ url_for('admin.local_federation_members_list', local_federation_id=local_federation.id) }}">Руководство, члены, коллегии</a></td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.local_federations_edit', local_federation_id=local_federation.id) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.local_federations_delete', local_federation_id=local_federation.id) }}"
+                                          onsubmit="return confirm('Удалить местную федерацию вместе со всем её составом?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Местные спортивные федерации пока не добавлены.</p>
+    {% endif %}
+{% endblock %}

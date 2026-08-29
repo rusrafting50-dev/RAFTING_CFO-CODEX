@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ section_label }} — {{ local_federation.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}{{ section_label }}: {{ local_federation.name }}{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="fed-page-title">{{ local_federation.name }}</h1>
+
+        <div class="row g-4">
+            <div class="col-lg-9">
+                {% if section in ('leadership', 'members', 'councils') %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
+                    {% if members_by_body %}
+                        {% for body, members in members_by_body.items() %}
+                            {% if section == 'councils' %}
+                                <h3 class="h6 mt-4 mb-3">{{ body_labels.get(body, body) }}</h3>
+                            {% endif %}
+                            <div class="table-responsive">
+                                <table class="table table-zebra align-middle">
+                                    <thead>
+                                        <tr class="site-table-header">
+                                            <th>ФИО</th>
+                                            <th>Должность</th>
+                                            <th>Контакты</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for member in members %}
+                                            <tr>
+                                                <td>{{ member.full_name }}</td>
+                                                <td>{{ member.position }}</td>
+                                                <td>{{ member.contacts }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0">Состав пока не заполнен.</p>
+                    {% endif %}
+                {% elif section == 'contacts' %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
+                    <div class="fed-text-block">
+                        {% if local_federation.contact_phone or local_federation.contact_email or local_federation.contact_address %}
+                            <ul class="list-unstyled mb-0">
+                                {% if local_federation.contact_address %}<li class="mb-2"><span aria-hidden="true">📍</span> {{ local_federation.contact_address }}</li>{% endif %}
+                                {% if local_federation.contact_phone %}<li class="mb-2"><span aria-hidden="true">📞</span> {{ local_federation.contact_phone }}</li>{% endif %}
+                                {% if local_federation.contact_email %}<li class="mb-0"><span aria-hidden="true">✉️</span> {{ local_federation.contact_email }}</li>{% endif %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted mb-0">Контакты пока не добавлены.</p>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
+                    <div class="fed-text-block">
+                        {% set section_text = {
+                            'calendar': local_federation.calendar_text,
+                            'clubs': local_federation.clubs_text,
+                        }[section] %}
+                        {% if section_text %}
+                            <div class="fed-intro">{{ section_text|richtext }}</div>
+                        {% else %}
+                            <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-3">
+                {% include "clubs/_sidebar.html" with context %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -296,15 +296,29 @@ class User(UserMixin, db.Model):
 
 
 class FederationMember(db.Model):
-    """Состав органов федерации (исполком, коллегия судей и т.д.)."""
+    """Состав органов федерации (исполком, коллегия судей и т.д.).
+
+    local_federation_id — NULL для состава уровня ЦФО (federation.structure(),
+    body из 'исполком'/'коллегия_судей'/'тренерский_совет'/'комитет_представителей'),
+    заполнено — для состава конкретной местной спортивной федерации
+    (routes/local_federations.py: section()), там свои значения body:
+    'руководство'/'член_федерации' — под отдельные разделы «Руководство»/
+    «Члены Федерации», плюс те же 'коллегия_судей'/'тренерский_совет'/
+    'комитет_представителей' — сгруппированы под общим разделом «Коллегии
+    и советы» (та же группировка по body, что и на странице ЦФО)."""
 
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(255), nullable=False)
     position = db.Column(db.String(255))
-    body = db.Column(db.String(50))  # исполком / коллегия_судей / тренерский_совет / комитет_представителей
+    body = db.Column(db.String(50))  # исполком / коллегия_судей / тренерский_совет / комитет_представителей / руководство / член_федерации
     level = db.Column(db.String(50))  # цфо / регион
     photo_path = db.Column(db.String(500))
     contacts = db.Column(db.String(255))
+    local_federation_id = db.Column(db.Integer, db.ForeignKey('local_federation.id'))
+
+    local_federation = db.relationship(
+        'LocalFederation', backref=db.backref('members', cascade='all, delete-orphan'),
+    )
 
 
 class RegionalFederation(db.Model):
@@ -367,6 +381,37 @@ class RegionalFederation(db.Model):
         строку по границе кавычек, а не режется браузером как попало.
         В отличие от name_quoted (для шапки сайта), кавычки не убираются."""
         return self._split_name()[2]
+
+
+class LocalFederation(db.Model):
+    """Местные спортивные федерации — третий уровень структуры сайта
+    (ЦФО → Региональная федерация → Местная федерация), параллельно
+    Club. Список показывается в разделе «Местные спортивные федерации»
+    на странице региональной федерации-родителя (routes/regions.py),
+    персональная страница — по структуре и оформлению повторяющая
+    RegionalFederation/Club (routes/local_federations.py).
+
+    Разделы бокового меню персональной страницы: «Руководство»/«Члены
+    Федерации»/«Коллегии и советы» — не текстовые поля здесь, а списки
+    FederationMember с local_federation_id, указывающим на эту запись
+    (см. FederationMember.body); «Календарный план»/«Клубы» — свой
+    произвольный текст ниже (список клубов местной федерации не связан
+    с моделью Club — вводится вручную)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
+    region_id = db.Column(db.Integer, db.ForeignKey('regional_federation.id'), nullable=False)
+    logo_path = db.Column(db.String(500))  # круг на карточке/баннере, как у RegionalFederation.logo_path
+
+    # Общая информация под баннером на странице местной федерации.
+    intro_text = db.Column(db.Text)
+    calendar_text = db.Column(db.Text)  # Календарный план
+    clubs_text = db.Column(db.Text)  # Клубы
+    contact_phone = db.Column(db.String(100))
+    contact_email = db.Column(db.String(150))
+    contact_address = db.Column(db.String(500))
+
+    region = db.relationship('RegionalFederation', backref='local_federations')
 
 
 class Club(db.Model):

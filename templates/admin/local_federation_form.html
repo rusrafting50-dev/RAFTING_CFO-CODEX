@@ -1,0 +1,78 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'local_federations' %}
+
+{% block title %}{{ 'Редактирование местной федерации' if local_federation else 'Новая местная федерация' }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-4">{{ 'Редактирование местной федерации' if local_federation else 'Новая местная спортивная федерация' }}</h1>
+
+    <form method="post" class="card p-4" enctype="multipart/form-data">
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <label for="name" class="form-label">Название</label>
+                <input type="text" class="form-control" id="name" name="name" required
+                       value="{{ local_federation.name if local_federation else '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="region_id" class="form-label">Региональная федерация</label>
+                <select class="form-select" id="region_id" name="region_id" required>
+                    <option value="">—</option>
+                    {% for region in regions %}
+                        <option value="{{ region.id }}" {{ 'selected' if local_federation and local_federation.region_id == region.id }}>{{ region.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="logo" class="form-label">Логотип</label>
+            {% if local_federation and local_federation.logo_path %}
+                <div class="mb-2">
+                    <img src="{{ url_for('static', filename=local_federation.logo_path) }}" alt=""
+                         style="width: 220px; height: 220px; object-fit: contain; border-radius: 50%; background: #f5f5f5; padding: 44px; box-sizing: border-box;" class="border">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" id="logo" name="logo" accept=".jpg,.jpeg,.png,.webp">
+            <div class="form-text">
+                Логотип выводится в круге на карточке местной федерации, рекомендуется квадратное изображение.
+                {% if local_federation and local_federation.logo_path %}Оставьте поле пустым, чтобы не менять текущий логотип.{% endif %}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="intro_text" class="form-label">Общая информация (на странице местной федерации, под баннером)</label>
+            <textarea class="form-control" id="intro_text" name="intro_text" rows="4" data-rich-text="1">{{ local_federation.intro_text or '' if local_federation else '' }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="calendar_text" class="form-label">Календарный план</label>
+            <textarea class="form-control" id="calendar_text" name="calendar_text" rows="3" data-rich-text="1">{{ local_federation.calendar_text or '' if local_federation else '' }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="clubs_text" class="form-label">Клубы</label>
+            <textarea class="form-control" id="clubs_text" name="clubs_text" rows="3" data-rich-text="1">{{ local_federation.clubs_text or '' if local_federation else '' }}</textarea>
+        </div>
+        <h2 class="h6 mb-3">Контакты</h2>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="contact_phone" class="form-label">Телефон</label>
+                <input type="text" class="form-control" id="contact_phone" name="contact_phone"
+                       value="{{ local_federation.contact_phone or '' if local_federation else '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="contact_email" class="form-label">E-mail</label>
+                <input type="text" class="form-control" id="contact_email" name="contact_email"
+                       value="{{ local_federation.contact_email or '' if local_federation else '' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="contact_address" class="form-label">Адрес</label>
+                <input type="text" class="form-control" id="contact_address" name="contact_address"
+                       value="{{ local_federation.contact_address or '' if local_federation else '' }}">
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.local_federations_list') }}">Отмена</a>
+            {% if local_federation %}
+                <a class="btn btn-outline-secondary" href="{{ url_for('admin.local_federation_members_list', local_federation_id=local_federation.id) }}">Руководство, члены, коллегии</a>
+            {% endif %}
+        </div>
+    </form>
+{% endblock %}

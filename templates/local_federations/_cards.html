@@ -1,0 +1,26 @@
+{# Карточки местных спортивных федераций (лого + название) — раздел
+   «Местные спортивные федерации» на странице региональной федерации
+   (regions/section.html, уже один конкретный регион) — та же карточка
+   и тот же приём «дотягивания» логотипа под круглое поле, что у клубов
+   (clubs/_cards.html: club_cards/club_cards_script) — JS-часть общая,
+   отдельного скрипта здесь нет, подключается clubs/_cards.html.club_cards_script(). #}
+{% macro local_federation_cards(local_federations) %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        {% for local_federation in local_federations %}
+            <div class="col">
+                <a class="region-card" href="{{ url_for('local_federations.detail', local_federation_id=local_federation.id) }}">
+                    <div class="region-card-photo">
+                        <div class="region-card-logo club-card-logo">
+                            {% if local_federation.logo_path %}
+                                <img src="{{ url_for('static', filename=local_federation.logo_path) }}" alt="{{ local_federation.name }}">
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="region-card-body">
+                        <h3 class="region-card-name">{{ local_federation.name }}</h3>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endmacro %}

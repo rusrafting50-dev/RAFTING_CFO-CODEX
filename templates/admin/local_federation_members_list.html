@@ -1,0 +1,56 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'local_federations' %}
+
+{% block title %}Состав — {{ local_federation.name }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-2"><a href="{{ url_for('admin.local_federations_list') }}">← Местные спортивные федерации</a></p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 mb-0">Состав: {{ local_federation.name }}</h1>
+        {% if current_user.role in ('admin', 'editor') %}
+            <a class="btn btn-primary btn-sm" href="{{ url_for('admin.local_federation_members_new', local_federation_id=local_federation.id) }}">Добавить</a>
+        {% endif %}
+    </div>
+    <p class="text-muted">
+        Орган «руководство» выводится на сайте в разделе «Руководство», «член_федерации» — в «Члены Федерации»,
+        «коллегия_судей»/«тренерский_совет»/«комитет_представителей» — вместе в разделе «Коллегии и советы».
+    </p>
+
+    {% if members %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>ФИО</th>
+                        <th>Должность</th>
+                        <th>Орган</th>
+                        <th>Контакты</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                        <tr>
+                            <td>{{ member.full_name }}</td>
+                            <td>{{ member.position }}</td>
+                            <td>{{ member.body }}</td>
+                            <td>{{ member.contacts }}</td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary"
+                                       href="{{ url_for('admin.local_federation_members_edit', local_federation_id=local_federation.id, member_id=member.id) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.local_federation_members_delete', local_federation_id=local_federation.id, member_id=member.id) }}"
+                                          onsubmit="return confirm('Удалить запись?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Состав пока не заполнен.</p>
+    {% endif %}
+{% endblock %}

@@ -31,6 +31,10 @@
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'clubs' }}"
                            href="{{ url_for('admin.clubs_list') }}">Клубы</a>
                     {% endif %}
+                    {% if current_user.can_access('local_federations') %}
+                        <a class="list-group-item list-group-item-action {{ 'active' if active == 'local_federations' }}"
+                           href="{{ url_for('admin.local_federations_list') }}">Местные федерации</a>
+                    {% endif %}
                     {% if current_user.can_access('banners') %}
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'banners' }}"
                            href="{{ url_for('admin.banners_list') }}">Баннеры</a>

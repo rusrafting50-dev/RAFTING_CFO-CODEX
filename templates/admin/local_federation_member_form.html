@@ -1,0 +1,42 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'local_federations' %}
+
+{% block title %}{{ 'Редактирование записи' if member else 'Новый член местной федерации' }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-2">
+        <a href="{{ url_for('admin.local_federation_members_list', local_federation_id=local_federation.id) }}">← {{ local_federation.name }}: состав</a>
+    </p>
+    <h1 class="h4 mb-4">{{ 'Редактирование записи' if member else 'Новый член местной федерации' }}</h1>
+
+    <form method="post" class="card p-4">
+        <div class="mb-3">
+            <label for="full_name" class="form-label">ФИО</label>
+            <input type="text" class="form-control" id="full_name" name="full_name" required
+                   value="{{ member.full_name if member else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="position" class="form-label">Должность</label>
+            <input type="text" class="form-control" id="position" name="position"
+                   value="{{ (member.position or '') if member else '' }}">
+        </div>
+        <div class="mb-3">
+            <label for="body" class="form-label">Орган</label>
+            <select class="form-select" id="body" name="body" required>
+                <option value="">—</option>
+                {% for choice in body_choices %}
+                    <option value="{{ choice }}" {{ 'selected' if member and member.body == choice }}>{{ choice }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="contacts" class="form-label">Контакты</label>
+            <input type="text" class="form-control" id="contacts" name="contacts"
+                   value="{{ (member.contacts or '') if member else '' }}">
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.local_federation_members_list', local_federation_id=local_federation.id) }}">Отмена</a>
+        </div>
+    </form>
+{% endblock %}

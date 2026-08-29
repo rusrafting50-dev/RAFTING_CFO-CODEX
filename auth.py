@@ -159,6 +159,7 @@ def ensure_schema():
     _ensure_column(inspector, 'document', 'link_url', 'VARCHAR(1000)')
     _ensure_column(inspector, 'athlete', 'photo_path', 'VARCHAR(500)')
     _ensure_column(inspector, 'competition', 'logo_is_manual', 'BOOLEAN NOT NULL DEFAULT 0')
+    _ensure_column(inspector, 'federation_member', 'local_federation_id', 'INTEGER')
 
 
 def seed_news_taxonomy():
@@ -350,7 +351,7 @@ FEDERATION_DOCUMENT_TAXONOMY = [
         'Уставные документы', 'Программы', 'Членство в ФРР', 'Государственная аккредитация',
     ]),
     ('Структура Федерации', [
-        'Положение о структуре Федерации', 'Местные отделения Федерации',
+        'Положение о структуре Федерации',
         'Коллегия судей', 'Тренерский совет', 'Совет клубов',
     ]),
     ('Лицензирование и сертификация', []),
@@ -395,6 +396,33 @@ def restore_federation_goals_section():
     if not category or category.sections:
         return
     db.session.delete(category)
+    db.session.commit()
+
+
+def remove_local_branches_document_section():
+    """Разовая миграция: пункт «Местные отделения Федерации» (раздел
+    внутри категории документов «Структура Федерации», scope='федерация',
+    сеялся seed_federation_document_taxonomy) заменён полноценным пунктом
+    бокового меню «Местные спортивные федерации» (routes/regions.py:
+    FUNCTIONAL_SECTIONS) со своей страницей списка (LocalFederation) — на
+    уже существующих базах, где этот раздел успел засеяться раньше этой
+    миграции, он удаляется явно, как и убран из FEDERATION_DOCUMENT_TAXONOMY
+    выше (иначе он остался бы висеть в меню документов задвоенным пунктом).
+    Уже загруженные документы с этим значением раздела никуда не денутся —
+    как и при обычном удалении раздела через панель управления."""
+    section = (
+        DocumentSection.query
+        .join(DocumentCategory)
+        .filter(
+            DocumentSection.name == 'Местные отделения Федерации',
+            DocumentCategory.name == 'Структура Федерации',
+            DocumentCategory.scope == 'федерация',
+        )
+        .first()
+    )
+    if not section:
+        return
+    db.session.delete(section)
     db.session.commit()
 
 

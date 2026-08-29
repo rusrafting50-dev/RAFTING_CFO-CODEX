@@ -1,7 +1,9 @@
 """Региональные федерации субъектов ЦФО."""
 from flask import Blueprint, abort, render_template, request, url_for
 
-from models import Athlete, Club, Document, DocumentCategory, DocumentSection, RegionalFederation, db
+from models import (
+    Athlete, Club, Document, DocumentCategory, DocumentSection, LocalFederation, RegionalFederation, db,
+)
 
 bp = Blueprint('regions', __name__)
 
@@ -22,6 +24,7 @@ bp = Blueprint('regions', __name__)
 FUNCTIONAL_SECTIONS = [
     ('goals', 'Направления деятельности'),
     ('leadership', 'Руководство'),
+    ('local_federations', 'Местные спортивные федерации'),
     ('calendar', 'Календарный план'),
     ('team', 'Сборная команда'),
     ('contacts', 'Контакты'),
@@ -61,6 +64,7 @@ SECTION_KEYS = {key for key, _ in FUNCTIONAL_SECTIONS} | {'clubs'} | set(TEAM_ME
 FEDERATION_SIDEBAR_LAYOUT = [
     ('functional', 'goals'),
     'category', ('functional', 'leadership'),
+    ('functional', 'local_federations'),
     'category', 'category', ('functional', 'calendar'),
     'category', ('functional', 'team'),
 ]
@@ -313,6 +317,12 @@ def section(region_id, section):
     if section == 'clubs':
         region_clubs = Club.query.filter_by(region_id=region.id).order_by(Club.name).all()
 
+    region_local_federations = []
+    if section == 'local_federations':
+        region_local_federations = (
+            LocalFederation.query.filter_by(region_id=region.id).order_by(LocalFederation.name).all()
+        )
+
     team_roster = []
     team_gender = None
     team_category = None
@@ -350,7 +360,7 @@ def section(region_id, section):
         section=section, section_label=section_label, region_clubs=region_clubs,
         team_roster=team_roster, team_gender=team_gender, team_category=team_category,
         team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(team_gender, []),
-        team_coaches=team_coaches,
+        team_coaches=team_coaches, region_local_federations=region_local_federations,
     )
 
 

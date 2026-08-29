@@ -14,8 +14,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from models import (
     Athlete, Banner, Club, Competition, CompetitionApplication, CompetitionDocument, Document,
     DocumentCategory, DocumentSection, Event, FederationMember, FederationRegistrationRequest,
-    MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel, PartnerLogo,
-    PasswordResetRequest, Referee, RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
+    LocalFederation, MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel,
+    PartnerLogo, PasswordResetRequest, Referee, RegionalFederation, SeminarApplicationSubmission,
+    SyncLog, User, db,
 )
 from richtext import sanitize_rich_text
 from sync_to_referee import отправить_заявку, обновить_заявку
@@ -75,12 +76,22 @@ SECTION_CHOICES = [
     ('members', 'Члены органов'),
     ('regions', 'Регионы ЦФО'),
     ('clubs', 'Клубы'),
+    ('local_federations', 'Местные федерации'),
     ('banners', 'Баннеры'),
     ('media', 'Медиа'),
     ('partners', 'Логотипы партнёров'),
     ('sync', 'Синхронизация'),
 ]
 SECTION_KEYS = [key for key, _ in SECTION_CHOICES]
+
+# Значения FederationMember.body для состава местной спортивной
+# федерации (routes/local_federations.py) — отдельно от BODY_CHOICES
+# (состав уровня ЦФО, FederationMember.local_federation_id пуст):
+# «руководство»/«член_федерации» под свои разделы, три «...совет»/
+# «коллегия...» — сгруппированы под общим разделом «Коллегии и советы».
+LOCAL_FEDERATION_BODY_CHOICES = [
+    'руководство', 'член_федерации', 'коллегия_судей', 'тренерский_совет', 'комитет_представителей',
+]
 
 # Каталог мест на сайте, куда можно поместить баннер — при добавлении
 # новой рекламной позиции на другой странице достаточно дописать пару сюда,
@@ -1282,6 +1293,197 @@ def clubs_delete(club_id):
     db.session.commit()
     flash('Клуб удалён.', 'success')
     return redirect(url_for('admin.clubs_list'))
+
+
+# ---------- Местные спортивные федерации ----------
+
+def _local_federation_form_fields(local_federation, form):
+    local_federation.name = form.get('name', '').strip()
+    local_federation.region_id = form.get('region_id', type=int)
+    local_federation.intro_text = sanitize_rich_text(form.get('intro_text', ''))
+    local_federation.calendar_text = sanitize_rich_text(form.get('calendar_text', ''))
+    local_federation.clubs_text = sanitize_rich_text(form.get('clubs_text', ''))
+    local_federation.contact_phone = form.get('contact_phone', '').strip() or None
+    local_federation.contact_email = form.get('contact_email', '').strip() or None
+    local_federation.contact_address = form.get('contact_address', '').strip() or None
+
+
+@bp.route('/local-federations')
+@section_required('local_federations')
+def local_federations_list():
+    local_federations = (
+        LocalFederation.query.join(RegionalFederation)
+        .order_by(RegionalFederation.name, LocalFederation.name)
+        .all()
+    )
+    return render_template('admin/local_federations_list.html', active='local_federations', local_federations=local_federations)
+
+
+@bp.route('/local-federations/new', methods=['GET', 'POST'])
+@section_required('local_federations')
+@roles_required('admin', 'editor')
+def local_federations_new():
+    regions = RegionalFederation.query.order_by(RegionalFederation.name).all()
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        region_id = request.form.get('region_id', type=int)
+        logo = request.files.get('logo')
+
+        if not name or not region_id:
+            flash('Название и регион обязательны.', 'error')
+            return render_template('admin/local_federation_form.html', active='local_federations', local_federation=None, regions=regions)
+
+        if logo and logo.filename and not allowed_image(logo.filename):
+            flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/local_federation_form.html', active='local_federations', local_federation=None, regions=regions)
+
+        local_federation = LocalFederation()
+        _local_federation_form_fields(local_federation, request.form)
+        if logo and logo.filename:
+            local_federation.logo_path = save_upload(logo)
+        db.session.add(local_federation)
+        db.session.commit()
+        flash('Местная спортивная федерация добавлена.', 'success')
+        return redirect(url_for('admin.local_federations_list'))
+
+    return render_template('admin/local_federation_form.html', active='local_federations', local_federation=None, regions=regions)
+
+
+@bp.route('/local-federations/<int:local_federation_id>/edit', methods=['GET', 'POST'])
+@section_required('local_federations')
+@roles_required('admin', 'editor')
+def local_federations_edit(local_federation_id):
+    local_federation = LocalFederation.query.get_or_404(local_federation_id)
+    regions = RegionalFederation.query.order_by(RegionalFederation.name).all()
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        region_id = request.form.get('region_id', type=int)
+        logo = request.files.get('logo')
+
+        if not name or not region_id:
+            flash('Название и регион обязательны.', 'error')
+            return render_template('admin/local_federation_form.html', active='local_federations', local_federation=local_federation, regions=regions)
+
+        if logo and logo.filename and not allowed_image(logo.filename):
+            flash('Допустимые форматы логотипа: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/local_federation_form.html', active='local_federations', local_federation=local_federation, regions=regions)
+
+        _local_federation_form_fields(local_federation, request.form)
+        if logo and logo.filename:
+            local_federation.logo_path = save_upload(logo)
+        db.session.commit()
+        flash('Данные обновлены.', 'success')
+        return redirect(url_for('admin.local_federations_list'))
+
+    return render_template('admin/local_federation_form.html', active='local_federations', local_federation=local_federation, regions=regions)
+
+
+@bp.route('/local-federations/<int:local_federation_id>/delete', methods=['POST'])
+@section_required('local_federations')
+@roles_required('admin', 'editor')
+def local_federations_delete(local_federation_id):
+    local_federation = LocalFederation.query.get_or_404(local_federation_id)
+    db.session.delete(local_federation)
+    db.session.commit()
+    flash('Местная спортивная федерация удалена.', 'success')
+    return redirect(url_for('admin.local_federations_list'))
+
+
+# ---------- Состав местных спортивных федераций ----------
+
+@bp.route('/local-federations/<int:local_federation_id>/members')
+@section_required('local_federations')
+def local_federation_members_list(local_federation_id):
+    local_federation = LocalFederation.query.get_or_404(local_federation_id)
+    members = (
+        FederationMember.query.filter_by(local_federation_id=local_federation.id)
+        .order_by(FederationMember.body, FederationMember.full_name)
+        .all()
+    )
+    return render_template(
+        'admin/local_federation_members_list.html', active='local_federations',
+        local_federation=local_federation, members=members,
+    )
+
+
+@bp.route('/local-federations/<int:local_federation_id>/members/new', methods=['GET', 'POST'])
+@section_required('local_federations')
+@roles_required('admin', 'editor')
+def local_federation_members_new(local_federation_id):
+    local_federation = LocalFederation.query.get_or_404(local_federation_id)
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        body = request.form.get('body') or None
+
+        if not full_name or body not in LOCAL_FEDERATION_BODY_CHOICES:
+            flash('ФИО и орган федерации обязательны.', 'error')
+            return render_template(
+                'admin/local_federation_member_form.html', active='local_federations',
+                local_federation=local_federation, member=None, body_choices=LOCAL_FEDERATION_BODY_CHOICES,
+            )
+
+        member = FederationMember(
+            full_name=full_name,
+            position=request.form.get('position', '').strip(),
+            body=body,
+            local_federation_id=local_federation.id,
+            contacts=request.form.get('contacts', '').strip(),
+        )
+        db.session.add(member)
+        db.session.commit()
+        flash('Член местной федерации добавлен.', 'success')
+        return redirect(url_for('admin.local_federation_members_list', local_federation_id=local_federation.id))
+
+    return render_template(
+        'admin/local_federation_member_form.html', active='local_federations',
+        local_federation=local_federation, member=None, body_choices=LOCAL_FEDERATION_BODY_CHOICES,
+    )
+
+
+@bp.route('/local-federations/<int:local_federation_id>/members/<int:member_id>/edit', methods=['GET', 'POST'])
+@section_required('local_federations')
+@roles_required('admin', 'editor')
+def local_federation_members_edit(local_federation_id, member_id):
+    local_federation = LocalFederation.query.get_or_404(local_federation_id)
+    member = FederationMember.query.filter_by(id=member_id, local_federation_id=local_federation.id).first_or_404()
+
+    if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()
+        body = request.form.get('body') or None
+
+        if not full_name or body not in LOCAL_FEDERATION_BODY_CHOICES:
+            flash('ФИО и орган федерации обязательны.', 'error')
+            return render_template(
+                'admin/local_federation_member_form.html', active='local_federations',
+                local_federation=local_federation, member=member, body_choices=LOCAL_FEDERATION_BODY_CHOICES,
+            )
+
+        member.full_name = full_name
+        member.position = request.form.get('position', '').strip()
+        member.body = body
+        member.contacts = request.form.get('contacts', '').strip()
+        db.session.commit()
+        flash('Данные обновлены.', 'success')
+        return redirect(url_for('admin.local_federation_members_list', local_federation_id=local_federation.id))
+
+    return render_template(
+        'admin/local_federation_member_form.html', active='local_federations',
+        local_federation=local_federation, member=member, body_choices=LOCAL_FEDERATION_BODY_CHOICES,
+    )
+
+
+@bp.route('/local-federations/<int:local_federation_id>/members/<int:member_id>/delete', methods=['POST'])
+@section_required('local_federations')
+@roles_required('admin', 'editor')
+def local_federation_members_delete(local_federation_id, member_id):
+    member = FederationMember.query.filter_by(id=member_id, local_federation_id=local_federation_id).first_or_404()
+    db.session.delete(member)
+    db.session.commit()
+    flash('Запись удалена.', 'success')
+    return redirect(url_for('admin.local_federation_members_list', local_federation_id=local_federation_id))
 
 
 # ---------- Баннеры ----------
