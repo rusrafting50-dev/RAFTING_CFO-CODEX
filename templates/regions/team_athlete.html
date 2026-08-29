@@ -66,18 +66,7 @@
                 </div>
             </div>
             <div class="col-lg-3">
-                <div class="doc-category-panel">
-                    {% if roster %}
-                        {% for member in roster %}
-                            <div class="doc-category-item">
-                                <a class="{{ 'fed-sidebar-active' if member.id == athlete.id else 'doc-category-toggle' }}"
-                                   href="{{ url_for('regions.team_athlete', region_id=region.id, athlete_id=member.id) }}">{{ member.full_name }}</a>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted small mb-0 p-2">Состав пока не добавлен.</p>
-                    {% endif %}
-                </div>
+                {% include "regions/_sidebar.html" with context %}
             </div>
         </div>
     </div>

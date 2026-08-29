@@ -27,7 +27,19 @@ FUNCTIONAL_SECTIONS = [
     ('contacts', 'Контакты'),
 ]
 FUNCTIONAL_SECTION_LABELS = dict(FUNCTIONAL_SECTIONS)
-SECTION_KEYS = {key for key, _ in FUNCTIONAL_SECTIONS} | {'clubs'}
+
+# Разделы-заглушки собственного бокового меню «Сборная команда» (см.
+# TEAM_MENU_STUB_LABELS/_team_sidebar_items() ниже) — вынесены сюда же,
+# чтобы попасть в SECTION_KEYS вместе с FUNCTIONAL_SECTIONS/'clubs'.
+TEAM_MENU_STUB_SECTIONS = [
+    ('team_coaches', 'Тренеры'),
+    ('team_calendar', 'Календарь'),
+    ('team_news', 'Новости'),
+    ('team_media', 'Медиа'),
+]
+TEAM_MENU_STUB_LABELS = dict(TEAM_MENU_STUB_SECTIONS)
+
+SECTION_KEYS = {key for key, _ in FUNCTIONAL_SECTIONS} | {'clubs'} | set(TEAM_MENU_STUB_LABELS)
 
 # Расположение пунктов бокового меню «О федерации» между «Федерация»
 # вверху и «Контакты»/«Все» внизу — чередование категорий документов
@@ -71,6 +83,12 @@ TEAM_GENDER_BY_CATEGORY = {
     for gender, categories in TEAM_CATEGORIES_BY_GENDER.items()
     for category in categories
 }
+
+# Собственное боковое меню раздела «Сборная команда» — полностью заменяет
+# общее меню «О федерации» (regions/_sidebar.html/_sidebar_items()) на
+# странице сборной, странице отдельного спортсмена и на страницах-
+# заглушках TEAM_MENU_STUB_SECTIONS (см. выше).
+TEAM_MENU_SECTION_KEYS = {'team'} | set(TEAM_MENU_STUB_LABELS)
 
 
 def _clubs_by_name():
@@ -119,6 +137,44 @@ def _category_sidebar_item(region, category, active_category, active_doc_section
         'active': active_doc_section is not None and active_doc_section.id == doc_section.id,
     } for doc_section in category.sections]
     return {'kind': 'category', 'label': category.name, 'url': url, 'active': active, 'sections': sections}
+
+
+def _team_sidebar_items(region, active_key, roster=None, current_athlete_id=None, team_gender=None, team_category=None):
+    """Боковое меню раздела «Сборная команда»: Состав/Тренеры/Календарь/
+    Новости/Медиа — используется вместо _sidebar_items() (общего меню «О
+    федерации») на regions/section.html при section в TEAM_MENU_SECTION_KEYS
+    и на regions/team_athlete.html.
+
+    «Состав» раскрывается (kind='category', тот же приём, что категории
+    документов в _sidebar_items()) с разделами — ФИО каждого спортсмена
+    того же состава со ссылкой на его страницу — только когда передан
+    roster (это происходит исключительно на странице отдельного
+    спортсмена, team_athlete()); на самой странице «Сборная команда» и на
+    страницах-заглушках roster не передаётся, и «Состав» — обычная ссылка
+    без раскрывашки: этим и достигается требование «при переходе на
+    другую страницу разделы ФИО исчезают»."""
+    roster_url = url_for(
+        'regions.section', region_id=region.id, section='team',
+        gender=team_gender, category=team_category,
+    )
+    if roster:
+        sections = [{
+            'label': member.full_name,
+            'url': url_for('regions.team_athlete', region_id=region.id, athlete_id=member.id),
+            'active': member.id == current_athlete_id,
+        } for member in roster]
+        items = [{'kind': 'category', 'label': 'Состав', 'url': roster_url, 'active': active_key == 'team', 'sections': sections}]
+    else:
+        items = [{'kind': 'link', 'label': 'Состав', 'url': roster_url, 'active': active_key == 'team'}]
+
+    for key, label in TEAM_MENU_STUB_SECTIONS:
+        items.append({
+            'kind': 'link',
+            'label': label,
+            'url': url_for('regions.section', region_id=region.id, section=key),
+            'active': active_key == key,
+        })
+    return items
 
 
 def _sidebar_items(region, active_section=None, active_category=None, active_doc_section=None):
@@ -201,7 +257,12 @@ def section(region_id, section):
     if section not in SECTION_KEYS:
         abort(404)
     region = RegionalFederation.query.get_or_404(region_id)
-    section_label = 'Клубы' if section == 'clubs' else FUNCTIONAL_SECTION_LABELS[section]
+    if section == 'clubs':
+        section_label = 'Клубы'
+    elif section in TEAM_MENU_STUB_LABELS:
+        section_label = TEAM_MENU_STUB_LABELS[section]
+    else:
+        section_label = FUNCTIONAL_SECTION_LABELS[section]
 
     region_clubs = []
     if section == 'clubs':
@@ -225,8 +286,13 @@ def section(region_id, section):
             for athlete in _team_roster(region, team_category, clubs_by_name)
         ]
 
+    if section in TEAM_MENU_SECTION_KEYS:
+        sidebar_items = _team_sidebar_items(region, active_key=section, team_gender=team_gender, team_category=team_category)
+    else:
+        sidebar_items = _sidebar_items(region, active_section=section)
+
     return render_template(
-        'regions/section.html', region=region, sidebar_items=_sidebar_items(region, active_section=section),
+        'regions/section.html', region=region, sidebar_items=sidebar_items,
         section=section, section_label=section_label, region_clubs=region_clubs,
         team_roster=team_roster, team_gender=team_gender, team_category=team_category,
         team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(team_gender, []),
@@ -236,8 +302,9 @@ def section(region_id, section):
 @bp.route('/<int:region_id>/team/<int:athlete_id>')
 def team_athlete(region_id, athlete_id):
     """Страница отдельного спортсмена сборной команды федерации — справа
-    вместо обычного меню «О федерации» список остального состава той же
-    возрастной категории (см. regions/team_athlete.html)."""
+    боковое меню «Сборная команда» (см. _team_sidebar_items()), с
+    раскрытым списком остального состава той же возрастной категории под
+    пунктом «Состав» (regions/team_athlete.html)."""
     region = RegionalFederation.query.get_or_404(region_id)
     athlete = Athlete.query.get_or_404(athlete_id)
 
@@ -255,9 +322,14 @@ def team_athlete(region_id, athlete_id):
     # 'мужские', как и на странице сборной команды.
     menu_gender = gender or 'мужские'
 
+    sidebar_items = _team_sidebar_items(
+        region, active_key='team', roster=roster, current_athlete_id=athlete.id,
+        team_gender=menu_gender, team_category=category,
+    )
+
     return render_template(
         'regions/team_athlete.html', region=region, athlete=athlete, club=club,
-        roster=roster, gender=gender, category=category,
+        roster=roster, gender=gender, category=category, sidebar_items=sidebar_items,
         team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(menu_gender, []),
         menu_gender=menu_gender,
     )
