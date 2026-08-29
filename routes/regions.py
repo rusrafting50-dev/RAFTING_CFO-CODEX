@@ -28,9 +28,13 @@ FUNCTIONAL_SECTIONS = [
 ]
 FUNCTIONAL_SECTION_LABELS = dict(FUNCTIONAL_SECTIONS)
 
-# Разделы-заглушки собственного бокового меню «Сборная команда» (см.
-# TEAM_MENU_STUB_LABELS/_team_sidebar_items() ниже) — вынесены сюда же,
-# чтобы попасть в SECTION_KEYS вместе с FUNCTIONAL_SECTIONS/'clubs'.
+# Разделы собственного бокового меню «Сборная команда», помимо «Состав»
+# (см. TEAM_MENU_STUB_LABELS/_team_sidebar_items() ниже) — вынесены сюда
+# же, чтобы попасть в SECTION_KEYS вместе с FUNCTIONAL_SECTIONS/'clubs'.
+# 'team_coaches' — реальные данные из REGTEAM_RAFTING (см. section()),
+# 'team_calendar'/'team_news'/'team_media' пока остаются заглушками
+# «материалы пока не добавлены» — источник данных для них ещё не
+# подключён.
 TEAM_MENU_STUB_SECTIONS = [
     ('team_coaches', 'Тренеры'),
     ('team_calendar', 'Календарь'),
@@ -117,6 +121,47 @@ def _team_roster(region, category, clubs_by_name):
         ),
         key=lambda a: a.full_name,
     )
+
+
+# Тренеры, числящиеся в REGTEAM_RAFTING не за клубом, а напрямую за
+# федерацией — направляющая организация в этом случае равна этой строке
+# (точное совпадение без учёта регистра), а не названию клуба, и на
+# карточке вместо логотипа клуба показывается логотип самой федерации
+# (RegionalFederation.logo_path) — см. _team_coaches()/section().
+FEDERATION_ORG_LABEL = 'МОСФ'
+
+
+def _team_coaches(region, clubs_by_name):
+    """Тренеры сборной региона — та же логика отбора, что _team_roster()
+    (совпадение territory с субъектом РФ федерации, is_active — в
+    текущем составе), но без деления по полу/возрастной категории (на
+    странице «Тренеры» его нет, см. regions/section.html) и с
+    допущением направляющей организации FEDERATION_ORG_LABEL в
+    придачу к настоящим клубам — тренеры федерации к клубу не
+    привязаны."""
+    if not region.subject_name:
+        return []
+    subject_name = region.subject_name.strip().lower()
+    federation_label = FEDERATION_ORG_LABEL.lower()
+    return sorted(
+        (
+            a for a in Athlete.query.filter(Athlete.is_active.is_(True), Athlete.role == 'тренер').all()
+            if a.territory and a.territory.strip().lower() == subject_name
+            and a.organization and (
+                a.organization.strip().lower() in clubs_by_name
+                or a.organization.strip().lower() == federation_label
+            )
+        ),
+        key=lambda a: a.full_name,
+    )
+
+
+def _coach_logo_path(region, coach, clubs_by_name):
+    """Бейдж-логотип на карточке тренера — логотип его клуба, а если
+    направляющая организация не клуб, а сама федерация
+    (FEDERATION_ORG_LABEL, «МОСФ») — логотип региональной федерации."""
+    club = clubs_by_name.get((coach.organization or '').strip().lower())
+    return club.logo_path if club else region.logo_path
 
 
 def _category_sidebar_item(region, category, active_category, active_doc_section):
@@ -286,6 +331,15 @@ def section(region_id, section):
             for athlete in _team_roster(region, team_category, clubs_by_name)
         ]
 
+    team_coaches = []
+    if section == 'team_coaches':
+        clubs_by_name = _clubs_by_name()
+        team_coaches = [{
+            'athlete': coach,
+            'logo_path': _coach_logo_path(region, coach, clubs_by_name),
+            'gender': TEAM_GENDER_BY_CATEGORY.get((coach.national_team or '').strip().lower(), 'мужские'),
+        } for coach in _team_coaches(region, clubs_by_name)]
+
     if section in TEAM_MENU_SECTION_KEYS:
         sidebar_items = _team_sidebar_items(region, active_key=section, team_gender=team_gender, team_category=team_category)
     else:
@@ -296,6 +350,7 @@ def section(region_id, section):
         section=section, section_label=section_label, region_clubs=region_clubs,
         team_roster=team_roster, team_gender=team_gender, team_category=team_category,
         team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(team_gender, []),
+        team_coaches=team_coaches,
     )
 
 

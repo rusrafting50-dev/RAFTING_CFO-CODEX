@@ -3001,6 +3001,16 @@ table.table-zebra tbody tr:nth-child(even) {
     color: inherit;
 }
 
+/* Категория тренера (Тренер/Специалист — Athlete.role) над фото на
+   странице «Тренеры» (regions/section.html, section == 'team_coaches')
+   — у спортсменов такой подписи нет, карточка там сразу с фото. */
+.athlete-card-category {
+    margin: 0 0 8px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
 .athlete-card-photo-wrap {
     position: relative;
     width: 100%;

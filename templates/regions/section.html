@@ -55,6 +55,34 @@
                     {% else %}
                         <p class="text-muted mb-0">Состав пока не добавлен.</p>
                     {% endif %}
+                {% elif section == 'team_coaches' %}
+                    <h2 class="h5 mb-4">{{ section_label }}</h2>
+                    {% if team_coaches %}
+                        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-4">
+                            {% for entry in team_coaches %}
+                                <div class="col">
+                                    <div class="athlete-card">
+                                        {% if entry.athlete.role %}
+                                            <p class="athlete-card-category text-muted">{{ entry.athlete.role|cap_first }}</p>
+                                        {% endif %}
+                                        <div class="athlete-card-photo-wrap">
+                                            <div class="athlete-card-photo">
+                                                {{ athlete_photo(entry.athlete, entry.gender) }}
+                                            </div>
+                                            {% if entry.logo_path %}
+                                                <span class="athlete-card-club-badge">
+                                                    <img src="{{ url_for('static', filename=entry.logo_path) }}" alt="">
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="athlete-card-name">{{ entry.athlete.full_name }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Тренеры пока не добавлены.</p>
+                    {% endif %}
                 {% elif section == 'clubs' %}
                     <h2 class="h5 mb-3">{{ section_label }}</h2>
                     {% if region_clubs %}
