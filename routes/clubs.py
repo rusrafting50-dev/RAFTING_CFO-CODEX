@@ -1,9 +1,10 @@
 """Спортивные клубы и организации рафтинга в ЦФО."""
 from itertools import groupby
 
-from flask import Blueprint, abort, render_template, url_for
+from flask import Blueprint, abort, render_template, request, url_for
 
 from models import Athlete, Club, RegionalFederation
+from routes.regions import TEAM_CATEGORIES_BY_GENDER, TEAM_GENDERS
 
 bp = Blueprint('clubs', __name__)
 
@@ -63,6 +64,7 @@ def section(club_id, section):
     section_label = dict(SECTIONS)[section]
 
     club_athletes = []
+    team_gender = team_category = team_genders = team_categories = None
     role = SECTION_ATHLETE_ROLES.get(section)
     if role:
         # Принадлежность клубу и включение в сборную — независимые вещи:
@@ -70,20 +72,42 @@ def section(club_id, section):
         # равно остаётся в составе клуба, поэтому здесь фильтра по
         # is_active нет (в отличие от routes/regions.py.section() —
         # раздел «Сборная команда» федерации показывает только активных).
+        # 'athletes' — все спортсмены клуба, независимо от того, состоят
+        # ли они в сборной, точно так же.
         #
         # Сравнение без учёта регистра — в Python, не в SQL: LOWER() в
         # SQLite не переводит кириллицу в нижний регистр (см. тот же
         # приём в routes/regions.py.section()).
         club_name = club.name.strip().lower()
-        club_athletes = sorted(
-            (
-                a for a in Athlete.query.filter(Athlete.role == role).all()
-                if a.organization and a.organization.strip().lower() == club_name
-            ),
-            key=lambda a: a.full_name,
-        )
+        role_athletes = [
+            a for a in Athlete.query.filter(Athlete.role == role).all()
+            if a.organization and a.organization.strip().lower() == club_name
+        ]
+
+        if section == 'athletes':
+            # Та же сетка пол/возрастная категория, что на «Сборная
+            # команда» страницы федерации (routes/regions.py.section()) —
+            # оформление специально одинаковое, поэтому и разбивка та же.
+            team_gender = request.args.get('gender')
+            if team_gender not in TEAM_CATEGORIES_BY_GENDER:
+                team_gender = 'мужские'
+            team_categories = TEAM_CATEGORIES_BY_GENDER[team_gender]
+            team_category = request.args.get('category')
+            if team_category not in team_categories:
+                team_category = team_categories[0]
+            team_genders = TEAM_GENDERS
+
+            category_lower = team_category.strip().lower()
+            club_athletes = sorted(
+                (a for a in role_athletes if a.national_team and a.national_team.strip().lower() == category_lower),
+                key=lambda a: a.full_name,
+            )
+        else:
+            club_athletes = sorted(role_athletes, key=lambda a: a.full_name)
 
     return render_template(
         'clubs/section.html', club=club, sidebar_items=_sidebar_items(club, section),
         section=section, section_label=section_label, club_athletes=club_athletes,
+        team_gender=team_gender, team_category=team_category,
+        team_genders=team_genders, team_categories=team_categories,
     )
