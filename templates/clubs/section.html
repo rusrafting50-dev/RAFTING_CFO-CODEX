@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% from "_athletes_table.html" import athletes_table %}
 {% from "regions/_athlete_photo.html" import athlete_photo %}
 
 {% block title %}{{ section_label }} — {{ club.name }} — Федерация рафтинга ЦФО{% endblock %}
@@ -55,9 +54,34 @@
                     {% else %}
                         <p class="text-muted mb-0">Состав пока не добавлен.</p>
                     {% endif %}
-                {% elif section == 'coaches' and club_athletes %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    {{ athletes_table(club_athletes, show_organization=False, show_team_status=True) }}
+                {% elif section == 'coaches' %}
+                    <h2 class="h5 mb-4">{{ section_label }}</h2>
+                    {% if club_coaches %}
+                        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-4">
+                            {% for entry in club_coaches %}
+                                <div class="col">
+                                    <div class="athlete-card">
+                                        {% if entry.athlete.role %}
+                                            <p class="athlete-card-category text-muted">{{ entry.athlete.role|cap_first }}</p>
+                                        {% endif %}
+                                        <div class="athlete-card-photo-wrap">
+                                            <div class="athlete-card-photo">
+                                                {{ athlete_photo(entry.athlete, entry.gender) }}
+                                            </div>
+                                            {% if club.logo_path %}
+                                                <span class="athlete-card-club-badge">
+                                                    <img src="{{ url_for('static', filename=club.logo_path) }}" alt="{{ club.name }}">
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <p class="athlete-card-name">{{ entry.athlete.full_name }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Тренеры пока не добавлены.</p>
+                    {% endif %}
                 {% else %}
                     <h2 class="h5 mb-3">{{ section_label }}</h2>
                     <div class="fed-text-block">
@@ -74,7 +98,6 @@
                         {% else %}
                             {% set section_text = {
                                 'leadership': club.leadership_text,
-                                'coaches': club.coaches_text,
                                 'schedule': club.schedule_text,
                                 'achievements': club.achievements_text,
                             }[section] %}

@@ -4,7 +4,7 @@ from itertools import groupby
 from flask import Blueprint, abort, render_template, request, url_for
 
 from models import Athlete, Club, RegionalFederation
-from routes.regions import TEAM_CATEGORIES_BY_GENDER, TEAM_GENDERS
+from routes.regions import TEAM_CATEGORIES_BY_GENDER, TEAM_GENDER_BY_CATEGORY, TEAM_GENDERS
 
 bp = Blueprint('clubs', __name__)
 
@@ -64,6 +64,7 @@ def section(club_id, section):
     section_label = dict(SECTIONS)[section]
 
     club_athletes = []
+    club_coaches = []
     team_gender = team_category = team_genders = team_categories = None
     role = SECTION_ATHLETE_ROLES.get(section)
     if role:
@@ -103,11 +104,22 @@ def section(club_id, section):
                 key=lambda a: a.full_name,
             )
         else:
-            club_athletes = sorted(role_athletes, key=lambda a: a.full_name)
+            # Карточки — тот же приём, что «Сборная команда/Тренеры» на
+            # странице федерации (routes/regions.py._team_coaches()):
+            # заглушка фото по полу выводится из возрастной категории
+            # (Athlete.national_team), а если она не распознана — по
+            # умолчанию мужская, как и там. Логотип клуба на бейджике тут
+            # один и тот же для всех карточек — сам клуб этой страницы, в
+            # отличие от страницы федерации, где часть тренеров закреплена
+            # не за клубом, а напрямую за федерацией.
+            club_coaches = [{
+                'athlete': coach,
+                'gender': TEAM_GENDER_BY_CATEGORY.get((coach.national_team or '').strip().lower(), 'мужские'),
+            } for coach in sorted(role_athletes, key=lambda a: a.full_name)]
 
     return render_template(
         'clubs/section.html', club=club, sidebar_items=_sidebar_items(club, section),
         section=section, section_label=section_label, club_athletes=club_athletes,
-        team_gender=team_gender, team_category=team_category,
+        club_coaches=club_coaches, team_gender=team_gender, team_category=team_category,
         team_genders=team_genders, team_categories=team_categories,
     )
