@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Заявка на включение в ЕКП — Федерация рафтинга ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
+            <h1 class="h4 mb-0">{{ application.status or 'Заявка на включение соревнования в ЕКП' }}</h1>
+            {% if can_manage %}
+                <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.calendar_application_edit', application_id=application.id) }}">Изменить</a>
+                    <form method="post" action="{{ url_for('competitions.calendar_application_delete', application_id=application.id) }}"
+                          onsubmit="return confirm('Удалить заявку?');">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        <h2 class="h6 mb-3">Основные данные</h2>
+        <dl class="row mb-4">
+            <dt class="col-sm-4">Статус соревнований</dt><dd class="col-sm-8">{{ application.status or '—' }}</dd>
+            <dt class="col-sm-4">Виды программы</dt><dd class="col-sm-8">{{ application.program_types or '—' }}</dd>
+            <dt class="col-sm-4">Сроки проведения</dt>
+            <dd class="col-sm-8">
+                {{ application.start_date.strftime('%d.%m.%Y') if application.start_date else '—' }}
+                {% if application.end_date and application.end_date != application.start_date %}
+                    &ndash; {{ application.end_date.strftime('%d.%m.%Y') }}
+                {% endif %}
+            </dd>
+            <dt class="col-sm-4">Место проведения — субъект РФ</dt><dd class="col-sm-8">{{ application.location_subject or '—' }}</dd>
+            <dt class="col-sm-4">Место проведения — район; город; объект спорта</dt><dd class="col-sm-8">{{ application.location_details or '—' }}</dd>
+            <dt class="col-sm-4">Организации, проводящие соревнования</dt><dd class="col-sm-8" style="white-space: pre-line;">{{ application.organizations or '—' }}</dd>
+            <dt class="col-sm-4">Программа соревнований</dt><dd class="col-sm-8" style="white-space: pre-line;">{{ application.program_schedule or '—' }}</dd>
+        </dl>
+
+        <h2 class="h6 mb-3">Предлагаемый состав ГСК и технический делегат</h2>
+        <div class="table-responsive mb-4">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="site-table-header">
+                        <th>Роль</th>
+                        <th>ФИО</th>
+                        <th>Квалификация</th>
+                        <th>Субъект</th>
+                        <th>Город</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for role, label in roles %}
+                        <tr>
+                            <td>{{ label }}</td>
+                            <td>{{ application[role ~ '_name'] or '—' }}</td>
+                            <td>{{ application[role ~ '_qualification'] or '—' }}</td>
+                            <td>{{ application[role ~ '_region'] or '—' }}</td>
+                            <td>{{ application[role ~ '_city'] or '—' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="h6 mb-3">Контакты организаторов</h2>
+        <dl class="row mb-0">
+            <dt class="col-sm-4">От Федерации</dt>
+            <dd class="col-sm-8">
+                {{ [application.federation_contact_name, application.federation_contact_phone, application.federation_contact_email]|select|join(', ') or '—' }}
+            </dd>
+            <dt class="col-sm-4">Главный судья</dt>
+            <dd class="col-sm-8">
+                {{ [application.chief_judge_contact_name, application.chief_judge_contact_phone, application.chief_judge_contact_email]|select|join(', ') or '—' }}
+            </dd>
+        </dl>
+
+        <a class="btn btn-outline-secondary mt-4" href="{{ url_for('competitions.calendar') }}#tab-forming">← К списку заявок</a>
+    </div>
+{% endblock %}

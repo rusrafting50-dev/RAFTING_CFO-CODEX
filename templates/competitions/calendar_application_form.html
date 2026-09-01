@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Редактирование заявки' if application else 'Заявка на включение в ЕКП' }} — Федерация рафтинга ЦФО{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1 class="h4 mb-4">{{ 'Редактирование заявки' if application else 'Заявка на включение соревнования в ЕКП' }}</h1>
+
+        <form method="post">
+            <h2 class="h6 mb-3">Основные данные</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Статус соревнований</label>
+                    <input type="text" name="status" class="form-control"
+                           value="{{ application.status or '' if application else '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Виды программы</label>
+                    <input type="text" name="program_types" class="form-control"
+                           value="{{ application.program_types or '' if application else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Дата начала соревнований</label>
+                    <input type="date" name="start_date" class="form-control"
+                           value="{{ application.start_date.isoformat() if application and application.start_date else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Дата окончания соревнований</label>
+                    <input type="date" name="end_date" class="form-control"
+                           value="{{ application.end_date.isoformat() if application and application.end_date else '' }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Место проведения — субъект РФ</label>
+                    <input type="text" name="location_subject" class="form-control"
+                           value="{{ application.location_subject if application else (current_user.region or '') }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Место проведения — район; город; объект спорта</label>
+                    <input type="text" name="location_details" class="form-control"
+                           value="{{ application.location_details or '' if application else '' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Организации, проводящие соревнования</label>
+                    <textarea name="organizations" class="form-control" rows="2">{{ application.organizations or '' if application else '' }}</textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Программа соревнований</label>
+                    <textarea name="program_schedule" class="form-control" rows="4"
+                              placeholder="дд.мм.гггг — заезд, КпД дд.мм.гггг — оф. тренировка, дисциплины по дням, дд.мм.гггг — отъезд">{{ application.program_schedule or '' if application else '' }}</textarea>
+                </div>
+            </div>
+
+            <h2 class="h6 mb-3">Предлагаемый состав ГСК и технический делегат</h2>
+            {% for role, label in roles %}
+                <div class="row g-3 mb-3">
+                    <div class="col-12"><span class="fw-bold">{{ label }}</span></div>
+                    <div class="col-md-3">
+                        <label class="form-label">ФИО</label>
+                        <input type="text" name="{{ role }}_name" class="form-control"
+                               value="{{ (application[role ~ '_name'] or '') if application else '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Квалификация</label>
+                        <select name="{{ role }}_qualification" class="form-select">
+                            <option value="">— не выбрано —</option>
+                            {% set current_qualification = application[role ~ '_qualification'] if application else '' %}
+                            {% for q in qualifications %}
+                                <option value="{{ q }}" {{ 'selected' if q == current_qualification }}>{{ q }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Субъект</label>
+                        <input type="text" name="{{ role }}_region" class="form-control"
+                               value="{{ (application[role ~ '_region'] or '') if application else '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Город</label>
+                        <input type="text" name="{{ role }}_city" class="form-control"
+                               value="{{ (application[role ~ '_city'] or '') if application else '' }}">
+                    </div>
+                </div>
+            {% endfor %}
+
+            <h2 class="h6 mb-3">Контакты организаторов</h2>
+            <div class="row g-3 mb-4">
+                <div class="col-12"><span class="fw-bold">От Федерации</span></div>
+                <div class="col-md-4">
+                    <label class="form-label">ФИО</label>
+                    <input type="text" name="federation_contact_name" class="form-control"
+                           value="{{ application.federation_contact_name or '' if application else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Телефон</label>
+                    <input type="text" name="federation_contact_phone" class="form-control"
+                           value="{{ application.federation_contact_phone or '' if application else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">E-mail</label>
+                    <input type="text" name="federation_contact_email" class="form-control"
+                           value="{{ application.federation_contact_email or '' if application else '' }}">
+                </div>
+                <div class="col-12"><span class="fw-bold">Главный судья</span></div>
+                <div class="col-md-4">
+                    <label class="form-label">ФИО</label>
+                    <input type="text" name="chief_judge_contact_name" class="form-control"
+                           value="{{ application.chief_judge_contact_name or '' if application else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Телефон</label>
+                    <input type="text" name="chief_judge_contact_phone" class="form-control"
+                           value="{{ application.chief_judge_contact_phone or '' if application else '' }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">E-mail</label>
+                    <input type="text" name="chief_judge_contact_email" class="form-control"
+                           value="{{ application.chief_judge_contact_email or '' if application else '' }}">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Сохранить</button>
+                <a class="btn btn-outline-secondary" href="{{ url_for('competitions.calendar') }}#tab-forming">Отмена</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

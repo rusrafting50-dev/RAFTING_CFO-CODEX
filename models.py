@@ -768,3 +768,78 @@ class CompetitionApplicationAthlete(db.Model):
     application = db.relationship(
         'CompetitionApplication', backref=db.backref('athletes', cascade='all, delete-orphan'),
     )
+
+
+class CalendarPlanApplication(db.Model):
+    """Заявка на включение соревнования в Единый календарный план (ЕКП) —
+    представитель региона предлагает провести новое соревнование, которого
+    ещё нет в Competition (в календарный план оно попадает по итогам
+    рассмотрения — отдельно, вручную, через COREZ/панель управления, как
+    и остальные соревнования). Показывается таблицей на вкладке
+    «Соревнования → Календарный план → Формирование календарного плана»
+    (routes/competitions.py: calendar()) и полным списком в панели
+    управления («Формирование КП», routes/admin.py:
+    calendar_applications_list()).
+
+    Состав ГСК и технический делегат — по 4 поля на роль (ФИО,
+    квалификация, субъект, город), как в самой заявке; заявитель обычно
+    указывает будущего главного судью и себя же в контактах, поэтому
+    chief_judge_contact_* не объединены с chief_judge_* — в форме это
+    два самостоятельных блока."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    submitted_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    status = db.Column(db.String(200))  # Статус соревнований
+    program_types = db.Column(db.String(500))  # Виды программы
+    start_date = db.Column(db.Date)  # Дата начала соревнований
+    end_date = db.Column(db.Date)  # Дата окончания соревнований
+    location_subject = db.Column(db.String(255))  # Место проведения — субъект РФ
+    location_details = db.Column(db.String(500))  # Место проведения — район;город;объект спорта
+    organizations = db.Column(db.Text)  # Организации, проводящие соревнования
+    # Программа соревнований по дням — свободный текст (заезд/оф.тренировка/
+    # дисциплины по дням/отъезд с датами), формат не структурируется.
+    program_schedule = db.Column(db.Text)
+
+    chief_judge_name = db.Column(db.String(255))  # Главный судья
+    chief_judge_qualification = db.Column(db.String(100))
+    chief_judge_region = db.Column(db.String(255))
+    chief_judge_city = db.Column(db.String(150))
+
+    chief_secretary_name = db.Column(db.String(255))  # Главный секретарь
+    chief_secretary_qualification = db.Column(db.String(100))
+    chief_secretary_region = db.Column(db.String(255))
+    chief_secretary_city = db.Column(db.String(150))
+
+    deputy_judge_name = db.Column(db.String(255))  # Зам. главного судьи по судейству
+    deputy_judge_qualification = db.Column(db.String(100))
+    deputy_judge_region = db.Column(db.String(255))
+    deputy_judge_city = db.Column(db.String(150))
+
+    deputy_organizer_name = db.Column(db.String(255))  # Зам. главного судьи по орг. вопросам
+    deputy_organizer_qualification = db.Column(db.String(100))
+    deputy_organizer_region = db.Column(db.String(255))
+    deputy_organizer_city = db.Column(db.String(150))
+
+    distance_chief_name = db.Column(db.String(255))  # Начальник дистанции
+    distance_chief_qualification = db.Column(db.String(100))
+    distance_chief_region = db.Column(db.String(255))
+    distance_chief_city = db.Column(db.String(150))
+
+    tech_delegate_name = db.Column(db.String(255))  # Технический делегат
+    tech_delegate_qualification = db.Column(db.String(100))
+    tech_delegate_region = db.Column(db.String(255))
+    tech_delegate_city = db.Column(db.String(150))
+
+    # Контакты организаторов
+    federation_contact_name = db.Column(db.String(255))  # от Федерации
+    federation_contact_phone = db.Column(db.String(50))
+    federation_contact_email = db.Column(db.String(150))
+
+    chief_judge_contact_name = db.Column(db.String(255))  # Главный судья (контакт)
+    chief_judge_contact_phone = db.Column(db.String(50))
+    chief_judge_contact_email = db.Column(db.String(150))
+
+    submitted_by = db.relationship('User')
+

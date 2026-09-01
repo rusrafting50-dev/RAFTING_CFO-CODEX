@@ -70,7 +70,54 @@
                 {% endif %}
             </div>
             <div class="tab-pane fade" id="tab-forming" role="tabpanel">
-                <p class="text-muted">Материалы пока не добавлены.</p>
+                <div class="d-flex justify-content-end mb-3">
+                    {% if can_submit_calendar_application %}
+                        <a href="{{ url_for('competitions.calendar_application_new') }}" class="btn btn-sm btn-primary">Добавить заявку</a>
+                    {% elif not current_user.is_authenticated %}
+                        <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-sm btn-outline-secondary">Войти, чтобы добавить заявку</a>
+                    {% endif %}
+                </div>
+
+                <h2 class="h6 mb-3">Заявки на включение соревнований в ЕКП</h2>
+                {% if calendar_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-zebra align-middle">
+                            <thead>
+                                <tr class="site-table-header">
+                                    <th>Статус соревнований</th>
+                                    <th>Виды программы</th>
+                                    <th>Сроки проведения</th>
+                                    <th>Место проведения</th>
+                                    <th>Проводящие организации</th>
+                                    <th>Главный судья</th>
+                                    <th>Главный секретарь</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in calendar_applications %}
+                                    <tr>
+                                        <td>
+                                            <a href="{{ url_for('competitions.calendar_application_view', application_id=item.id) }}">{{ item.status or 'Без названия' }}</a>
+                                        </td>
+                                        <td>{{ item.program_types or '' }}</td>
+                                        <td>
+                                            {{ item.start_date.strftime('%d.%m.%Y') if item.start_date else '' }}
+                                            {% if item.end_date and item.end_date != item.start_date %}
+                                                &ndash; {{ item.end_date.strftime('%d.%m.%Y') }}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ [item.location_subject, item.location_details]|select|join(', ') }}</td>
+                                        <td>{{ item.organizations or '' }}</td>
+                                        <td>{{ item.chief_judge_name or '' }}</td>
+                                        <td>{{ item.chief_secretary_name or '' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Заявок пока нет.</p>
+                {% endif %}
             </div>
         </div>
 

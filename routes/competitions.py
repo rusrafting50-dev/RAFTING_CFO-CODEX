@@ -8,7 +8,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import extract
 
 from models import (
-    Competition, CompetitionApplication, CompetitionApplicationAthlete,
+    CalendarPlanApplication, Competition, CompetitionApplication, CompetitionApplicationAthlete,
     CompetitionDocument, Document, DocumentCategory, DocumentSection,
     RegionalFederation, db,
 )
@@ -107,10 +107,19 @@ def calendar():
         scope='соревнования', name='Положение о соревнованиях',
     ).first()
 
+    calendar_applications = (
+        CalendarPlanApplication.query.order_by(CalendarPlanApplication.created_at.desc()).all()
+    )
+    can_submit_calendar_application = (
+        current_user.is_authenticated and current_user.role in ('region_rep', 'admin')
+    )
+
     return render_template(
         'competitions/calendar.html', competitions=competitions, year=year,
         archive_years=archive_years, regulations_category=regulations_category,
         level_tabs=LEVEL_TABS, selected_level=selected_level,
+        calendar_applications=calendar_applications,
+        can_submit_calendar_application=can_submit_calendar_application,
     )
 
 
@@ -591,3 +600,118 @@ def application_delete(competition_id, application_id):
     db.session.commit()
     flash('Заявка удалена.', 'success')
     return redirect(url_for('competitions.detail', competition_id=competition_id) + '#tab-entries')
+
+
+# ---------- Заявки на включение соревнования в ЕКП (вкладка «Формирование
+# календарного плана») ----------
+
+# Роли предлагаемого состава ГСК и технического делегата — у каждой один
+# и тот же набор полей (ФИО, квалификация, субъект, город), см.
+# CalendarPlanApplication в models.py.
+CALENDAR_APPLICATION_ROLES = [
+    ('chief_judge', 'Главный судья'),
+    ('chief_secretary', 'Главный секретарь'),
+    ('deputy_judge', 'Заместитель главного судьи по судейству'),
+    ('deputy_organizer', 'Заместитель главного судьи по организационным вопросам'),
+    ('distance_chief', 'Начальник дистанции'),
+    ('tech_delegate', 'Технический делегат'),
+]
+
+
+def _fill_calendar_application_fields(application, form):
+    application.status = form.get('status', '').strip() or None
+    application.program_types = form.get('program_types', '').strip() or None
+    application.location_subject = form.get('location_subject', '').strip() or None
+    application.location_details = form.get('location_details', '').strip() or None
+    application.organizations = form.get('organizations', '').strip() or None
+    application.program_schedule = form.get('program_schedule', '').strip() or None
+
+    application.start_date = None
+    start_date = form.get('start_date')
+    if start_date:
+        try:
+            application.start_date = date.fromisoformat(start_date)
+        except ValueError:
+            pass
+
+    application.end_date = None
+    end_date = form.get('end_date')
+    if end_date:
+        try:
+            application.end_date = date.fromisoformat(end_date)
+        except ValueError:
+            pass
+
+    for role, _label in CALENDAR_APPLICATION_ROLES:
+        setattr(application, f'{role}_name', form.get(f'{role}_name', '').strip() or None)
+        setattr(application, f'{role}_qualification', form.get(f'{role}_qualification', '').strip() or None)
+        setattr(application, f'{role}_region', form.get(f'{role}_region', '').strip() or None)
+        setattr(application, f'{role}_city', form.get(f'{role}_city', '').strip() or None)
+
+    application.federation_contact_name = form.get('federation_contact_name', '').strip() or None
+    application.federation_contact_phone = form.get('federation_contact_phone', '').strip() or None
+    application.federation_contact_email = form.get('federation_contact_email', '').strip() or None
+    application.chief_judge_contact_name = form.get('chief_judge_contact_name', '').strip() or None
+    application.chief_judge_contact_phone = form.get('chief_judge_contact_phone', '').strip() or None
+    application.chief_judge_contact_email = form.get('chief_judge_contact_email', '').strip() or None
+
+
+@bp.route('/calendar-applications/new', methods=['GET', 'POST'])
+@login_required
+def calendar_application_new():
+    if current_user.role not in ('region_rep', 'admin'):
+        abort(403)
+
+    if request.method == 'POST':
+        application = CalendarPlanApplication(submitted_by_id=current_user.id)
+        _fill_calendar_application_fields(application, request.form)
+        db.session.add(application)
+        db.session.commit()
+        flash('Заявка сохранена.', 'success')
+        return redirect(url_for('competitions.calendar') + '#tab-forming')
+
+    return render_template(
+        'competitions/calendar_application_form.html', application=None,
+        roles=CALENDAR_APPLICATION_ROLES, qualifications=QUALIFICATIONS,
+    )
+
+
+@bp.route('/calendar-applications/<int:application_id>/edit', methods=['GET', 'POST'])
+@login_required
+def calendar_application_edit(application_id):
+    application = CalendarPlanApplication.query.get_or_404(application_id)
+    if not _can_manage(application):
+        abort(403)
+
+    if request.method == 'POST':
+        _fill_calendar_application_fields(application, request.form)
+        db.session.commit()
+        flash('Заявка обновлена.', 'success')
+        return redirect(url_for('competitions.calendar') + '#tab-forming')
+
+    return render_template(
+        'competitions/calendar_application_form.html', application=application,
+        roles=CALENDAR_APPLICATION_ROLES, qualifications=QUALIFICATIONS,
+    )
+
+
+@bp.route('/calendar-applications/<int:application_id>')
+def calendar_application_view(application_id):
+    application = CalendarPlanApplication.query.get_or_404(application_id)
+    return render_template(
+        'competitions/calendar_application_detail.html', application=application,
+        roles=CALENDAR_APPLICATION_ROLES, can_manage=_can_manage(application),
+    )
+
+
+@bp.route('/calendar-applications/<int:application_id>/delete', methods=['POST'])
+@login_required
+def calendar_application_delete(application_id):
+    application = CalendarPlanApplication.query.get_or_404(application_id)
+    if not _can_manage(application):
+        abort(403)
+
+    db.session.delete(application)
+    db.session.commit()
+    flash('Заявка удалена.', 'success')
+    return redirect(url_for('competitions.calendar') + '#tab-forming')

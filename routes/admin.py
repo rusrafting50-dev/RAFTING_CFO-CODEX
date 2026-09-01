@@ -12,11 +12,12 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from models import (
-    Athlete, Banner, Club, Competition, CompetitionApplication, CompetitionDocument, Council,
-    CouncilCategory, CouncilMember, CouncilPage, Document, DocumentCategory, DocumentSection, Event,
-    FederationMember, FederationRegistrationRequest, LocalFederation, MediaAlbum, MediaAlbumPhoto,
-    MediaVideo, News, NewsCategory, NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee,
-    RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
+    Athlete, Banner, CalendarPlanApplication, Club, Competition, CompetitionApplication,
+    CompetitionDocument, Council, CouncilCategory, CouncilMember, CouncilPage, Document,
+    DocumentCategory, DocumentSection, Event, FederationMember, FederationRegistrationRequest,
+    LocalFederation, MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel,
+    PartnerLogo, PasswordResetRequest, Referee, RegionalFederation, SeminarApplicationSubmission,
+    SyncLog, User, db,
 )
 from richtext import sanitize_rich_text
 from sync_to_referee import отправить_заявку, обновить_заявку
@@ -919,6 +920,33 @@ def documents_delete(document_id):
 def competitions_list():
     competitions = Competition.query.order_by(Competition.start_date.desc()).all()
     return render_template('admin/competitions_list.html', active='competitions', competitions=competitions)
+
+
+@bp.route('/competitions/calendar-applications')
+@section_required('competitions')
+def calendar_applications_list():
+    """Заявки на включение соревнований в ЕКП («Формирование КП») — те
+    же заявки, что таблицей на сайте (Соревнования → Календарный план →
+    Формирование календарного плана), здесь видны все сразу без перехода
+    по одной (routes/competitions.py: calendar_application_view — ссылка
+    «Просмотр» ведёт туда же, на публичную страницу с полными данными)."""
+    applications = (
+        CalendarPlanApplication.query.order_by(CalendarPlanApplication.created_at.desc()).all()
+    )
+    return render_template(
+        'admin/calendar_applications_list.html', active='competitions', applications=applications,
+    )
+
+
+@bp.route('/competitions/calendar-applications/<int:application_id>/delete', methods=['POST'])
+@section_required('competitions')
+@roles_required('admin', 'editor')
+def calendar_application_delete(application_id):
+    application = CalendarPlanApplication.query.get_or_404(application_id)
+    db.session.delete(application)
+    db.session.commit()
+    flash('Заявка удалена.', 'success')
+    return redirect(url_for('admin.calendar_applications_list'))
 
 
 @bp.route('/competitions/<int:competition_id>/logo', methods=['POST'])
