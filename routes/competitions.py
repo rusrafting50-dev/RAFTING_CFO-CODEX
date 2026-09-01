@@ -70,29 +70,15 @@ RESULT_DISCIPLINES = [
 # (см. модель: level — цфо/регион/отделение), а не отдельному значению
 # 'клуб' — третий уровень структуры сайта («Местное отделение / Спортивный
 # клуб», см. CLAUDE.md) в этом поле представлен только этим значением.
-LEVEL_TABS = [
-    ('цфо', 'ЦФО'),
-    ('регион', 'Регионы'),
-    ('отделение', 'Клубы'),
-]
-LEVEL_TAB_VALUES = {value for value, _ in LEVEL_TABS}
-
-
 @bp.route('/')
 def calendar():
-    """Соревнования — календарный план текущего года + ссылки в архив
-    трёх предыдущих лет. «Официальные спортивные соревнования» дополнительно
-    делится на вкладки по уровню (LEVEL_TABS) — ЦФО по умолчанию."""
+    """Соревнования — календарный план текущего года (все уровни сразу,
+    без деления по вкладкам ЦФО/Регионы/Клубы) + ссылки в архив трёх
+    предыдущих лет."""
     year = date.today().year
-    selected_level = request.args.get('level')
-    if selected_level not in LEVEL_TAB_VALUES:
-        selected_level = 'цфо'
 
     competitions = (
-        Competition.query.filter(
-            extract('year', Competition.start_date) == year,
-            Competition.level == selected_level,
-        )
+        Competition.query.filter(extract('year', Competition.start_date) == year)
         .order_by(Competition.start_date.asc())
         .all()
     )
@@ -117,7 +103,6 @@ def calendar():
     return render_template(
         'competitions/calendar.html', competitions=competitions, year=year,
         archive_years=archive_years, regulations_category=regulations_category,
-        level_tabs=LEVEL_TABS, selected_level=selected_level,
         calendar_applications=calendar_applications,
         can_submit_calendar_application=can_submit_calendar_application,
     )

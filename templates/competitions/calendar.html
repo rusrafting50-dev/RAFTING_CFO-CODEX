@@ -24,15 +24,6 @@
 
         <div class="tab-content" id="calendarSubTabsContent">
             <div class="tab-pane fade show active" id="tab-official" role="tabpanel">
-                <ul class="news-submenu mb-4">
-                    {% for value, label in level_tabs %}
-                        <li role="presentation">
-                            <a class="{{ 'active' if selected_level == value }}"
-                               href="{{ url_for('competitions.calendar', level=value) }}">{{ label }}</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-
                 {% if competitions %}
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
                         {% for competition in competitions %}

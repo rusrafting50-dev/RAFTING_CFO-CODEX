@@ -184,21 +184,21 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-lg-3">
+                        {% if can_submit_application %}
+                            <a href="{{ url_for('competitions.application_new', competition_id=competition.id) }}" class="btn btn-primary w-100">Подать заявку команды</a>
+                        {% elif not current_user.is_authenticated %}
+                            <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-outline-secondary w-100">Войти, чтобы подать заявку</a>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
 
             <div class="tab-pane fade" id="tab-news" role="tabpanel"></div>
             <div class="tab-pane fade" id="tab-entries" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted small">
-                        {% if applications %}Заявок подано: {{ applications|length }}, спортсменов: {{ total_athletes }}{% endif %}
-                    </span>
-                    {% if can_submit_application %}
-                        <a href="{{ url_for('competitions.application_new', competition_id=competition.id) }}" class="btn btn-sm btn-primary">Подать заявку команды</a>
-                    {% elif not current_user.is_authenticated %}
-                        <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-sm btn-outline-secondary">Войти, чтобы подать заявку</a>
-                    {% endif %}
-                </div>
+                {% if applications %}
+                    <p class="text-muted small mb-3">Заявок подано: {{ applications|length }}, спортсменов: {{ total_athletes }}</p>
+                {% endif %}
                 {% if not applications %}
                     <p class="text-muted">Заявок пока нет.</p>
                 {% else %}
