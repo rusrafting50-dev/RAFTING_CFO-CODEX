@@ -11,13 +11,45 @@
             <div class="row g-3 mb-4">
                 <div class="col-12">
                     <label class="form-label">Статус соревнований</label>
-                    <input type="text" name="status" class="form-control"
-                           value="{{ application.status or '' if application else '' }}">
+                    <select name="status" class="form-select">
+                        <option value="">— выберите статус —</option>
+                        {% set current_status = application.status if application else '' %}
+                        {% for s in status_choices %}
+                            <option value="{{ s }}" {{ 'selected' if s == current_status }}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Виды программы</label>
-                    <input type="text" name="program_types" class="form-control"
-                           value="{{ application.program_types or '' if application else '' }}">
+                    <label class="form-label">Возрастная группа и классы судов</label>
+                    {% set age_group_list = (application.age_groups.split(' / ') if application and application.age_groups else ['']) %}
+                    {% set chosen_boat_classes = (application.boat_classes.split(' ') if application and application.boat_classes else []) %}
+                    <div id="ageGroupRows">
+                        {% for value in age_group_list %}
+                            {% set row_idx = loop.index %}
+                            <div class="d-flex gap-2 mb-2 align-items-center age-group-row">
+                                <select name="age_group[]" class="form-select" style="flex: 2 1 auto;">
+                                    <option value="">— не указана —</option>
+                                    {% for g in age_group_choices %}
+                                        <option value="{{ g }}" {{ 'selected' if value.strip() == g }}>{{ g }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="d-flex gap-2 flex-shrink-0">
+                                    {% for cls in boat_classes %}
+                                        <div class="form-check form-check-inline mb-0">
+                                            <input class="form-check-input" type="checkbox" name="boat_class"
+                                                   id="boatClass{{ cls }}_{{ row_idx }}" value="{{ cls }}"
+                                                   {{ 'checked' if cls in chosen_boat_classes }}>
+                                            <label class="form-check-label small fw-semibold" for="boatClass{{ cls }}_{{ row_idx }}">{{ cls }}</label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% if not loop.first %}
+                                    <button type="button" class="btn btn-outline-danger btn-sm px-2 remove-age-group-row">×</button>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm mt-1" id="addAgeGroupRow">+ Добавить</button>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Дата начала соревнований</label>
@@ -124,4 +156,90 @@
             </div>
         </form>
     </div>
+
+    <script>
+        (function () {
+            var container = document.getElementById('ageGroupRows');
+            var addBtn = document.getElementById('addAgeGroupRow');
+            var ageGroupOptions = {{ age_group_choices|tojson }};
+            var boatClassValues = {{ boat_classes|tojson }};
+            var rowCounter = container.querySelectorAll('.age-group-row').length;
+            var MAX_ROWS = 3;
+
+            function buildRow() {
+                rowCounter++;
+                var row = document.createElement('div');
+                row.className = 'd-flex gap-2 mb-2 align-items-center age-group-row';
+
+                var select = document.createElement('select');
+                select.name = 'age_group[]';
+                select.className = 'form-select';
+                select.style.flex = '2 1 auto';
+                var emptyOption = document.createElement('option');
+                emptyOption.value = '';
+                emptyOption.textContent = '— не указана —';
+                select.appendChild(emptyOption);
+                ageGroupOptions.forEach(function (g) {
+                    var option = document.createElement('option');
+                    option.value = g;
+                    option.textContent = g;
+                    select.appendChild(option);
+                });
+                row.appendChild(select);
+
+                var checksWrap = document.createElement('div');
+                checksWrap.className = 'd-flex gap-2 flex-shrink-0';
+                boatClassValues.forEach(function (cls) {
+                    var wrap = document.createElement('div');
+                    wrap.className = 'form-check form-check-inline mb-0';
+                    var input = document.createElement('input');
+                    input.className = 'form-check-input';
+                    input.type = 'checkbox';
+                    input.name = 'boat_class';
+                    input.value = cls;
+                    input.id = 'boatClass' + cls + '_' + rowCounter;
+                    if (cls === boatClassValues[0]) {
+                        input.checked = true;
+                    }
+                    var label = document.createElement('label');
+                    label.className = 'form-check-label small fw-semibold';
+                    label.setAttribute('for', input.id);
+                    label.textContent = cls;
+                    wrap.appendChild(input);
+                    wrap.appendChild(label);
+                    checksWrap.appendChild(wrap);
+                });
+                row.appendChild(checksWrap);
+
+                var removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn btn-outline-danger btn-sm px-2 remove-age-group-row';
+                removeBtn.textContent = '×';
+                row.appendChild(removeBtn);
+
+                return row;
+            }
+
+            function updateAddButton() {
+                addBtn.disabled = container.querySelectorAll('.age-group-row').length >= MAX_ROWS;
+            }
+
+            addBtn.addEventListener('click', function () {
+                if (container.querySelectorAll('.age-group-row').length >= MAX_ROWS) {
+                    return;
+                }
+                container.appendChild(buildRow());
+                updateAddButton();
+            });
+
+            container.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-age-group-row')) {
+                    e.target.closest('.age-group-row').remove();
+                    updateAddButton();
+                }
+            });
+
+            updateAddButton();
+        })();
+    </script>
 {% endblock %}

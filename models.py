@@ -828,7 +828,12 @@ class CalendarPlanApplication(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     status = db.Column(db.String(200))  # Статус соревнований
-    program_types = db.Column(db.String(500))  # Виды программы
+    # Возрастная группа и классы судов — как в форме «Добавить соревнование»
+    # в COREZ (раздел «Классификация соревнований»): несколько строк
+    # возрастная группа + класс(ы) судна, склеенные через " / " (группы) и
+    # через пробел (классы), см. _fill_calendar_application_fields().
+    age_groups = db.Column(db.String(500))  # Возрастная группа
+    boat_classes = db.Column(db.String(20))  # Классы судов (R4 / R6)
     start_date = db.Column(db.Date)  # Дата начала соревнований
     end_date = db.Column(db.Date)  # Дата окончания соревнований
     location_subject = db.Column(db.String(255))  # Место проведения — субъект РФ

@@ -26,6 +26,36 @@ QUALIFICATIONS = ['МСМК', 'МС', 'КМС', 'I', 'II', 'III', 'б/р']
 # QUALIFICATIONS (спортивные разряды), который используется в заявках
 # на участие спортсменов и не должен меняться.
 JUDGE_CATEGORIES = ['ССВК', 'СС1К', 'СС2К', 'СС3К']
+# Статус соревнований — тот же список (полные названия статусов), что
+# СТАТУСЫ в COREZ (routes/соревнование.py), для выпадающего списка «Статус
+# соревнований» в заявке на включение в ЕКП. Там же ключ — короткий код
+# (ЧР/КР/...), но на сайте своего кода нет и не нужен — используем сразу
+# полное название статуса и как значение, и как подпись пункта.
+CALENDAR_STATUS_CHOICES = [
+    'Чемпионат России', 'Кубок России', 'Первенство России',
+    'Всероссийские соревнования', 'Чемпионат федерального округа',
+    'Чемпионат города Москвы', 'Первенство федерального округа',
+    'Первенство города Москвы', 'межрегиональные спортивные соревнования',
+    'Чемпионат субъекта Российской Федерации', 'Кубок субъекта Российской Федерации',
+    'Первенство субъекта Российской Федерации',
+    'Спортивные соревнования субъекта Российской Федерации',
+    'Чемпионат муниципального образования', 'Первенство муниципального образования',
+    'Спортивные соревнования муниципального образования',
+]
+# Возрастная группа — тот же список, что в разделе «Классификация
+# соревнований» формы «Добавить соревнование» в COREZ (включая
+# объединённые пункты вроде «Мужчины, Женщины»); отдельно от AGE_GROUPS
+# (список без объединённых пунктов), который используется в заявке
+# команды на участие в конкретном соревновании и не должен меняться.
+CALENDAR_AGE_GROUP_CHOICES = [
+    'Мужчины', 'Женщины',
+    'Юниоры (до 26 лет)', 'Юниорки (до 26 лет)',
+    'Юниоры (до 24 лет)', 'Юниорки (до 24 лет)',
+    'Юниоры (до 20 лет)', 'Юниорки (до 20 лет)',
+    'Юноши (до 16 лет)', 'Девушки (до 16 лет)',
+    'Мужчины, Женщины', 'Юниоры, Юниорки (до 26 лет)', 'Юниоры, Юниорки (до 24 лет)',
+    'Юниоры, Юниорки (до 20 лет)', 'Юноши, Девушки (до 16 лет)',
+]
 # Тот же список, что ВОЗРАСТНЫЕ_ГРУППЫ в COREZ (routes/заявка.py) — единый
 # словарь значений на обеих сторонах.
 AGE_GROUPS = [
@@ -642,9 +672,25 @@ CALENDAR_APPLICATION_ROLES = [
 ]
 
 
+def _calendar_age_groups_from_form(form):
+    """Возрастные группы из строк «Возрастная группа и классы судов» (до 3
+    штук, как в COREZ) → склеены через " / ", как _возраст_из_формы() в
+    routes/соревнование.py COREZ."""
+    groups = [g.strip() for g in form.getlist('age_group[]') if g.strip()]
+    return ' / '.join(groups) or None
+
+
+def _calendar_boat_classes_from_form(form):
+    """Классы судов из чекбоксов R4/R6 (общие на все строки возрастных
+    групп) → склеены через пробел, как _класс_из_формы() в COREZ."""
+    chosen = [c for c in form.getlist('boat_class') if c in BOAT_CLASSES]
+    return ' '.join(sorted(set(chosen))) or None
+
+
 def _fill_calendar_application_fields(application, form):
     application.status = form.get('status', '').strip() or None
-    application.program_types = form.get('program_types', '').strip() or None
+    application.age_groups = _calendar_age_groups_from_form(form)
+    application.boat_classes = _calendar_boat_classes_from_form(form)
     application.location_subject = form.get('location_subject', '').strip() or None
     application.location_details = form.get('location_details', '').strip() or None
     application.organizations = form.get('organizations', '').strip() or None
@@ -697,6 +743,8 @@ def calendar_application_new():
     return render_template(
         'competitions/calendar_application_form.html', application=None,
         roles=CALENDAR_APPLICATION_ROLES, qualifications=JUDGE_CATEGORIES,
+        status_choices=CALENDAR_STATUS_CHOICES, age_group_choices=CALENDAR_AGE_GROUP_CHOICES,
+        boat_classes=BOAT_CLASSES,
     )
 
 
@@ -716,6 +764,8 @@ def calendar_application_edit(application_id):
     return render_template(
         'competitions/calendar_application_form.html', application=application,
         roles=CALENDAR_APPLICATION_ROLES, qualifications=JUDGE_CATEGORIES,
+        status_choices=CALENDAR_STATUS_CHOICES, age_group_choices=CALENDAR_AGE_GROUP_CHOICES,
+        boat_classes=BOAT_CLASSES,
     )
 
 

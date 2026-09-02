@@ -90,7 +90,7 @@
                                         <td>
                                             <a href="{{ url_for('competitions.calendar_application_view', application_id=item.id) }}">{{ item.status or 'Без названия' }}</a>
                                         </td>
-                                        <td>{{ item.program_types or '' }}</td>
+                                        <td>{{ [item.age_groups, item.boat_classes]|select|join(' — ') }}</td>
                                         <td>
                                             {{ item.start_date.strftime('%d.%m.%Y') if item.start_date else '' }}
                                             {% if item.end_date and item.end_date != item.start_date %}

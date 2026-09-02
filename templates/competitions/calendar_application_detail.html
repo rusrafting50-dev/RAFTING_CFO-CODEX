@@ -20,7 +20,8 @@
         <h2 class="h6 mb-3">Основные данные</h2>
         <dl class="row mb-4">
             <dt class="col-sm-4">Статус соревнований</dt><dd class="col-sm-8">{{ application.status or '—' }}</dd>
-            <dt class="col-sm-4">Виды программы</dt><dd class="col-sm-8">{{ application.program_types or '—' }}</dd>
+            <dt class="col-sm-4">Возрастная группа</dt><dd class="col-sm-8">{{ application.age_groups or '—' }}</dd>
+            <dt class="col-sm-4">Классы судов</dt><dd class="col-sm-8">{{ application.boat_classes or '—' }}</dd>
             <dt class="col-sm-4">Сроки проведения</dt>
             <dd class="col-sm-8">
                 {{ application.start_date.strftime('%d.%m.%Y') if application.start_date else '—' }}
