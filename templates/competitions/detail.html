@@ -151,7 +151,7 @@
                                 {% if competition.start_date %}
                                     <span class="comp-banner-meta-item">
                                         <span aria-hidden="true">📅</span>
-                                        {{ competition.start_date|ru_date_full }}{% if competition.end_date and competition.end_date != competition.start_date %} &ndash; {{ competition.end_date|ru_date_full }}{% endif %}
+                                        {{ competition.start_date|ru_date_range(competition.end_date) }}
                                     </span>
                                 {% endif %}
                                 {% if competition.location %}
