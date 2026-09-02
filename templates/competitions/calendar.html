@@ -63,9 +63,9 @@
             <div class="tab-pane fade" id="tab-forming" role="tabpanel">
                 <div class="d-flex justify-content-end mb-3">
                     {% if can_submit_calendar_application %}
-                        <a href="{{ url_for('competitions.calendar_application_new') }}" class="btn btn-sm btn-primary">Добавить заявку</a>
+                        <a href="{{ url_for('competitions.calendar_application_new') }}" class="btn btn-sm btn-primary">Подать заявку</a>
                     {% elif not current_user.is_authenticated %}
-                        <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-sm btn-outline-secondary">Войти, чтобы добавить заявку</a>
+                        <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-sm btn-outline-secondary">Войти, чтобы подать заявку</a>
                     {% endif %}
                 </div>
 
@@ -110,13 +110,6 @@
                     <p class="text-muted">Заявок пока нет.</p>
                 {% endif %}
             </div>
-        </div>
-
-        <h2 class="h5 mt-5 mb-3">Архив</h2>
-        <div class="d-flex flex-wrap gap-2">
-            {% for y in archive_years %}
-                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.archive', year=y) }}">{{ y }}</a>
-            {% endfor %}
         </div>
     </div>
 {% endblock %}
