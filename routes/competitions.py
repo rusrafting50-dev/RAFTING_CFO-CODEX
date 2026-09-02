@@ -239,21 +239,23 @@ def _equipment_categories(audience):
     )
 
 
-def _equipment_sidebar_items(active_audience):
+def _equipment_sidebar_items(active_audience, active_category_id=None):
     """Боковое меню страницы «Оборудование и снаряжение» — тот же
     приём, что _team_sidebar_items()/_councils_sidebar_items() в
     routes/regions.py: категория (аудитория) с раскрывающимся списком
-    видов оборудования внутри (kind='category'). Виды оборудования не
-    ведут на отдельные страницы — это якоря на той же странице (у всех
-    видов выбранной аудитории общий URL, различаются только якорем),
-    поэтому активный пункт — только сама аудитория, не конкретный вид."""
+    видов оборудования внутри (kind='category'). В отличие от прежней
+    версии виды оборудования ведут не на якорь у уже отрисованного
+    блока, а на тот же URL с своим параметром category — на странице
+    в любой момент показан текст только одной аудитории и карточки
+    только одного выбранного вида (см. equipment()); при заходе без
+    параметров в сайдбаре не активен ни один пункт."""
     items = []
     for value, label in EQUIPMENT_AUDIENCES:
         base_url = url_for('competitions.equipment', audience=value)
         sections = [{
             'label': category.name,
-            'url': f'{base_url}#eq-{category.id}',
-            'active': False,
+            'url': url_for('competitions.equipment', audience=value, category=category.id),
+            'active': value == active_audience and category.id == active_category_id,
         } for category in _equipment_categories(value)]
         items.append({
             'kind': 'category', 'label': label, 'url': base_url,
@@ -264,26 +266,36 @@ def _equipment_sidebar_items(active_audience):
 
 @bp.route('/equipment')
 def equipment():
-    """Оборудование и снаряжение — третья вкладка раздела «Соревнования»
-    (см. comp_tabs в competitions/_tabs.html). Боковое меню — аудитория
-    (для спортсменов/организаторов) с видами оборудования внутри как
-    раскрывающимися разделами (_equipment_sidebar_items()); в основном
-    поле — общий текст аудитории (EquipmentPageText) и под заголовком
-    каждого вида оборудования — карточки «фото + текст» (EquipmentItem),
-    тот же формат, что новости."""
-    audience = request.args.get('audience', 'спортсмены')
+    """Оборудование и снаряжение — третья вкладка раздела «Соревнования».
+    Ничего не выбрано по умолчанию (ни аудитория, ни вид оборудования —
+    в сайдбаре тогда не подсвечен ни один пункт): виден только общий
+    заголовок «ОБОРУДОВАНИЕ И СНАРЯЖЕНИЕ». После выбора аудитории (для
+    спортсменов/организаторов) появляется её заголовок и общий текст
+    (EquipmentPageText); после выбора вида оборудования внутри неё —
+    ещё заголовок этого вида и его карточки «фото + текст»
+    (EquipmentItem, тот же формат, что новости)."""
+    audience = request.args.get('audience')
     if audience not in EQUIPMENT_SCOPE_BY_AUDIENCE:
-        audience = 'спортсмены'
+        audience = None
 
-    categories = _equipment_categories(audience)
-    items_by_category = {category.id: category.equipment_items for category in categories}
-    page_text = EquipmentPageText.query.filter_by(audience=audience).first()
+    category_id = request.args.get('category', type=int)
+    page_text = None
+    selected_category = None
+    equipment_items = []
+
+    if audience:
+        page_text = EquipmentPageText.query.filter_by(audience=audience).first()
+        if category_id:
+            selected_category = next(
+                (c for c in _equipment_categories(audience) if c.id == category_id), None
+            )
+            if selected_category:
+                equipment_items = selected_category.equipment_items
 
     return render_template(
-        'competitions/equipment.html', audience=audience,
-        audience_label=EQUIPMENT_AUDIENCE_LABELS[audience],
-        categories=categories, items_by_category=items_by_category, page_text=page_text,
-        sidebar_items=_equipment_sidebar_items(audience),
+        'competitions/equipment.html', audience=audience, page_text=page_text,
+        selected_category=selected_category, equipment_items=equipment_items,
+        sidebar_items=_equipment_sidebar_items(audience, category_id),
     )
 
 

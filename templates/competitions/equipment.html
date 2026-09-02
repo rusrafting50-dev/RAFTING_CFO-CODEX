@@ -1,32 +1,30 @@
 {% extends "base.html" %}
-{% from "competitions/_tabs.html" import comp_tabs %}
 
 {% block title %}Оборудование и снаряжение — Соревнования — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}Оборудование и снаряжение для спортсменов и организаторов соревнований по рафтингу{% endblock %}
 
 {% block content %}
     <div class="container py-5">
-        {{ comp_tabs('equipment') }}
-
         <div class="row g-4">
             <div class="col-lg-9">
-                <h2 class="h4 mb-3">Оборудование и снаряжение {{ 'для спортсменов' if audience == 'спортсмены' else 'для организаторов' }}</h2>
+                <h1 class="h4 mb-4">ОБОРУДОВАНИЕ И СНАРЯЖЕНИЕ</h1>
 
-                <div class="fed-text-block mb-4">
-                    {% if page_text and page_text.text %}
-                        <div class="fed-intro">{{ page_text.text|richtext }}</div>
-                    {% else %}
-                        <p class="text-muted mb-0">Материалы пока не добавлены.</p>
-                    {% endif %}
-                </div>
+                {% if audience %}
+                    <h2 class="h5 mb-3">Оборудование и снаряжение {{ 'для спортсменов' if audience == 'спортсмены' else 'для организаторов' }}</h2>
 
-                {% if categories %}
-                    {% for category in categories %}
-                        <h3 id="eq-{{ category.id }}" class="h5 mb-3{{ ' mt-5' if not loop.first }}">{{ category.name|cap_first }}</h3>
-                        {% set entries = items_by_category.get(category.id, []) %}
-                        {% if entries %}
+                    <div class="fed-text-block mb-4">
+                        {% if page_text and page_text.text %}
+                            <div class="fed-intro">{{ page_text.text|richtext }}</div>
+                        {% else %}
+                            <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                        {% endif %}
+                    </div>
+
+                    {% if selected_category %}
+                        <h3 class="h5 mb-3">{{ selected_category.name|cap_first }}</h3>
+                        {% if equipment_items %}
                             <div class="d-flex flex-column gap-4 mb-4">
-                                {% for entry in entries %}
+                                {% for entry in equipment_items %}
                                     <div class="news-row">
                                         <div class="news-row-media-link">
                                             <div class="news-row-photo"
@@ -44,9 +42,7 @@
                         {% else %}
                             <p class="text-muted mb-4">Материалы пока не добавлены.</p>
                         {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted mb-0">Категории пока не добавлены.</p>
+                    {% endif %}
                 {% endif %}
             </div>
             <div class="col-lg-3">
