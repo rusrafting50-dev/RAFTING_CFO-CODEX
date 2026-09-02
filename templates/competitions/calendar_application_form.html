@@ -94,7 +94,7 @@
                     <div class="col-app-qualification">
                         <label class="form-label">Квалификация</label>
                         <select name="{{ role }}_qualification" class="form-select">
-                            <option value="">— не выбрано —</option>
+                            <option value="">–</option>
                             {% set current_qualification = application[role ~ '_qualification'] if application else '' %}
                             {% for q in qualifications %}
                                 <option value="{{ q }}" {{ 'selected' if q == current_qualification }}>{{ q }}</option>

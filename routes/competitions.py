@@ -264,6 +264,12 @@ EQUIPMENT_SCOPE_BY_AUDIENCE = {
     'организаторы': 'оборудование_организаторы',
 }
 EQUIPMENT_AUDIENCE_LABELS = dict(EQUIPMENT_AUDIENCES)
+# Общее вводное поле стартовой страницы «Оборудование и снаряжение» (когда
+# в сайдбаре ещё ничего не выбрано) — тот же EquipmentPageText, что и у
+# каждой аудитории, но со своим отдельным ключом, не входящим в
+# EQUIPMENT_AUDIENCES/EQUIPMENT_AUDIENCE_LABELS (у него нет своих видов
+# оборудования — только текст).
+EQUIPMENT_GENERAL_KEY = 'общее'
 
 
 def _equipment_categories(audience):
@@ -317,6 +323,7 @@ def equipment():
     page_text = None
     selected_category = None
     equipment_items = []
+    general_page_text = None
 
     if audience:
         page_text = EquipmentPageText.query.filter_by(audience=audience).first()
@@ -326,10 +333,13 @@ def equipment():
             )
             if selected_category:
                 equipment_items = selected_category.equipment_items
+    else:
+        general_page_text = EquipmentPageText.query.filter_by(audience=EQUIPMENT_GENERAL_KEY).first()
 
     return render_template(
         'competitions/equipment.html', audience=audience, page_text=page_text,
         selected_category=selected_category, equipment_items=equipment_items,
+        general_page_text=general_page_text,
         sidebar_items=_equipment_sidebar_items(audience, category_id),
     )
 

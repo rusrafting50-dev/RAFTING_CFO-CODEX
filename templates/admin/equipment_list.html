@@ -17,19 +17,27 @@
 
     <form method="post" action="{{ url_for('admin.equipment_text_save') }}" class="card p-4 mb-4">
         <input type="hidden" name="audience" value="{{ audience }}">
-        <label class="form-label">Вводный текст страницы (над видами оборудования)</label>
+        <label class="form-label">
+            {% if audience == 'общее' %}
+                Текст стартовой страницы — виден, пока в сайдбаре не выбрана аудитория
+            {% else %}
+                Вводный текст страницы (над видами оборудования)
+            {% endif %}
+        </label>
         <textarea class="form-control mb-3" name="text" rows="4" data-rich-text="1">{{ page_text.text or '' if page_text else '' }}</textarea>
         <div><button type="submit" class="btn btn-primary">Сохранить</button></div>
     </form>
 
-    <p class="text-muted">
-        Список видов оборудования и их порядок — в разделе
-        <a href="{{ url_for('admin.document_taxonomy') }}">«Документы» → «Категории документов»</a>
-        (scope «оборудование_{{ audience }}»). Здесь — карточки «фото + текст» под каждым видом.
-    </p>
+    {% if audience != 'общее' %}
+        <p class="text-muted">
+            Список видов оборудования и их порядок — в разделе
+            <a href="{{ url_for('admin.document_taxonomy') }}">«Документы» → «Категории документов»</a>
+            (scope «оборудование_{{ audience }}»). Здесь — карточки «фото + текст» под каждым видом.
+        </p>
 
-    {% if not categories %}
-        <p class="text-muted">Виды оборудования пока не добавлены.</p>
+        {% if not categories %}
+            <p class="text-muted">Виды оборудования пока не добавлены.</p>
+        {% endif %}
     {% endif %}
 
     {% for category in categories %}

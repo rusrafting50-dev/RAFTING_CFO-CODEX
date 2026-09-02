@@ -20,7 +20,9 @@ from models import (
     RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
 )
 from richtext import sanitize_rich_text
-from routes.competitions import EQUIPMENT_AUDIENCE_LABELS, EQUIPMENT_AUDIENCES, _equipment_categories
+from routes.competitions import (
+    EQUIPMENT_AUDIENCE_LABELS, EQUIPMENT_AUDIENCES, EQUIPMENT_GENERAL_KEY, _equipment_categories,
+)
 from sync_to_referee import отправить_заявку, обновить_заявку
 from sync_to_corez import отправить_заявку_команды, обновить_заявку_команды
 from utils import safe_upload_filename
@@ -957,19 +959,22 @@ def calendar_application_delete(application_id):
 # (EquipmentPageText) и карточки «фото + текст» под каждым видом
 # (EquipmentItem).
 
+EQUIPMENT_ADMIN_TABS = [(EQUIPMENT_GENERAL_KEY, 'Общее (стартовая страница)')] + EQUIPMENT_AUDIENCES
+
+
 @bp.route('/equipment')
 @section_required('competitions')
 def equipment_list():
-    audience = request.args.get('audience', 'спортсмены')
-    if audience not in EQUIPMENT_AUDIENCE_LABELS:
-        audience = 'спортсмены'
+    audience = request.args.get('audience', EQUIPMENT_GENERAL_KEY)
+    if audience not in EQUIPMENT_AUDIENCE_LABELS and audience != EQUIPMENT_GENERAL_KEY:
+        audience = EQUIPMENT_GENERAL_KEY
 
-    categories = _equipment_categories(audience)
+    categories = _equipment_categories(audience) if audience in EQUIPMENT_AUDIENCE_LABELS else []
     page_text = EquipmentPageText.query.filter_by(audience=audience).first()
 
     return render_template(
         'admin/equipment_list.html', active='competitions', audience=audience,
-        audiences=EQUIPMENT_AUDIENCES, categories=categories, page_text=page_text,
+        audiences=EQUIPMENT_ADMIN_TABS, categories=categories, page_text=page_text,
     )
 
 
@@ -978,7 +983,7 @@ def equipment_list():
 @roles_required('admin', 'editor')
 def equipment_text_save():
     audience = request.form.get('audience')
-    if audience not in EQUIPMENT_AUDIENCE_LABELS:
+    if audience not in EQUIPMENT_AUDIENCE_LABELS and audience != EQUIPMENT_GENERAL_KEY:
         abort(404)
 
     page_text = EquipmentPageText.query.filter_by(audience=audience).first()
