@@ -21,6 +21,11 @@ ALLOWED_LOGO_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 BOAT_CLASSES = ['R4', 'R6']
 DISCIPLINES = ['Спринт', 'Параллельный спринт', 'Слалом', 'Длинная гонка', 'Многоборье']
 QUALIFICATIONS = ['МСМК', 'МС', 'КМС', 'I', 'II', 'III', 'б/р']
+# Судейские категории — для поля «Квалификация» состава ГСК в заявке на
+# включение в ЕКП (calendar_application_form.html); отдельно от
+# QUALIFICATIONS (спортивные разряды), который используется в заявках
+# на участие спортсменов и не должен меняться.
+JUDGE_CATEGORIES = ['ССВК', 'СС1К', 'СС2К', 'СС3К']
 # Тот же список, что ВОЗРАСТНЫЕ_ГРУППЫ в COREZ (routes/заявка.py) — единый
 # словарь значений на обеих сторонах.
 AGE_GROUPS = [
@@ -691,7 +696,7 @@ def calendar_application_new():
 
     return render_template(
         'competitions/calendar_application_form.html', application=None,
-        roles=CALENDAR_APPLICATION_ROLES, qualifications=QUALIFICATIONS,
+        roles=CALENDAR_APPLICATION_ROLES, qualifications=JUDGE_CATEGORIES,
     )
 
 
@@ -710,7 +715,7 @@ def calendar_application_edit(application_id):
 
     return render_template(
         'competitions/calendar_application_form.html', application=application,
-        roles=CALENDAR_APPLICATION_ROLES, qualifications=QUALIFICATIONS,
+        roles=CALENDAR_APPLICATION_ROLES, qualifications=JUDGE_CATEGORIES,
     )
 
 

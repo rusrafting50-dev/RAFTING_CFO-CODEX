@@ -9,32 +9,32 @@
         <form method="post">
             <h2 class="h6 mb-3">Основные данные</h2>
             <div class="row g-3 mb-4">
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">Статус соревнований</label>
                     <input type="text" name="status" class="form-control"
                            value="{{ application.status or '' if application else '' }}">
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                     <label class="form-label">Виды программы</label>
                     <input type="text" name="program_types" class="form-control"
                            value="{{ application.program_types or '' if application else '' }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">Дата начала соревнований</label>
                     <input type="date" name="start_date" class="form-control"
                            value="{{ application.start_date.isoformat() if application and application.start_date else '' }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">Дата окончания соревнований</label>
                     <input type="date" name="end_date" class="form-control"
                            value="{{ application.end_date.isoformat() if application and application.end_date else '' }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label">Место проведения — субъект РФ</label>
                     <input type="text" name="location_subject" class="form-control"
                            value="{{ application.location_subject if application else (current_user.region or '') }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-12">
                     <label class="form-label">Место проведения — район; город; объект спорта</label>
                     <input type="text" name="location_details" class="form-control"
                            value="{{ application.location_details or '' if application else '' }}">
@@ -54,12 +54,12 @@
             {% for role, label in roles %}
                 <div class="row g-3 mb-3">
                     <div class="col-12"><span class="fw-bold">{{ label }}</span></div>
-                    <div class="col-md-3">
+                    <div class="col-app-fio">
                         <label class="form-label">ФИО</label>
                         <input type="text" name="{{ role }}_name" class="form-control"
                                value="{{ (application[role ~ '_name'] or '') if application else '' }}">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-app-qualification">
                         <label class="form-label">Квалификация</label>
                         <select name="{{ role }}_qualification" class="form-select">
                             <option value="">— не выбрано —</option>
