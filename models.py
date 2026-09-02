@@ -253,6 +253,42 @@ class DocumentSection(db.Model):
     )
 
 
+class EquipmentPageText(db.Model):
+    """Вводный текст страницы «Оборудование и снаряжение» (Соревнования)
+    — свой у каждой аудитории (audience: 'спортсмены'/'организаторы',
+    см. routes/competitions.py: EQUIPMENT_AUDIENCES), редактируется в
+    панели управления. Строка создаётся по требованию, как CouncilPage
+    — при отсутствии страница показывает «Материалы пока не добавлены»."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    audience = db.Column(db.String(20), unique=True, nullable=False)
+    text = db.Column(db.Text)
+
+
+class EquipmentItem(db.Model):
+    """Карточка «фото + текст» под конкретным видом оборудования/
+    снаряжения (DocumentCategory scope='оборудование_спортсмены'/
+    'оборудование_организаторы') — тот же формат, что новости
+    (news-row), редактируется в собственном разделе панели управления
+    «Оборудование и снаряжение», отдельно от общих новостей сайта."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('document_category.id'), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    content = db.Column(db.Text)
+    image_path = db.Column(db.String(500))
+    sort_order = db.Column(db.Integer, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    category = db.relationship(
+        'DocumentCategory',
+        backref=db.backref(
+            'equipment_items', cascade='all, delete-orphan',
+            order_by='EquipmentItem.sort_order, EquipmentItem.created_at.desc()',
+        ),
+    )
+
+
 class Document(db.Model):
     """Нормативные документы."""
 

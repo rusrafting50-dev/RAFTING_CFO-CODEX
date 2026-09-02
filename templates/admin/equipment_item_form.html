@@ -1,0 +1,39 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'competitions' %}
+
+{% block title %}{{ 'Редактирование карточки' if item else 'Новая карточка' }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-2"><a href="{{ url_for('admin.equipment_list', audience=audience) }}">← Оборудование и снаряжение</a></p>
+    <h1 class="h4 mb-4">{{ 'Редактирование карточки' if item else 'Новая карточка' }}: {{ category.name }}</h1>
+
+    <form method="post" class="card p-4" enctype="multipart/form-data">
+        <input type="hidden" name="audience" value="{{ audience }}">
+        <div class="mb-3">
+            <label class="form-label">Заголовок</label>
+            <input type="text" class="form-control" name="title" required value="{{ item.title if item else '' }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Фото</label>
+            {% if item and item.image_path %}
+                <div class="mb-2">
+                    <img src="{{ url_for('static', filename=item.image_path) }}" alt=""
+                         style="width: 220px; height: 124px; object-fit: cover; border-radius: 4px;" class="border">
+                </div>
+            {% endif %}
+            <input type="file" class="form-control" name="image" accept=".jpg,.jpeg,.png,.webp">
+            <div class="form-text">
+                Рекомендуемое соотношение сторон — 16:9.
+                {% if item and item.image_path %}Оставьте поле пустым, чтобы не менять текущее фото.{% endif %}
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Текст</label>
+            <textarea class="form-control" name="content" rows="5" data-rich-text="1">{{ item.content or '' if item else '' }}</textarea>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('admin.equipment_list', audience=audience) }}">Отмена</a>
+        </div>
+    </form>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'competitions' %}
+
+{% block title %}Оборудование и снаряжение — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-2"><a href="{{ url_for('admin.competitions_list') }}">← Соревнования</a></p>
+    <h1 class="h4 mb-4">Оборудование и снаряжение</h1>
+
+    <ul class="nav nav-tabs mb-4">
+        {% for value, label in audiences %}
+            <li class="nav-item">
+                <a class="nav-link {{ 'active' if audience == value }}" href="{{ url_for('admin.equipment_list', audience=value) }}">{{ label }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form method="post" action="{{ url_for('admin.equipment_text_save') }}" class="card p-4 mb-4">
+        <input type="hidden" name="audience" value="{{ audience }}">
+        <label class="form-label">Вводный текст страницы (над видами оборудования)</label>
+        <textarea class="form-control mb-3" name="text" rows="4" data-rich-text="1">{{ page_text.text or '' if page_text else '' }}</textarea>
+        <div><button type="submit" class="btn btn-primary">Сохранить</button></div>
+    </form>
+
+    <p class="text-muted">
+        Список видов оборудования и их порядок — в разделе
+        <a href="{{ url_for('admin.document_taxonomy') }}">«Документы» → «Категории документов»</a>
+        (scope «оборудование_{{ audience }}»). Здесь — карточки «фото + текст» под каждым видом.
+    </p>
+
+    {% if not categories %}
+        <p class="text-muted">Виды оборудования пока не добавлены.</p>
+    {% endif %}
+
+    {% for category in categories %}
+        <div class="d-flex justify-content-between align-items-center mb-2 mt-4">
+            <h2 class="h6 mb-0">{{ category.name }}</h2>
+            <a class="btn btn-sm btn-primary" href="{{ url_for('admin.equipment_item_new', category_id=category.id, audience=audience) }}">Добавить</a>
+        </div>
+        {% if category.equipment_items %}
+            <div class="table-responsive mb-3">
+                <table class="table table-zebra align-middle">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>Фото</th>
+                            <th>Заголовок</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in category.equipment_items %}
+                            <tr>
+                                <td>
+                                    {% if item.image_path %}
+                                        <img src="{{ url_for('static', filename=item.image_path) }}" alt=""
+                                             style="width: 64px; height: 36px; object-fit: cover; border-radius: 4px;">
+                                    {% endif %}
+                                </td>
+                                <td>{{ item.title }}</td>
+                                <td class="d-flex gap-1 flex-wrap">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.equipment_item_edit', item_id=item.id, audience=audience) }}">Изменить</a>
+                                    <form method="post" action="{{ url_for('admin.equipment_item_delete', item_id=item.id) }}"
+                                          onsubmit="return confirm('Удалить карточку?');">
+                                        <input type="hidden" name="audience" value="{{ audience }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted small mb-3">Карточек пока нет.</p>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

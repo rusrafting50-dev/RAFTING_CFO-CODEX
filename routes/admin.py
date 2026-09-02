@@ -14,12 +14,13 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from models import (
     Athlete, Banner, CalendarPlanApplication, Club, Competition, CompetitionApplication,
     CompetitionDocument, Council, CouncilCategory, CouncilMember, CouncilPage, Document,
-    DocumentCategory, DocumentSection, Event, FederationMember, FederationRegistrationRequest,
-    LocalFederation, MediaAlbum, MediaAlbumPhoto, MediaVideo, News, NewsCategory, NewsImage, NewsLevel,
-    PartnerLogo, PasswordResetRequest, Referee, RegionalFederation, SeminarApplicationSubmission,
-    SyncLog, User, db,
+    DocumentCategory, DocumentSection, EquipmentItem, EquipmentPageText, Event, FederationMember,
+    FederationRegistrationRequest, LocalFederation, MediaAlbum, MediaAlbumPhoto, MediaVideo, News,
+    NewsCategory, NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee,
+    RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
 )
 from richtext import sanitize_rich_text
+from routes.competitions import EQUIPMENT_AUDIENCE_LABELS, EQUIPMENT_AUDIENCES, _equipment_categories
 from sync_to_referee import отправить_заявку, обновить_заявку
 from sync_to_corez import отправить_заявку_команды, обновить_заявку_команды
 from utils import safe_upload_filename
@@ -947,6 +948,122 @@ def calendar_application_delete(application_id):
     db.session.commit()
     flash('Заявка удалена.', 'success')
     return redirect(url_for('admin.calendar_applications_list'))
+
+
+# ---------- Оборудование и снаряжение ----------
+# Виды оборудования (DocumentCategory scope='оборудование_спортсмены'/
+# 'оборудование_организаторы') по-прежнему управляются в «Документы →
+# Категории документов» — здесь только вводный текст аудитории
+# (EquipmentPageText) и карточки «фото + текст» под каждым видом
+# (EquipmentItem).
+
+@bp.route('/equipment')
+@section_required('competitions')
+def equipment_list():
+    audience = request.args.get('audience', 'спортсмены')
+    if audience not in EQUIPMENT_AUDIENCE_LABELS:
+        audience = 'спортсмены'
+
+    categories = _equipment_categories(audience)
+    page_text = EquipmentPageText.query.filter_by(audience=audience).first()
+
+    return render_template(
+        'admin/equipment_list.html', active='competitions', audience=audience,
+        audiences=EQUIPMENT_AUDIENCES, categories=categories, page_text=page_text,
+    )
+
+
+@bp.route('/equipment/text', methods=['POST'])
+@section_required('competitions')
+@roles_required('admin', 'editor')
+def equipment_text_save():
+    audience = request.form.get('audience')
+    if audience not in EQUIPMENT_AUDIENCE_LABELS:
+        abort(404)
+
+    page_text = EquipmentPageText.query.filter_by(audience=audience).first()
+    if page_text is None:
+        page_text = EquipmentPageText(audience=audience)
+        db.session.add(page_text)
+    page_text.text = sanitize_rich_text(request.form.get('text', ''))
+    db.session.commit()
+    flash('Текст обновлён.', 'success')
+    return redirect(url_for('admin.equipment_list', audience=audience))
+
+
+@bp.route('/equipment/categories/<int:category_id>/new', methods=['GET', 'POST'])
+@section_required('competitions')
+@roles_required('admin', 'editor')
+def equipment_item_new(category_id):
+    category = DocumentCategory.query.get_or_404(category_id)
+    audience = request.values.get('audience', 'спортсмены')
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        image = request.files.get('image')
+
+        if not title:
+            flash('Заголовок обязателен.', 'error')
+            return render_template('admin/equipment_item_form.html', active='competitions', category=category, item=None, audience=audience)
+
+        if image and image.filename and not allowed_image(image.filename):
+            flash('Допустимые форматы фото: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/equipment_item_form.html', active='competitions', category=category, item=None, audience=audience)
+
+        item = EquipmentItem(
+            category_id=category.id,
+            title=title,
+            content=sanitize_rich_text(request.form.get('content', '')),
+            image_path=save_upload(image) if image and image.filename else None,
+        )
+        db.session.add(item)
+        db.session.commit()
+        flash('Карточка добавлена.', 'success')
+        return redirect(url_for('admin.equipment_list', audience=audience))
+
+    return render_template('admin/equipment_item_form.html', active='competitions', category=category, item=None, audience=audience)
+
+
+@bp.route('/equipment/<int:item_id>/edit', methods=['GET', 'POST'])
+@section_required('competitions')
+@roles_required('admin', 'editor')
+def equipment_item_edit(item_id):
+    item = EquipmentItem.query.get_or_404(item_id)
+    audience = request.values.get('audience', 'спортсмены')
+
+    if request.method == 'POST':
+        title = request.form.get('title', '').strip()
+        image = request.files.get('image')
+
+        if not title:
+            flash('Заголовок обязателен.', 'error')
+            return render_template('admin/equipment_item_form.html', active='competitions', category=item.category, item=item, audience=audience)
+
+        if image and image.filename and not allowed_image(image.filename):
+            flash('Допустимые форматы фото: JPG, PNG, WEBP.', 'error')
+            return render_template('admin/equipment_item_form.html', active='competitions', category=item.category, item=item, audience=audience)
+
+        item.title = title
+        item.content = sanitize_rich_text(request.form.get('content', ''))
+        if image and image.filename:
+            item.image_path = save_upload(image)
+        db.session.commit()
+        flash('Данные обновлены.', 'success')
+        return redirect(url_for('admin.equipment_list', audience=audience))
+
+    return render_template('admin/equipment_item_form.html', active='competitions', category=item.category, item=item, audience=audience)
+
+
+@bp.route('/equipment/<int:item_id>/delete', methods=['POST'])
+@section_required('competitions')
+@roles_required('admin', 'editor')
+def equipment_item_delete(item_id):
+    item = EquipmentItem.query.get_or_404(item_id)
+    audience = request.form.get('audience', 'спортсмены')
+    db.session.delete(item)
+    db.session.commit()
+    flash('Карточка удалена.', 'success')
+    return redirect(url_for('admin.equipment_list', audience=audience))
 
 
 @bp.route('/competitions/<int:competition_id>/logo', methods=['POST'])

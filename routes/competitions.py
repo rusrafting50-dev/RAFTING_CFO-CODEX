@@ -9,8 +9,8 @@ from sqlalchemy import extract
 
 from models import (
     CalendarPlanApplication, Competition, CompetitionApplication, CompetitionApplicationAthlete,
-    CompetitionDocument, Document, DocumentCategory, DocumentSection,
-    RegionalFederation, db,
+    CompetitionDocument, Document, DocumentCategory, DocumentSection, EquipmentItem,
+    EquipmentPageText, RegionalFederation, db,
 )
 from utils import safe_upload_filename
 
@@ -213,55 +213,77 @@ def documents():
     )
 
 
-# Первая строка меню на странице «Оборудование и снаряжение» — тот же
-# приём, что EVENT_TYPE_FILTERS в routes/events.py.
+# Категории аудитории на странице «Оборудование и снаряжение» — теперь
+# пункты бокового меню (тот же приём, что «Коллегии и советы» страницы
+# региональной федерации: категория/раздел), а не строка вкладок наверху.
+# Вторая часть значения — DocumentCategory.scope (тот же приём, что
+# 'соревнования'/'мероприятия'); сами виды оборудования внутри — уже
+# существующие категории документов этого scope, список/порядок которых
+# по-прежнему редактируется в «Документы → Категории документов».
 EQUIPMENT_AUDIENCES = [
     ('спортсмены', 'Для спортсменов'),
-    ('организаторы', 'Для организаторов соревнований'),
+    ('организаторы', 'Для организаторов'),
 ]
-# Вторая строка меню зависит от выбранной аудитории — это разные
-# DocumentCategory.scope (тот же приём, что 'соревнования'/'мероприятия').
 EQUIPMENT_SCOPE_BY_AUDIENCE = {
     'спортсмены': 'оборудование_спортсмены',
     'организаторы': 'оборудование_организаторы',
 }
+EQUIPMENT_AUDIENCE_LABELS = dict(EQUIPMENT_AUDIENCES)
+
+
+def _equipment_categories(audience):
+    return (
+        DocumentCategory.query.filter_by(scope=EQUIPMENT_SCOPE_BY_AUDIENCE[audience])
+        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
+        .all()
+    )
+
+
+def _equipment_sidebar_items(active_audience):
+    """Боковое меню страницы «Оборудование и снаряжение» — тот же
+    приём, что _team_sidebar_items()/_councils_sidebar_items() в
+    routes/regions.py: категория (аудитория) с раскрывающимся списком
+    видов оборудования внутри (kind='category'). Виды оборудования не
+    ведут на отдельные страницы — это якоря на той же странице (у всех
+    видов выбранной аудитории общий URL, различаются только якорем),
+    поэтому активный пункт — только сама аудитория, не конкретный вид."""
+    items = []
+    for value, label in EQUIPMENT_AUDIENCES:
+        base_url = url_for('competitions.equipment', audience=value)
+        sections = [{
+            'label': category.name,
+            'url': f'{base_url}#eq-{category.id}',
+            'active': False,
+        } for category in _equipment_categories(value)]
+        items.append({
+            'kind': 'category', 'label': label, 'url': base_url,
+            'active': value == active_audience, 'sections': sections,
+        })
+    return items
 
 
 @bp.route('/equipment')
 def equipment():
     """Оборудование и снаряжение — третья вкладка раздела «Соревнования»
-    (см. comp_tabs в competitions/_tabs.html). Сначала выбор аудитории
-    (для спортсменов / для организаторов соревнований) — строка меню,
-    затем на самой странице категории оборудования внутри выбранной
-    аудитории (DocumentCategory, scope зависит от аудитории) выводятся
-    как заголовки разделов, а не как отдельная строка меню-вкладок —
-    под каждым заголовком сразу все документы этой категории."""
+    (см. comp_tabs в competitions/_tabs.html). Боковое меню — аудитория
+    (для спортсменов/организаторов) с видами оборудования внутри как
+    раскрывающимися разделами (_equipment_sidebar_items()); в основном
+    поле — общий текст аудитории (EquipmentPageText) и под заголовком
+    каждого вида оборудования — карточки «фото + текст» (EquipmentItem),
+    тот же формат, что новости."""
     audience = request.args.get('audience', 'спортсмены')
     if audience not in EQUIPMENT_SCOPE_BY_AUDIENCE:
         audience = 'спортсмены'
-    scope = EQUIPMENT_SCOPE_BY_AUDIENCE[audience]
 
-    categories = (
-        DocumentCategory.query.filter_by(scope=scope)
-        .order_by(DocumentCategory.sort_order, DocumentCategory.name)
-        .all()
-    )
-
-    documents_by_category = {}
-    for category in categories:
-        # region_id.is_(None) — см. комментарий в documents() выше: имя
-        # категории уникально только в пределах своего scope, а не глобально.
-        documents_by_category[category.id] = (
-            Document.query.filter_by(doc_category=category.name)
-            .filter(Document.region_id.is_(None))
-            .order_by(Document.uploaded_at.desc(), Document.title)
-            .all()
-        )
+    categories = _equipment_categories(audience)
+    items_by_category = {category.id: category.equipment_items for category in categories}
+    page_text = EquipmentPageText.query.filter_by(audience=audience).first()
 
     return render_template(
-        'competitions/equipment.html',
-        audiences=EQUIPMENT_AUDIENCES, selected_audience=audience,
-        categories=categories, documents_by_category=documents_by_category,
+        'competitions/equipment.html', audience=audience,
+        audience_label=EQUIPMENT_AUDIENCE_LABELS[audience],
+        categories=categories, items_by_category=items_by_category, page_text=page_text,
+        sidebar_items=_equipment_sidebar_items(audience),
     )
 
 

@@ -8,69 +8,50 @@
     <div class="container py-5">
         {{ comp_tabs('equipment') }}
 
-        <ul class="news-submenu mb-3" role="tablist">
-            {% for value, label in audiences %}
-                <li role="presentation">
-                    <a class="{{ 'active' if selected_audience == value }}"
-                       href="{{ url_for('competitions.equipment', audience=value) }}">{{ label }}</a>
-                </li>
-            {% endfor %}
-        </ul>
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <h2 class="h4 mb-3">Оборудование и снаряжение {{ 'для спортсменов' if audience == 'спортсмены' else 'для организаторов' }}</h2>
 
-        {% if categories %}
-            {% for category in categories %}
-                <h2 class="h4 mb-3{{ ' mt-5' if not loop.first }}">{{ category.name|cap_first }}</h2>
-                {% set documents = documents_by_category[category.id] %}
-                {% if documents %}
-                    <div id="doc-list-{{ category.id }}" class="mb-4">
-                        {% for document in documents %}
-                            {% set icon_file = document|document_icon %}
-                            <div class="doc-list-item" id="doc-{{ document.id }}">
-                                <p class="news-row-date">{{ document.uploaded_at|ru_date_full if document.uploaded_at else '' }}</p>
-                                <div class="d-flex justify-content-between align-items-start gap-3">
-                                    <div>
-                                        <h3 class="doc-list-title">{{ document.title }}</h3>
-                                        <button type="button" class="btn btn-sm btn-primary doc-copy-link"
-                                                data-url="{{ document|document_href(external=True) }}">
-                                            Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
-                                        </button>
+                <div class="fed-text-block mb-4">
+                    {% if page_text and page_text.text %}
+                        <div class="fed-intro">{{ page_text.text|richtext }}</div>
+                    {% else %}
+                        <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                    {% endif %}
+                </div>
+
+                {% if categories %}
+                    {% for category in categories %}
+                        <h3 id="eq-{{ category.id }}" class="h5 mb-3{{ ' mt-5' if not loop.first }}">{{ category.name|cap_first }}</h3>
+                        {% set entries = items_by_category.get(category.id, []) %}
+                        {% if entries %}
+                            <div class="d-flex flex-column gap-4 mb-4">
+                                {% for entry in entries %}
+                                    <div class="news-row">
+                                        <div class="news-row-media-link">
+                                            <div class="news-row-photo"
+                                                 {% if entry.image_path %}style="background-image: url('{{ url_for('static', filename=entry.image_path) }}')"{% endif %}></div>
+                                        </div>
+                                        <div class="news-row-body">
+                                            <h4 class="news-row-title">{{ entry.title }}</h4>
+                                            {% if entry.content %}
+                                                <div class="news-row-full-text">{{ entry.content|richtext }}</div>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                    <a class="doc-open-link text-center text-nowrap" href="{{ document|document_href }}"
-                                       target="_blank" rel="noopener">
-                                        {% if icon_file %}
-                                            <img class="doc-file-icon-img" src="{{ url_for('static', filename='img/' + icon_file) }}" alt="{{ 'Ссылка' if document.link_url else ('.' + (document.file_path|file_extension)) }}">
-                                        {% else %}
-                                            <svg class="doc-file-icon-generic" viewBox="0 0 24 24" aria-hidden="true">
-                                                <path d="M6 2h8l5 5v15H6z" fill="#8a9199"/>
-                                                <path d="M14 2v5h5z" fill="#c2c7cc"/>
-                                            </svg>
-                                        {% endif %}
-                                        <span class="d-block small">Открыть</span>
-                                    </a>
-                                </div>
+                                {% endfor %}
                             </div>
-                        {% endfor %}
-                    </div>
+                        {% else %}
+                            <p class="text-muted mb-4">Материалы пока не добавлены.</p>
+                        {% endif %}
+                    {% endfor %}
                 {% else %}
-                    <p class="text-muted mb-4">Материалы пока не добавлены.</p>
+                    <p class="text-muted mb-0">Категории пока не добавлены.</p>
                 {% endif %}
-            {% endfor %}
-        {% else %}
-            <p class="text-muted mb-0">Категории пока не добавлены.</p>
-        {% endif %}
+            </div>
+            <div class="col-lg-3">
+                {% include "regions/_sidebar.html" with context %}
+            </div>
+        </div>
     </div>
-
-    <script>
-        (function () {
-            document.querySelectorAll('.doc-copy-link').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    navigator.clipboard.writeText(btn.dataset.url).then(function () {
-                        var original = btn.innerHTML;
-                        btn.innerHTML = 'Скопировано';
-                        setTimeout(function () { btn.innerHTML = original; }, 1500);
-                    });
-                });
-            });
-        })();
-    </script>
 {% endblock %}
