@@ -11,14 +11,14 @@
         <ul class="news-submenu mb-4" id="calendarSubTabs" role="tablist">
             <li role="presentation">
                 <button class="active" id="tab-official-btn" data-bs-toggle="tab"
-                        data-bs-target="#tab-official" type="button" role="tab">Официальные спортивные соревнования</button>
+                        data-bs-target="#tab-official" type="button" role="tab">ОФИЦИАЛЬНЫЕ</button>
             </li>
             <li role="presentation">
                 <button id="tab-forming-btn" data-bs-toggle="tab"
-                        data-bs-target="#tab-forming" type="button" role="tab">Формирование календарного плана</button>
+                        data-bs-target="#tab-forming" type="button" role="tab">ФОРМИРОВАНИЕ</button>
             </li>
             <li role="presentation">
-                <a href="{{ url_for('competitions.documents', category=regulations_category.id) if regulations_category else url_for('competitions.documents') }}">Положение о соревнованиях</a>
+                <a href="{{ url_for('competitions.documents', category=regulations_category.id) if regulations_category else url_for('competitions.documents') }}">ПОЛОЖЕНИЯ</a>
             </li>
         </ul>
 
