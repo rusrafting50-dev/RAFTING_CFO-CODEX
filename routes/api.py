@@ -337,6 +337,7 @@ def sync_events():
         try:
             start_date = parse_date(item.get('start_date'))
             end_date = parse_date(item.get('end_date'))
+            applications_deadline = parse_date(item.get('applications_deadline'))
         except ValueError:
             skipped += 1
             errors.append(f'source_id={source_id}: неверный формат даты (ожидается YYYY-MM-DD)')
@@ -354,6 +355,7 @@ def sync_events():
         event.event_type = item.get('event_type')
         event.start_date = start_date
         event.end_date = end_date
+        event.applications_deadline = applications_deadline
         event.location = item.get('location')
         event.status = item.get('status')
         event.category = item.get('category')

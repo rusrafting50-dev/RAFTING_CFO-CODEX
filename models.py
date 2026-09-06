@@ -180,6 +180,13 @@ class Event(db.Model):
     end_date = db.Column(db.Date)
     location = db.Column(db.String(255))
     status = db.Column(db.String(50))  # анонс / идёт / завершён
+    # Срок подачи заявок — из блока «Положение о семинаре» в SPORTS_REFEREE
+    # (Seminar.polozhenie_applications_deadline), не из start_date/end_date
+    # самого семинара: обычно раньше них. Используется в app.py:
+    # event_status_label(), чтобы карточка/страница мероприятия показывали
+    # «Приём заявок завершён», как только этот срок прошёл — даже если сам
+    # семинар (по датам start_date/end_date) ещё не начался.
+    applications_deadline = db.Column(db.Date)
     category = db.Column(db.String(100))  # присваиваемая (подтверждаемая) категория
     program_hours = db.Column(db.String(20))  # количество часов программы семинара
     qualification_exam = db.Column(db.String(10))  # квалификационный зачёт: Да/Нет

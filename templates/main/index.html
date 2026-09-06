@@ -153,6 +153,7 @@
                                 <div class="home-carousel-track {{ 'home-carousel-track-scroll' if upcoming_events|length > 3 }}">
                                     {% for event in upcoming_events %}
                                         {% set status_lower = (event.status or '')|lower %}
+                                        {% set deadline_passed = event.applications_deadline and event.applications_deadline < now.date() %}
                                         <a href="{{ url_for('events.detail', event_id=event.id) }}"
                                            class="home-carousel-card home-carousel-card-light">
                                             <div class="home-carousel-card-zone-top">
@@ -173,8 +174,8 @@
                                                             <div class="home-carousel-card-judge small">Руководитель: {{ event.leader_full_name }}</div>
                                                         {% endif %}
                                                         {% if event.status %}
-                                                            <span class="home-carousel-status {{ 'home-carousel-status-done' if 'заверш' in status_lower else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
-                                                                {{ event.status|event_status_label }}
+                                                            <span class="home-carousel-status {{ 'home-carousel-status-done' if (deadline_passed or 'заверш' in status_lower) else ('home-carousel-status-live' if status_lower == 'идёт' else 'home-carousel-status-announced') }}">
+                                                                {{ event.status|event_status_label(event.applications_deadline) }}
                                                             </span>
                                                         {% endif %}
                                                     </div>

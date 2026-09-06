@@ -120,12 +120,22 @@ def format_numeric_date_range(start, end):
     return f'{start.day:02d}.{start.month:02d}.{start.year} - {end.day:02d}.{end.month:02d}.{end.year}'
 
 
-def event_status_label(value):
+def event_status_label(value, applications_deadline=None):
     """Статус мероприятия (анонс/идёт/завершён) -> подпись на сайте:
-    "Прием заявок" / "Прием заявок окончен" / "Завершён"."""
+    "Прием заявок" / "Прием заявок окончен" / "Прием заявок завершён".
+
+    applications_deadline — «До даты» из блока «Положение о семинаре» в
+    SPORTS_REFEREE (Event.applications_deadline), отдельный от start_date/
+    end_date самого семинара срок (обычно раньше них). Как только он
+    проходит, статус переключается на «Прием заявок завершён» независимо
+    от анонс/идёт/завершён — иначе семинар с уже прошедшим сроком подачи
+    заявок, но ещё не начавшийся (status='анонс'), продолжал бы
+    показывать «Прием заявок», как будто заявку ещё можно подать."""
+    if applications_deadline and datetime.utcnow().date() > applications_deadline:
+        return 'Прием заявок завершён'
     status_lower = (value or '').lower()
     if 'заверш' in status_lower:
-        return 'Завершён'
+        return 'Прием заявок завершён'
     if status_lower == 'идёт':
         return 'Прием заявок окончен'
     if status_lower == 'анонс':

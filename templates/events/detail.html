@@ -61,7 +61,7 @@
                         </li>
                     {% endif %}
                     {% if event.status %}
-                        <li class="mb-1"><span class="text-muted">•</span> Статус: {{ event.status|event_status_label }}</li>
+                        <li class="mb-1"><span class="text-muted">•</span> Статус: {{ event.status|event_status_label(event.applications_deadline) }}</li>
                     {% endif %}
                 </ul>
             </div>
