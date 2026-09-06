@@ -11,233 +11,235 @@
 
 {% block content %}
     <div class="container py-5">
-        <div class="row g-4">
-            <div class="col-lg-9">
-                {% if section == 'team' %}
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
-                        <h2 class="h5 mb-0">{{ section_label }}</h2>
-                        <ul class="news-filter-menu comp-tabs-menu">
-                            {% for value, label in team_genders %}
-                                <li role="presentation">
-                                    <a class="{{ 'active' if team_gender == value }}"
-                                       href="{{ url_for('regions.section', region_id=region.id, section='team', gender=value) }}">{{ label }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    <ul class="news-submenu mb-4">
-                        {% for category in team_categories %}
-                            <li role="presentation">
-                                <a class="{{ 'active' if team_category == category }}"
-                                   href="{{ url_for('regions.section', region_id=region.id, section='team', gender=team_gender, category=category) }}">{{ category }}</a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-
-                    {% if team_roster %}
-                        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-4">
-                            {% for entry in team_roster %}
+        {% if section == 'news' %}
+            <h2 class="h5 mb-3">{{ section_label }}</h2>
+            {% if region_news_cards %}
+                <div class="row g-4">
+                    <div class="col-lg-9">
+                        <div class="row row-cols-1 row-cols-sm-2 g-4">
+                            {% for item in region_news_cards %}
                                 <div class="col">
-                                    <a class="athlete-card" href="{{ url_for('regions.team_athlete', region_id=region.id, athlete_id=entry.athlete.id) }}">
-                                        <div class="athlete-card-photo-wrap">
-                                            <div class="athlete-card-photo">
-                                                {{ athlete_photo(entry.athlete, team_gender) }}
+                                    <a href="{{ url_for('main.news_detail', news_id=item.id) }}" class="news-card-link">
+                                        <div class="card h-100 news-card">
+                                            <div class="card-img-placeholder"
+                                                 {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
+                                            <div class="card-body">
+                                                <h3 class="h6 news-card-title">{{ item.title }}</h3>
+                                                {% set item_excerpt = (item.description or item.content)|striptags %}
+                                                <p class="news-card-excerpt">{{ item_excerpt[:120] }}{% if item_excerpt|length > 120 %}…{% endif %}</p>
+                                                <p class="news-card-date">
+                                                    {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                                </p>
                                             </div>
-                                            {% if entry.club and entry.club.logo_path %}
-                                                <span class="athlete-card-club-badge">
-                                                    <img src="{{ url_for('static', filename=entry.club.logo_path) }}" alt="{{ entry.club.name }}">
-                                                </span>
-                                            {% endif %}
                                         </div>
-                                        <p class="athlete-card-name">{{ entry.athlete.full_name }}</p>
                                     </a>
                                 </div>
                             {% endfor %}
                         </div>
-                    {% else %}
-                        <p class="text-muted mb-0">Состав пока не добавлен.</p>
-                    {% endif %}
-                {% elif section == 'team_coaches' %}
-                    <h2 class="h5 mb-4">{{ section_label }}</h2>
-                    {% if team_coaches %}
-                        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-4">
-                            {% for entry in team_coaches %}
-                                <div class="col">
-                                    <div class="athlete-card">
-                                        {% if entry.athlete.role %}
-                                            <p class="athlete-card-category text-muted">{{ entry.athlete.role|cap_first }}</p>
-                                        {% endif %}
-                                        <div class="athlete-card-photo-wrap">
-                                            <div class="athlete-card-photo">
-                                                {{ athlete_photo(entry.athlete, entry.gender) }}
-                                            </div>
-                                            {% if entry.logo_path %}
-                                                <span class="athlete-card-club-badge">
-                                                    <img src="{{ url_for('static', filename=entry.logo_path) }}" alt="">
-                                                </span>
-                                            {% endif %}
-                                        </div>
-                                        <p class="athlete-card-name">{{ entry.athlete.full_name }}</p>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <p class="text-muted mb-0">Тренеры пока не добавлены.</p>
-                    {% endif %}
-                {% elif section == 'clubs' %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    {% if region_clubs %}
-                        {{ club_cards(region_clubs) }}
-                    {% else %}
-                        <p class="text-muted mb-0">Клубы пока не добавлены.</p>
-                    {% endif %}
-                {% elif section == 'calendar' %}
-                    <h2 class="h5 mb-3">ОФИЦИАЛЬНЫЕ СПОРТИВНЫЕ СОРЕВНОВАНИЯ</h2>
-                    {% if region_competitions %}
-                        {{ comp_cards(region_competitions) }}
-                    {% else %}
-                        <p class="text-muted mb-0">Соревнования пока не запланированы.</p>
-                    {% endif %}
-                {% elif section == 'events' %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    {% if region_events %}
-                        {{ event_cards(region_events) }}
-                    {% else %}
-                        <p class="text-muted mb-0">Мероприятия пока не запланированы.</p>
-                    {% endif %}
-
-                    <h2 class="h5 mt-5 mb-3">Архив</h2>
-                    <div class="d-flex flex-wrap gap-2">
-                        {% for y in events_archive_years %}
-                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('regions.events_archive', region_id=region.id, year=y) }}">{{ y }}</a>
-                        {% endfor %}
                     </div>
-                {% elif section == 'news' %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    {% if region_news_cards %}
-                        <div class="row g-4">
-                            <div class="col-lg-9">
-                                <div class="row row-cols-1 row-cols-sm-2 g-4">
-                                    {% for item in region_news_cards %}
-                                        <div class="col">
-                                            <a href="{{ url_for('main.news_detail', news_id=item.id) }}" class="news-card-link">
-                                                <div class="card h-100 news-card">
-                                                    <div class="card-img-placeholder"
-                                                         {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
-                                                    <div class="card-body">
-                                                        <h3 class="h6 news-card-title">{{ item.title }}</h3>
-                                                        {% set item_excerpt = (item.description or item.content)|striptags %}
-                                                        <p class="news-card-excerpt">{{ item_excerpt[:120] }}{% if item_excerpt|length > 120 %}…{% endif %}</p>
-                                                        <p class="news-card-date">
-                                                            {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </a>
+                    <div class="col-lg-3">
+                        <div class="official-panel">
+                            <h2 class="official-panel-title">Официально</h2>
+                            {% if region_news_sidebar %}
+                                <div class="official-list">
+                                    {% for item in region_news_sidebar %}
+                                        <div class="official-item">
+                                            <span class="official-item-date">
+                                                {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                            </span>
+                                            <span class="official-item-title">{{ item.title }}</span>
                                         </div>
                                     {% endfor %}
                                 </div>
-                            </div>
-                            <div class="col-lg-3">
-                                <div class="official-panel">
-                                    <h2 class="official-panel-title">Новости</h2>
-                                    {% if region_news_sidebar %}
-                                        <div class="official-list">
-                                            {% for item in region_news_sidebar %}
-                                                <div class="official-item">
-                                                    <span class="official-item-date">
-                                                        {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
-                                                    </span>
-                                                    <span class="official-item-title">{{ item.title }}</span>
-                                                </div>
-                                            {% endfor %}
-                                        </div>
-                                    {% else %}
-                                        <p class="official-empty">Больше новостей пока нет.</p>
-                                    {% endif %}
-                                </div>
-                            </div>
+                            {% else %}
+                                <p class="official-empty">Больше новостей пока нет.</p>
+                            {% endif %}
                         </div>
-                    {% else %}
-                        <p class="text-muted mb-0">Новостей пока нет.</p>
-                    {% endif %}
-                {% elif section == 'referees' %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    {{ referees_table(region_referees) }}
-                {% elif section == 'local_federations' %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    {% if region_local_federations %}
-                        {{ local_federation_cards(region_local_federations) }}
-                    {% else %}
-                        <p class="text-muted mb-0">Местные спортивные федерации пока не добавлены.</p>
-                    {% endif %}
-                {% elif section == 'councils' %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    <div class="fed-text-block mb-4">
-                        {% if region.councils_intro_text %}
-                            <div class="fed-intro">{{ region.councils_intro_text|richtext }}</div>
-                        {% else %}
-                            <p class="text-muted mb-0">Материалы пока не добавлены.</p>
-                        {% endif %}
                     </div>
-                    {% if councils_flat_list is not none %}
-                        <div class="council-button-list">
-                            {% for council in councils_flat_list %}
-                                <a class="council-button council-button-white" href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
-                            {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Новостей пока нет.</p>
+            {% endif %}
+        {% else %}
+            <div class="row g-4">
+                <div class="col-lg-9">
+                    {% if section == 'team' %}
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 comp-tabs-row">
+                            <h2 class="h5 mb-0">{{ section_label }}</h2>
+                            <ul class="news-filter-menu comp-tabs-menu">
+                                {% for value, label in team_genders %}
+                                    <li role="presentation">
+                                        <a class="{{ 'active' if team_gender == value }}"
+                                           href="{{ url_for('regions.section', region_id=region.id, section='team', gender=value) }}">{{ label }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
                         </div>
-                    {% elif council_categories %}
                         <ul class="news-submenu mb-4">
-                            {% for category in council_categories %}
+                            {% for category in team_categories %}
                                 <li role="presentation">
-                                    <a class="{{ 'active' if active_council_category_id == category.id }}"
-                                       href="{{ url_for('regions.section', region_id=region.id, section='councils', category=category.id) }}">{{ category.name }}</a>
+                                    <a class="{{ 'active' if team_category == category }}"
+                                       href="{{ url_for('regions.section', region_id=region.id, section='team', gender=team_gender, category=category) }}">{{ category }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
-                        {% set active_category = council_categories|selectattr('id', 'equalto', active_council_category_id)|first %}
-                        {% if active_category and active_category.councils %}
-                            <div class="council-button-list">
-                                {% for council in active_category.councils %}
-                                    <a class="council-button" href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
+    
+                        {% if team_roster %}
+                            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-4">
+                                {% for entry in team_roster %}
+                                    <div class="col">
+                                        <a class="athlete-card" href="{{ url_for('regions.team_athlete', region_id=region.id, athlete_id=entry.athlete.id) }}">
+                                            <div class="athlete-card-photo-wrap">
+                                                <div class="athlete-card-photo">
+                                                    {{ athlete_photo(entry.athlete, team_gender) }}
+                                                </div>
+                                                {% if entry.club and entry.club.logo_path %}
+                                                    <span class="athlete-card-club-badge">
+                                                        <img src="{{ url_for('static', filename=entry.club.logo_path) }}" alt="{{ entry.club.name }}">
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="athlete-card-name">{{ entry.athlete.full_name }}</p>
+                                        </a>
+                                    </div>
                                 {% endfor %}
                             </div>
                         {% else %}
-                            <p class="text-muted mb-0">Советов в этой категории пока нет.</p>
+                            <p class="text-muted mb-0">Состав пока не добавлен.</p>
                         {% endif %}
-                    {% else %}
-                        <p class="text-muted mb-0">Категории пока не добавлены.</p>
-                    {% endif %}
-                {% else %}
-                    <h2 class="h5 mb-3">{{ section_label }}</h2>
-                    <div class="fed-text-block">
-                        {% if section == 'goals' %}
-                            {% if region.goals_text %}
-                                <div class="fed-intro">{{ region.goals_text|richtext }}</div>
+                    {% elif section == 'team_coaches' %}
+                        <h2 class="h5 mb-4">{{ section_label }}</h2>
+                        {% if team_coaches %}
+                            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-4">
+                                {% for entry in team_coaches %}
+                                    <div class="col">
+                                        <div class="athlete-card">
+                                            {% if entry.athlete.role %}
+                                                <p class="athlete-card-category text-muted">{{ entry.athlete.role|cap_first }}</p>
+                                            {% endif %}
+                                            <div class="athlete-card-photo-wrap">
+                                                <div class="athlete-card-photo">
+                                                    {{ athlete_photo(entry.athlete, entry.gender) }}
+                                                </div>
+                                                {% if entry.logo_path %}
+                                                    <span class="athlete-card-club-badge">
+                                                        <img src="{{ url_for('static', filename=entry.logo_path) }}" alt="">
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            <p class="athlete-card-name">{{ entry.athlete.full_name }}</p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted mb-0">Тренеры пока не добавлены.</p>
+                        {% endif %}
+                    {% elif section == 'clubs' %}
+                        <h2 class="h5 mb-3">{{ section_label }}</h2>
+                        {% if region_clubs %}
+                            {{ club_cards(region_clubs) }}
+                        {% else %}
+                            <p class="text-muted mb-0">Клубы пока не добавлены.</p>
+                        {% endif %}
+                    {% elif section == 'calendar' %}
+                        <h2 class="h5 mb-3">ОФИЦИАЛЬНЫЕ СПОРТИВНЫЕ СОРЕВНОВАНИЯ</h2>
+                        {% if region_competitions %}
+                            {{ comp_cards(region_competitions) }}
+                        {% else %}
+                            <p class="text-muted mb-0">Соревнования пока не запланированы.</p>
+                        {% endif %}
+                    {% elif section == 'events' %}
+                        <h2 class="h5 mb-3">{{ section_label }}</h2>
+                        {% if region_events %}
+                            {{ event_cards(region_events) }}
+                        {% else %}
+                            <p class="text-muted mb-0">Мероприятия пока не запланированы.</p>
+                        {% endif %}
+    
+                        <h2 class="h5 mt-5 mb-3">Архив</h2>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for y in events_archive_years %}
+                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('regions.events_archive', region_id=region.id, year=y) }}">{{ y }}</a>
+                            {% endfor %}
+                        </div>
+                    {% elif section == 'referees' %}
+                        <h2 class="h5 mb-3">{{ section_label }}</h2>
+                        {{ referees_table(region_referees) }}
+                    {% elif section == 'local_federations' %}
+                        <h2 class="h5 mb-3">{{ section_label }}</h2>
+                        {% if region_local_federations %}
+                            {{ local_federation_cards(region_local_federations) }}
+                        {% else %}
+                            <p class="text-muted mb-0">Местные спортивные федерации пока не добавлены.</p>
+                        {% endif %}
+                    {% elif section == 'councils' %}
+                        <h2 class="h5 mb-3">{{ section_label }}</h2>
+                        <div class="fed-text-block mb-4">
+                            {% if region.councils_intro_text %}
+                                <div class="fed-intro">{{ region.councils_intro_text|richtext }}</div>
                             {% else %}
                                 <p class="text-muted mb-0">Материалы пока не добавлены.</p>
                             {% endif %}
-                        {% elif section == 'contacts' %}
-                            {% if region.contact_phone or region.contact_email or region.contact_address %}
-                                <ul class="list-unstyled mb-0">
-                                    {% if region.contact_address %}<li class="mb-2"><span aria-hidden="true">📍</span> {{ region.contact_address }}</li>{% endif %}
-                                    {% if region.contact_phone %}<li class="mb-2"><span aria-hidden="true">📞</span> {{ region.contact_phone }}</li>{% endif %}
-                                    {% if region.contact_email %}<li class="mb-0"><span aria-hidden="true">✉️</span> {{ region.contact_email }}</li>{% endif %}
-                                </ul>
+                        </div>
+                        {% if councils_flat_list is not none %}
+                            <div class="council-button-list">
+                                {% for council in councils_flat_list %}
+                                    <a class="council-button council-button-white" href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
+                                {% endfor %}
+                            </div>
+                        {% elif council_categories %}
+                            <ul class="news-submenu mb-4">
+                                {% for category in council_categories %}
+                                    <li role="presentation">
+                                        <a class="{{ 'active' if active_council_category_id == category.id }}"
+                                           href="{{ url_for('regions.section', region_id=region.id, section='councils', category=category.id) }}">{{ category.name }}</a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                            {% set active_category = council_categories|selectattr('id', 'equalto', active_council_category_id)|first %}
+                            {% if active_category and active_category.councils %}
+                                <div class="council-button-list">
+                                    {% for council in active_category.councils %}
+                                        <a class="council-button" href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
+                                    {% endfor %}
+                                </div>
                             {% else %}
-                                <p class="text-muted mb-0">Контакты пока не добавлены.</p>
+                                <p class="text-muted mb-0">Советов в этой категории пока нет.</p>
                             {% endif %}
                         {% else %}
-                            <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                            <p class="text-muted mb-0">Категории пока не добавлены.</p>
                         {% endif %}
-                    </div>
-                {% endif %}
+                    {% else %}
+                        <h2 class="h5 mb-3">{{ section_label }}</h2>
+                        <div class="fed-text-block">
+                            {% if section == 'goals' %}
+                                {% if region.goals_text %}
+                                    <div class="fed-intro">{{ region.goals_text|richtext }}</div>
+                                {% else %}
+                                    <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                                {% endif %}
+                            {% elif section == 'contacts' %}
+                                {% if region.contact_phone or region.contact_email or region.contact_address %}
+                                    <ul class="list-unstyled mb-0">
+                                        {% if region.contact_address %}<li class="mb-2"><span aria-hidden="true">📍</span> {{ region.contact_address }}</li>{% endif %}
+                                        {% if region.contact_phone %}<li class="mb-2"><span aria-hidden="true">📞</span> {{ region.contact_phone }}</li>{% endif %}
+                                        {% if region.contact_email %}<li class="mb-0"><span aria-hidden="true">✉️</span> {{ region.contact_email }}</li>{% endif %}
+                                    </ul>
+                                {% else %}
+                                    <p class="text-muted mb-0">Контакты пока не добавлены.</p>
+                                {% endif %}
+                            {% else %}
+                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-lg-3">
+                    {% include "regions/_sidebar.html" with context %}
+                </div>
             </div>
-            <div class="col-lg-3">
-                {% include "regions/_sidebar.html" with context %}
-            </div>
-        </div>
+        {% endif %}
     </div>
 
     {% if (section == 'clubs' and region_clubs) or (section == 'local_federations' and region_local_federations) %}
