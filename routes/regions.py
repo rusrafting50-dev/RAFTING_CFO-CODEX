@@ -6,7 +6,7 @@ from sqlalchemy import extract
 
 from models import (
     Athlete, Club, Competition, Council, CouncilCategory, CouncilMember, CouncilPage, Document, DocumentCategory,
-    DocumentSection, LocalFederation, News, RegionalFederation, db,
+    DocumentSection, LocalFederation, News, Referee, RegionalFederation, db,
 )
 
 bp = Blueprint('regions', __name__)
@@ -20,8 +20,10 @@ bp = Blueprint('regions', __name__)
 # calendar — соревнования из COREZ (см. section() ниже), те же карточки,
 # что на странице Соревнования/Календарный план/Официальные,
 # отфильтрованные по Competition.subject_name; team — реальные данные
-# из REGTEAM_RAFTING (см. section() ниже), contacts — поля
-# RegionalFederation.
+# из REGTEAM_RAFTING (см. section() ниже); referees — реальные данные из
+# SPORTS_REFEREE (та же таблица, что на общей странице «Судьи»,
+# отфильтрованная по Referee.territory — см. section() ниже); contacts —
+# поля RegionalFederation.
 #
 # 'clubs' сюда не входит: этот раздел убран из бокового меню «О
 # федерации» по просьбе федерации, но сама страница остаётся рабочей —
@@ -35,6 +37,7 @@ FUNCTIONAL_SECTIONS = [
     ('councils', 'Коллегии и советы'),
     ('calendar', 'Календарный план'),
     ('team', 'Сборная команда'),
+    ('referees', 'Спортивные судьи'),
     ('contacts', 'Контакты'),
 ]
 FUNCTIONAL_SECTION_LABELS = dict(FUNCTIONAL_SECTIONS)
@@ -79,6 +82,7 @@ FEDERATION_SIDEBAR_LAYOUT = [
     ('functional', 'calendar'),
     'categories',
     ('functional', 'team'),
+    ('functional', 'referees'),
 ]
 
 # Раздел «Сборная команда»: верхняя строка — пол (мужские/женские),
@@ -347,6 +351,17 @@ def section(region_id, section):
             if c.subject_name and c.subject_name.strip().lower() == subject_name
         ]
 
+    region_referees = []
+    if section == 'referees' and region.subject_name:
+        subject_name = region.subject_name.strip().lower()
+        region_referees = sorted(
+            (
+                r for r in Referee.query.filter(Referee.is_active.is_(True)).all()
+                if r.territory and r.territory.strip().lower() == subject_name
+            ),
+            key=lambda r: r.full_name,
+        )
+
     team_roster = []
     team_gender = None
     team_category = None
@@ -406,6 +421,7 @@ def section(region_id, section):
         team_coaches=team_coaches, region_local_federations=region_local_federations,
         council_categories=council_categories, active_council_category_id=active_council_category_id,
         councils_flat_list=councils_flat_list, region_competitions=region_competitions,
+        region_referees=region_referees,
     )
 
 

@@ -2,6 +2,7 @@
 {% from "clubs/_cards.html" import club_cards, club_cards_script %}
 {% from "local_federations/_cards.html" import local_federation_cards %}
 {% from "competitions/_cards.html" import comp_cards %}
+{% from "_referees_table.html" import referees_table %}
 {% from "regions/_athlete_photo.html" import athlete_photo %}
 
 {% block title %}{{ section_label }} — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
@@ -101,6 +102,9 @@
                     {% else %}
                         <p class="text-muted mb-0">Соревнования пока не запланированы.</p>
                     {% endif %}
+                {% elif section == 'referees' %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
+                    {{ referees_table(region_referees) }}
                 {% elif section == 'local_federations' %}
                     <h2 class="h5 mb-3">{{ section_label }}</h2>
                     {% if region_local_federations %}
