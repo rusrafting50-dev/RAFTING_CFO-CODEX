@@ -100,6 +100,24 @@ def format_ru_date_range(start, end):
     return f'{format_ru_date_full(start)} – {format_ru_date_full(end)}'
 
 
+def format_numeric_date_range(start, end):
+    """Диапазон дат цифрами для таблицы заявок на включение в ЕКП
+    (competitions/calendar.html, столбец «Сроки проведения»): "23 -
+    24.5.2026" (тот же месяц и год — начало без месяца/года), "23.5 -
+    24.6.2026" (тот же год, месяц разный — начало с месяцем без года),
+    иначе — обе даты полностью ("30.12.2026 - 2.1.2027"). День всегда
+    двумя цифрами, месяц — без ведущего нуля."""
+    if not start:
+        return ''
+    if not end or end == start:
+        return f'{start.day:02d}.{start.month}.{start.year}'
+    if start.year == end.year:
+        if start.month == end.month:
+            return f'{start.day:02d} - {end.day:02d}.{end.month}.{end.year}'
+        return f'{start.day:02d}.{start.month} - {end.day:02d}.{end.month}.{end.year}'
+    return f'{start.day:02d}.{start.month}.{start.year} - {end.day:02d}.{end.month}.{end.year}'
+
+
 def event_status_label(value):
     """Статус мероприятия (анонс/идёт/завершён) -> подпись на сайте:
     "Прием заявок" / "Прием заявок окончен" / "Завершён"."""
@@ -325,6 +343,7 @@ def create_app():
     app.jinja_env.filters['ru_date'] = format_ru_date
     app.jinja_env.filters['ru_date_full'] = format_ru_date_full
     app.jinja_env.filters['ru_date_range'] = format_ru_date_range
+    app.jinja_env.filters['numeric_date_range'] = format_numeric_date_range
     app.jinja_env.filters['cap_first'] = cap_first
     app.jinja_env.filters['ru_plural'] = ru_plural
     app.jinja_env.filters['file_extension'] = file_extension

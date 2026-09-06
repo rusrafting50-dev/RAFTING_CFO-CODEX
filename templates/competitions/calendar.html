@@ -81,7 +81,6 @@
                                     <th>Место проведения</th>
                                     <th>Проводящие организации</th>
                                     <th>Контакты организаторов</th>
-                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -90,21 +89,18 @@
                                         <td>
                                             <a href="{{ url_for('competitions.calendar_application_view', application_id=item.id) }}">{{ item.competition_name or 'Без названия' }}</a>
                                         </td>
-                                        <td>{{ [item.age_groups, item.boat_classes]|select|join(' — ') }}</td>
                                         <td>
-                                            {{ item.start_date.strftime('%d.%m.%Y') if item.start_date else '' }}
-                                            {% if item.end_date and item.end_date != item.start_date %}
-                                                &ndash; {{ item.end_date.strftime('%d.%m.%Y') }}
+                                            {% if item.age_groups %}
+                                                {% set boat_classes_text = item.boat_classes.split(' ')|join(', ') if item.boat_classes else '' %}
+                                                {% for age_group in item.age_groups.split(' / ') %}
+                                                    <div>{{ [age_group, boat_classes_text]|select|join(' ') }}</div>
+                                                {% endfor %}
                                             {% endif %}
                                         </td>
+                                        <td>{{ item.start_date|numeric_date_range(item.end_date) }}</td>
                                         <td>{{ [item.location_subject, item.location_details]|select|join(', ') }}</td>
                                         <td>{{ item.organizations or '' }}</td>
-                                        <td>{{ [item.federation_contact_name, item.federation_contact_phone, item.federation_contact_email]|select|join(', ') }}</td>
-                                        <td>
-                                            {% if item.can_manage %}
-                                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.calendar_application_edit', application_id=item.id) }}">Изменить</a>
-                                            {% endif %}
-                                        </td>
+                                        <td>{{ item.federation_contact_email or '' }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
