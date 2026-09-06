@@ -119,7 +119,7 @@
                                                     {% if competition.start_date %}
                                                         <div>
                                                             📅
-                                                            {{ competition.start_date|ru_date_range(competition.end_date) }}
+                                                            {{ competition.start_date|numeric_date_range(competition.end_date) }}
                                                         </div>
                                                     {% endif %}
                                                     {% if competition.location %}
