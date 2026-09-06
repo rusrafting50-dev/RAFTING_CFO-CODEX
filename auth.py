@@ -374,6 +374,7 @@ def seed_equipment_document_taxonomy():
 # категорий/разделов (см. routes/regions.py: FEDERATION_SIDEBAR_LAYOUT),
 # а сами загруженные документы у каждой федерации свои (Document.region_id).
 FEDERATION_DOCUMENT_TAXONOMY = [
+    ('Календарный план', []),
     ('Основополагающие документы', [
         'Уставные документы', 'Программы', 'Членство в ФРР', 'Государственная аккредитация',
     ]),
@@ -408,6 +409,37 @@ def seed_federation_document_taxonomy():
             for section_order, section_name in enumerate(section_names):
                 db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=section_order))
         db.session.commit()
+
+
+def add_federation_calendar_document_category():
+    """Разовое добавление категории «Календарный план» (scope='федерация')
+    на уже посеянных сайтах — seed_federation_document_taxonomy() выше
+    добавляет категории только когда у федерации их вообще ещё нет
+    (count == 0), поэтому на уже работающих сайтах эта новая категория
+    сама не появится. Раньше на странице федерации на её месте в сайдбаре
+    была функциональная ссылка «Календарный план» (FUNCTIONAL_SECTIONS,
+    показывала карточки соревнований COREZ) — теперь эта ссылка ведёт на
+    страницу вида «Документы» с этой категорией (см. routes/regions.py:
+    FEDERATION_SIDEBAR_LAYOUT), а карточки соревнований остались на
+    отдельной странице, доступной через пункт «Соревнования» в шапке
+    сайта. Ставится первой (sort_order меньше текущего минимума), чтобы
+    оказаться там же, где раньше была прежняя функциональная ссылка. Если
+    админ категорию удалит, это зафиксируется в DeletedDocumentTaxonomyEntry
+    (routes/admin.py: document_category_delete) — тогда эта функция её не
+    восстановит, тот же приём, что ensure_competition_document_taxonomy()."""
+    if DocumentCategory.query.filter_by(scope='федерация', name='Календарный план').first():
+        return
+    tombstoned = DeletedDocumentTaxonomyEntry.query.filter_by(
+        scope='федерация', category_name='Календарный план', section_name=None,
+    ).first()
+    if tombstoned:
+        return
+    min_sort_order = (
+        db.session.query(db.func.min(DocumentCategory.sort_order)).filter_by(scope='федерация').scalar()
+    )
+    sort_order = (min_sort_order - 1) if min_sort_order is not None else 0
+    db.session.add(DocumentCategory(name='Календарный план', scope='федерация', sort_order=sort_order))
+    db.session.commit()
 
 
 def rename_federation_regulations_category():

@@ -19,17 +19,23 @@ bp = Blueprint('regions', __name__)
 # на других страницах сайта, где источник данных ещё не подключён;
 # calendar — соревнования из COREZ (см. section() ниже), те же карточки,
 # что на странице Соревнования/Календарный план/Официальные,
-# отфильтрованные по Competition.subject_name; team — реальные данные
-# из REGTEAM_RAFTING (см. section() ниже); referees — реальные данные из
-# SPORTS_REFEREE (та же таблица, что на общей странице «Судьи»,
-# отфильтрованная по Referee.territory — см. section() ниже); contacts —
-# поля RegionalFederation.
+# отфильтрованные по Competition.subject_name — заголовок страницы
+# «ОФИЦИАЛЬНЫЕ СПОРТИВНЫЕ СОРЕВНОВАНИЯ» (regions/section.html); team —
+# реальные данные из REGTEAM_RAFTING (см. section() ниже); referees —
+# реальные данные из SPORTS_REFEREE (та же таблица, что на общей
+# странице «Судьи», отфильтрованная по Referee.territory — см. section()
+# ниже); contacts — поля RegionalFederation.
 #
-# 'clubs' сюда не входит: этот раздел убран из бокового меню «О
-# федерации» по просьбе федерации, но сама страница остаётся рабочей —
-# на неё по-прежнему ведёт пункт «Клубы» в шапке сайта и подвале
-# (base.html), поэтому раздел/маршрут не удаляется, а только перестаёт
-# быть пунктом этого меню.
+# 'clubs' и 'calendar' сюда (FEDERATION_SIDEBAR_LAYOUT ниже) не входят —
+# в сайдбар «О федерации» не выводятся, но сами страницы остаются
+# рабочими: на 'clubs' по-прежнему ведёт пункт «Клубы» в шапке сайта и
+# подвале (base.html), на 'calendar' — пункт «Соревнования» в шапке;
+# 'calendar' к тому же заменён в сайдбаре на категорию документов
+# «Календарный план» (см. FEDERATION_SIDEBAR_LAYOUT/
+# auth.py: add_federation_calendar_document_category) — карточки живых
+# соревнований и загружаемый документ «Календарный план» это две разные
+# вещи. Раздел/маршрут поэтому не удаляется, а только перестаёт быть
+# пунктом этого меню.
 FUNCTIONAL_SECTIONS = [
     ('goals', 'Направления деятельности'),
     ('leadership', 'Руководство'),
@@ -63,7 +69,7 @@ SECTION_KEYS = {key for key, _ in FUNCTIONAL_SECTIONS} | {'clubs'} | set(TEAM_ME
 # вверху и «Контакты» внизу (последней). Все категории документов
 # страницы федерации (scope='федерация', сколько их сейчас есть — см.
 # auth.py: FEDERATION_DOCUMENT_TAXONOMY) выводятся вместе, одним блоком,
-# в единственном слоте 'categories' — сразу после «Календарный план»,
+# в единственном слоте 'categories' — сразу после «Коллегии и советы»,
 # перед «Сборная команда»; порядок категорий между собой определяется
 # DocumentCategory.sort_order (задаётся в панели управления кнопками
 # ▲/▼, admin/document_taxonomy.html). Раньше слотов 'category' было
@@ -74,12 +80,17 @@ SECTION_KEYS = {key for key, _ in FUNCTIONAL_SECTIONS} | {'clubs'} | set(TEAM_ME
 # сама сдвинуть её было нельзя (сортировать ▲/▼ можно только относительно
 # других категорий, а она осталась одна) — единый слот исключает эту
 # путаницу при любом числе категорий: 0, 1 или несколько.
+#
+# Категория «Календарный план» стоит первой среди категорий (sort_order,
+# см. auth.py: add_federation_calendar_document_category) — занимает
+# место, где раньше в этом же слоте была функциональная ссылка
+# «Календарный план» (карточки соревнований, теперь это отдельная
+# страница section='calendar', см. FUNCTIONAL_SECTIONS выше).
 FEDERATION_SIDEBAR_LAYOUT = [
     ('functional', 'goals'),
     ('functional', 'leadership'),
     ('functional', 'local_federations'),
     ('functional', 'councils'),
-    ('functional', 'calendar'),
     'categories',
     ('functional', 'team'),
     ('functional', 'referees'),

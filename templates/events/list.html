@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% from "events/_tabs.html" import events_tabs %}
+{% from "events/_cards.html" import event_cards %}
 
 {% block title %}Мероприятия — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}Календарный план мероприятий: спортивные судьи, тренеры, спортивная подготовка, руководители организаций{% endblock %}
@@ -18,35 +19,7 @@
         </ul>
 
         {% if events %}
-            <div class="table-responsive">
-                <table class="table table-zebra align-middle">
-                    <thead>
-                        <tr class="site-table-header">
-                            <th>№ п/п</th>
-                            <th>Наименование мероприятия</th>
-                            <th>Сроки проведения</th>
-                            <th>Место проведения</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for event in events %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>
-                                    <a class="events-calendar-link" href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a>
-                                </td>
-                                <td>
-                                    {{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '' }}
-                                    {% if event.end_date and event.end_date != event.start_date %}
-                                        &ndash; {{ event.end_date.strftime('%d.%m.%Y') }}
-                                    {% endif %}
-                                </td>
-                                <td>{{ event.location }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            {{ event_cards(events) }}
         {% else %}
             <p class="text-muted">На {{ year }} год мероприятия пока не запланированы.</p>
         {% endif %}

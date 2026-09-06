@@ -1,0 +1,25 @@
+{# Сетка карточек мероприятий — events/list.html («Мероприятия» с
+   главной страницы), оформление один в один с сеткой соревнований
+   (competitions/_cards.html: те же CSS-классы comp-card-*), только
+   карточка мероприятия — у Event нет своего логотипа, поэтому фото
+   всегда в пустом состоянии (comp-card-photo-empty). #}
+{% macro event_cards(events) %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        {% for event in events %}
+            <div class="col">
+                <a class="comp-card" href="{{ url_for('events.detail', event_id=event.id) }}">
+                    <div class="comp-card-photo comp-card-photo-empty"></div>
+                    <div class="comp-card-body">
+                        <h3 class="comp-card-name">{{ event.name }}</h3>
+                        <p class="comp-card-dates">
+                            {{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '' }}
+                            {% if event.end_date and event.end_date != event.start_date %}
+                                &ndash; {{ event.end_date.strftime('%d.%m.%Y') }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endmacro %}
