@@ -33,51 +33,77 @@
 
         <div class="tab-content" id="eventTabsContent">
             <div class="tab-pane fade show active" id="tab-info" role="tabpanel">
-                <div class="mb-2 d-flex align-items-center gap-2 flex-wrap">
-                    {% if event.event_type %}
-                        <span class="badge bg-secondary">{{ event.event_type.replace('_', ' ')|cap_first }}</span>
-                    {% endif %}
-                    {% if event.category %}
-                        <span class="badge {{ event.category|seminar_category_badge }}">{{ event.category }}{% if event.program_hours %}, {{ event.program_hours }}{% endif %}</span>
-                    {% endif %}
-                    {% if event.qualification_exam == 'Да' %}
-                        <span class="badge bg-dark">Квалификационный зачёт</span>
-                    {% endif %}
+                <div class="row">
+                    <div class="col-lg-9">
+                        <div class="comp-banner">
+                            <div class="comp-banner-circle">
+                                <span class="comp-banner-circle-name">{{ event.name }}</span>
+                            </div>
+                            <div class="comp-banner-meta">
+                                {% if event.start_date %}
+                                    <span class="comp-banner-meta-item">
+                                        <span aria-hidden="true">📅</span>
+                                        {{ event.start_date|ru_date_range(event.end_date) }}
+                                    </span>
+                                {% endif %}
+                                {% if event.location %}
+                                    <span class="comp-banner-meta-item">
+                                        <span aria-hidden="true">📍</span>
+                                        {{ event.location }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% if event.status %}
+                                <div class="comp-banner-meta comp-banner-meta-secondary">
+                                    <span class="comp-banner-meta-item">Статус: {{ event.status|event_status_label(event.applications_deadline) }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="council-button-list council-button-list-row mb-4" role="tablist">
+                            <button class="council-button council-button-white active" id="info-polozhenie-btn"
+                                    data-bs-toggle="tab" data-bs-target="#info-polozhenie" type="button" role="tab">Положение о мероприятии</button>
+                            <button class="council-button council-button-white" id="info-lecturers-btn"
+                                    data-bs-toggle="tab" data-bs-target="#info-lecturers" type="button" role="tab">Лекторский состав</button>
+                            {% if event.qualification_exam == 'Да' %}
+                                <button class="council-button council-button-white" id="info-qualification-btn"
+                                        data-bs-toggle="tab" data-bs-target="#info-qualification" type="button" role="tab">Квалификационный зачёт</button>
+                            {% endif %}
+                            <button class="council-button council-button-white" id="info-protocol-btn"
+                                    data-bs-toggle="tab" data-bs-target="#info-protocol" type="button" role="tab">Протокол семинара</button>
+                        </div>
+                        <div class="tab-content" id="infoTabsContent">
+                            <div class="tab-pane fade show active" id="info-polozhenie" role="tabpanel">
+                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                            </div>
+                            <div class="tab-pane fade" id="info-lecturers" role="tabpanel">
+                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                            </div>
+                            {% if event.qualification_exam == 'Да' %}
+                                <div class="tab-pane fade" id="info-qualification" role="tabpanel">
+                                    <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                                </div>
+                            {% endif %}
+                            <div class="tab-pane fade" id="info-protocol" role="tabpanel">
+                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        {% if can_submit_application %}
+                            <a href="{{ url_for('events.application_new', event_id=event.id) }}" class="btn btn-primary w-100">Подать заявку</a>
+                        {% elif not current_user.is_authenticated %}
+                            <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-outline-secondary w-100">Войти, чтобы подать заявку</a>
+                        {% endif %}
+                    </div>
                 </div>
-                <ul class="list-unstyled small mb-0">
-                    {% if event.start_date %}
-                        <li class="mb-1">
-                            <span class="text-muted">📅</span>
-                            {{ event.start_date|ru_date_range(event.end_date) }}
-                        </li>
-                    {% endif %}
-                    {% if event.location %}
-                        <li class="mb-1"><span class="text-muted">📍</span> {{ event.location }}</li>
-                    {% endif %}
-                    {% if event.leader_full_name %}
-                        <li class="mb-1">
-                            <span class="text-muted">👤</span>
-                            Руководитель семинара: {{ event.leader_full_name }}
-                        </li>
-                    {% endif %}
-                    {% if event.status %}
-                        <li class="mb-1"><span class="text-muted">•</span> Статус: {{ event.status|event_status_label(event.applications_deadline) }}</li>
-                    {% endif %}
-                </ul>
             </div>
 
             <div class="tab-pane fade" id="tab-news" role="tabpanel"></div>
             <div class="tab-pane fade" id="tab-participants" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-muted small">
-                        {% if applications %}Заявок подано: {{ applications|length }}, участников: {{ total_participants }}{% endif %}
-                    </span>
-                    {% if can_submit_application %}
-                        <a href="{{ url_for('events.application_new', event_id=event.id) }}" class="btn btn-sm btn-primary">Подать заявку</a>
-                    {% elif not current_user.is_authenticated %}
-                        <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-sm btn-outline-secondary">Войти, чтобы подать заявку</a>
-                    {% endif %}
-                </div>
+                {% if applications %}
+                    <p class="text-muted small mb-3">Заявок подано: {{ applications|length }}, участников: {{ total_participants }}</p>
+                {% endif %}
                 {% if not applications %}
                     <p class="text-muted">Заявок пока нет.</p>
                 {% else %}
