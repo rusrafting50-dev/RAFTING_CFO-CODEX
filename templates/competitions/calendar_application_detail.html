@@ -5,19 +5,19 @@
 {% block content %}
     <div class="container py-5">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-4">
-            <h1 class="h4 mb-0">{{ application.competition_name or 'Заявка на включение соревнования в ЕКП' }}</h1>
-            {% if can_manage %}
-                <div class="d-flex gap-2">
+            <h1 class="h4 mb-0">Заявка на включение соревнований в ЕКП (КП) на {{ year + 1 }} год</h1>
+            <div class="d-flex gap-2">
+                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.calendar') }}#tab-forming">← К списку заявок</a>
+                {% if can_manage %}
                     <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.calendar_application_edit', application_id=application.id) }}">Изменить</a>
                     <form method="post" action="{{ url_for('competitions.calendar_application_delete', application_id=application.id) }}"
                           onsubmit="return confirm('Удалить заявку?');">
                         <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
                     </form>
-                </div>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
 
-        <h2 class="h6 mb-3">Основные данные</h2>
         <dl class="row mb-4">
             <dt class="col-sm-4">Наименование соревнований</dt><dd class="col-sm-8">{{ application.competition_name or '—' }}</dd>
             <dt class="col-sm-4">Статус соревнований</dt><dd class="col-sm-8">{{ application.status or '—' }}</dd>
@@ -73,7 +73,5 @@
                 {{ [application.chief_judge_contact_name, application.chief_judge_contact_phone, application.chief_judge_contact_email]|select|join(', ') or '—' }}
             </dd>
         </dl>
-
-        <a class="btn btn-outline-secondary mt-4" href="{{ url_for('competitions.calendar') }}#tab-forming">← К списку заявок</a>
     </div>
 {% endblock %}

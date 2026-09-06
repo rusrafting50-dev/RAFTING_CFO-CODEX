@@ -784,7 +784,7 @@ def calendar_application_edit(application_id):
 def calendar_application_view(application_id):
     application = CalendarPlanApplication.query.get_or_404(application_id)
     return render_template(
-        'competitions/calendar_application_detail.html', application=application,
+        'competitions/calendar_application_detail.html', application=application, year=date.today().year,
         roles=CALENDAR_APPLICATION_ROLES, can_manage=_can_manage(application),
     )
 
