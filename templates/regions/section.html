@@ -10,10 +10,6 @@
 
 {% block content %}
     <div class="container py-5">
-        {% if section == 'councils' %}
-            <h1 class="fed-page-title">Коллегии и советы</h1>
-        {% endif %}
-
         <div class="row g-4">
             <div class="col-lg-9">
                 {% if section == 'team' %}
@@ -113,6 +109,7 @@
                         <p class="text-muted mb-0">Местные спортивные федерации пока не добавлены.</p>
                     {% endif %}
                 {% elif section == 'councils' %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
                     <div class="fed-text-block mb-4">
                         {% if region.councils_intro_text %}
                             <div class="fed-intro">{{ region.councils_intro_text|richtext }}</div>
@@ -121,13 +118,11 @@
                         {% endif %}
                     </div>
                     {% if councils_flat_list is not none %}
-                        <ul class="news-submenu mb-4">
+                        <div class="council-button-list">
                             {% for council in councils_flat_list %}
-                                <li role="presentation">
-                                    <a href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
-                                </li>
+                                <a class="council-button council-button-white" href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
                             {% endfor %}
-                        </ul>
+                        </div>
                     {% elif council_categories %}
                         <ul class="news-submenu mb-4">
                             {% for category in council_categories %}

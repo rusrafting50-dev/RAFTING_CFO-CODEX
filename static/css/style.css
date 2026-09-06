@@ -3155,6 +3155,19 @@ a.council-button:hover {
     color: var(--color-accent);
 }
 
+/* Модификатор для списка «Коллегии и советы», когда советы есть только
+   в одной категории (плашки-категории скрыты, см. regions/section.html:
+   councils_flat_list) — белые прямоугольные кнопки вместо серых, как на
+   референсе rfs.ru (rfs.ru/subject/1/committees). */
+.council-button-white {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+a.council-button-white:hover {
+    background: #f8f8f8;
+}
+
 .council-button-static {
     cursor: default;
 }
