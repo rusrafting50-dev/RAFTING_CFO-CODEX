@@ -53,7 +53,9 @@ def index():
 @bp.route('/<int:club_id>')
 def detail(club_id):
     club = Club.query.get_or_404(club_id)
-    return render_template('clubs/detail.html', club=club, sidebar_items=_sidebar_items(club, None))
+    return render_template(
+        'clubs/detail.html', club=club, sidebar_items=_sidebar_items(club, None), region=club.region,
+    )
 
 
 @bp.route('/<int:club_id>/<section>')
@@ -121,5 +123,5 @@ def section(club_id, section):
         'clubs/section.html', club=club, sidebar_items=_sidebar_items(club, section),
         section=section, section_label=section_label, club_athletes=club_athletes,
         club_coaches=club_coaches, team_gender=team_gender, team_category=team_category,
-        team_genders=team_genders, team_categories=team_categories,
+        team_genders=team_genders, team_categories=team_categories, region=club.region,
     )
