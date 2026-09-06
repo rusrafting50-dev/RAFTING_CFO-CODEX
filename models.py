@@ -35,9 +35,17 @@ class News(db.Model):
     # странице конкретной коллегии/совета региональной федерации
     # (routes/regions.py: council_detail(), вкладка «Общая информация»).
     council_id = db.Column(db.Integer, db.ForeignKey('council.id'))
+    # Новость конкретной региональной федерации — задаётся вручную в
+    # админке (в отличие от Competition/Athlete/Referee/Event, у новости
+    # нет внешнего источника с субъектом РФ для сопоставления). Помимо
+    # общего списка новостей сайта (main.news, region_id не участвует в
+    # фильтре), выводится ещё и на странице «Новости» этой федерации
+    # (routes/regions.py: section(), раздел 'news').
+    region_id = db.Column(db.Integer, db.ForeignKey('regional_federation.id'))
 
     author = db.relationship('User', backref='news_items')
     council = db.relationship('Council', backref='tagged_news')
+    region = db.relationship('RegionalFederation', backref='news_items')
 
 
 class NewsImage(db.Model):

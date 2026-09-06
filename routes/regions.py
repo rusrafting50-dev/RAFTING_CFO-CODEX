@@ -26,16 +26,19 @@ bp = Blueprint('regions', __name__)
 # странице «Судьи», отфильтрованная по Referee.territory — см. section()
 # ниже); events — мероприятия из SPORTS_REFEREE (см. section() ниже),
 # те же карточки, что на странице «Мероприятия», отфильтрованные по
-# Event.subject_name, тот же приём, что 'calendar'; contacts — поля
-# RegionalFederation.
+# Event.subject_name, тот же приём, что 'calendar'; news — новости этой
+# федерации (см. section() ниже) — в отличие от Competition/Event, у
+# News нет внешнего источника с субъектом РФ, поэтому связь прямая,
+# News.region_id, задаётся вручную в админке (admin/news_form.html);
+# contacts — поля RegionalFederation.
 #
-# 'clubs', 'calendar' и 'events' сюда (FEDERATION_SIDEBAR_LAYOUT ниже) не
-# входят — в сайдбар «О федерации» не выводятся, но сами страницы
-# остаются рабочими: на 'clubs' по-прежнему ведёт пункт «Клубы» в шапке
-# сайта и подвале (base.html), на 'calendar' и 'events' — пункты
-# «Соревнования»/«Мероприятия» в шапке; 'calendar' к тому же заменён в
-# сайдбаре на категорию документов «Календарный план» (см.
-# FEDERATION_SIDEBAR_LAYOUT/auth.py: add_federation_calendar_document_category)
+# 'clubs', 'calendar', 'events' и 'news' сюда (FEDERATION_SIDEBAR_LAYOUT
+# ниже) не входят — в сайдбар «О федерации» не выводятся, но сами
+# страницы остаются рабочими: на 'clubs' по-прежнему ведёт пункт «Клубы»
+# в шапке сайта и подвале (base.html), на 'calendar'/'events'/'news' —
+# пункты «Соревнования»/«Мероприятия»/«Новости» в шапке; 'calendar' к
+# тому же заменён в сайдбаре на категорию документов «Календарный план»
+# (см. FEDERATION_SIDEBAR_LAYOUT/auth.py: add_federation_calendar_document_category)
 # — карточки живых соревнований и загружаемый документ «Календарный план»
 # это две разные вещи. Разделы/маршруты поэтому не удаляются, а только
 # перестают быть пунктами этого меню.
@@ -48,6 +51,7 @@ FUNCTIONAL_SECTIONS = [
     ('team', 'Сборная команда'),
     ('referees', 'Спортивные судьи'),
     ('events', 'Мероприятия'),
+    ('news', 'Новости'),
     ('contacts', 'Контакты'),
 ]
 FUNCTIONAL_SECTION_LABELS = dict(FUNCTIONAL_SECTIONS)
@@ -393,6 +397,22 @@ def section(region_id, section):
             if e.subject_name and e.subject_name.strip().lower() == subject_name
         ]
 
+    region_news_cards = []
+    region_news_sidebar = []
+    if section == 'news':
+        # Прямая связь по region_id (не сопоставление по субъекту РФ,
+        # как у Competition/Event выше) — см. models.py: News.region_id.
+        # Первые 4 — карточками (как раздел «Новости» на главной
+        # странице), остальные — компактным списком в сайдбаре (как
+        # колонка «Официально» на странице новости, main/_official_panel.html).
+        region_news = (
+            News.query.filter_by(is_published=True, region_id=region.id)
+            .order_by(News.published_at.desc())
+            .all()
+        )
+        region_news_cards = region_news[:4]
+        region_news_sidebar = region_news[4:]
+
     team_roster = []
     team_gender = None
     team_category = None
@@ -453,6 +473,7 @@ def section(region_id, section):
         council_categories=council_categories, active_council_category_id=active_council_category_id,
         councils_flat_list=councils_flat_list, region_competitions=region_competitions,
         region_referees=region_referees, region_events=region_events,
+        region_news_cards=region_news_cards, region_news_sidebar=region_news_sidebar,
     )
 
 

@@ -168,6 +168,7 @@ def ensure_schema():
     _ensure_column(inspector, 'federation_member', 'local_federation_id', 'INTEGER')
     _ensure_column(inspector, 'regional_federation', 'councils_intro_text', 'TEXT')
     _ensure_column(inspector, 'news', 'council_id', 'INTEGER')
+    _ensure_column(inspector, 'news', 'region_id', 'INTEGER')
     _ensure_column(inspector, 'calendar_plan_application', 'age_groups', 'VARCHAR(500)')
     _ensure_column(inspector, 'calendar_plan_application', 'boat_classes', 'VARCHAR(20)')
     _ensure_column(inspector, 'calendar_plan_application', 'competition_name', 'VARCHAR(255)')

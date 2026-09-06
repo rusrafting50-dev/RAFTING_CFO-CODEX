@@ -64,7 +64,7 @@
             <div class="collapse navbar-collapse" id="mainNav">
                 {% if region %}
                     <ul class="navbar-nav nav-left">
-                        <li class="nav-item"><a class="nav-link" href="{{ url_for('main.news') }}">Новости</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.section', region_id=region.id, section='news') }}">Новости</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.detail', region_id=region.id) }}">Федерация</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ url_for('regions.section', region_id=region.id, section='clubs') }}">Клубы</a></li>
                     </ul>

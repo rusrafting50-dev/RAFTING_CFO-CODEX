@@ -78,6 +78,14 @@ def council_choices():
     """Категории коллегий/советов с их советами — для выпадающего списка
     «Коллегия / совет» в форме новости (admin/news_form.html)."""
     return CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all()
+
+
+def region_choices():
+    """Региональные федерации — для выпадающего списка «Региональная
+    федерация» в форме новости (admin/news_form.html): помечает новость
+    как относящуюся к конкретной федерации (routes/regions.py: section(),
+    раздел 'news')."""
+    return RegionalFederation.query.order_by(RegionalFederation.name).all()
 # Разделы панели, доступ к которым назначается сотруднику индивидуально
 # (роль admin получает их все автоматически, см. User.can_access).
 SECTION_CHOICES = [
@@ -346,7 +354,7 @@ def news_new():
             return render_template(
                 'admin/news_form.html', active='news', news=None,
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
-                council_choices=council_choices(),
+                council_choices=council_choices(), region_choices=region_choices(),
             )
 
         bad_images = [f for f in [image, *gallery_files] if f and f.filename and not allowed_image(f.filename)]
@@ -355,7 +363,7 @@ def news_new():
             return render_template(
                 'admin/news_form.html', active='news', news=None,
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
-                council_choices=council_choices(),
+                council_choices=council_choices(), region_choices=region_choices(),
             )
 
         news_item = News(
@@ -365,6 +373,7 @@ def news_new():
             category=request.form.get('category') or None,
             level=request.form.get('level') or None,
             council_id=request.form.get('council_id', type=int),
+            region_id=request.form.get('region_id', type=int),
             photo_author=request.form.get('photo_author', '').strip() or None,
             organization=request.form.get('organization', '').strip() or None,
             is_published=bool(request.form.get('is_published')),
@@ -381,7 +390,7 @@ def news_new():
     return render_template(
         'admin/news_form.html', active='news', news=None,
         category_choices=news_category_choices(), level_choices=news_level_choices(),
-        council_choices=council_choices(),
+        council_choices=council_choices(), region_choices=region_choices(),
     )
 
 
@@ -403,7 +412,7 @@ def news_edit(news_id):
             return render_template(
                 'admin/news_form.html', active='news', news=news_item,
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
-                council_choices=council_choices(),
+                council_choices=council_choices(), region_choices=region_choices(),
             )
 
         bad_images = [f for f in [image, *gallery_files] if f and f.filename and not allowed_image(f.filename)]
@@ -412,7 +421,7 @@ def news_edit(news_id):
             return render_template(
                 'admin/news_form.html', active='news', news=news_item,
                 category_choices=news_category_choices(), level_choices=news_level_choices(),
-                council_choices=council_choices(),
+                council_choices=council_choices(), region_choices=region_choices(),
             )
 
         news_item.title = title
@@ -421,6 +430,7 @@ def news_edit(news_id):
         news_item.category = request.form.get('category') or None
         news_item.level = request.form.get('level') or None
         news_item.council_id = request.form.get('council_id', type=int)
+        news_item.region_id = request.form.get('region_id', type=int)
         news_item.photo_author = request.form.get('photo_author', '').strip() or None
         news_item.organization = request.form.get('organization', '').strip() or None
         news_item.is_published = bool(request.form.get('is_published'))
@@ -435,7 +445,7 @@ def news_edit(news_id):
     return render_template(
         'admin/news_form.html', active='news', news=news_item,
         category_choices=news_category_choices(), level_choices=news_level_choices(),
-        council_choices=council_choices(),
+        council_choices=council_choices(), region_choices=region_choices(),
     )
 
 

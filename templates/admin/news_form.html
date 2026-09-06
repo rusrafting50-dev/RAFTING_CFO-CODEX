@@ -118,6 +118,16 @@
             </select>
             <div class="form-text">Новость появится на странице этой коллегии/совета среди тегированных новостей.</div>
         </div>
+        <div class="mb-3">
+            <label for="region_id" class="form-label">Региональная федерация</label>
+            <select class="form-select" id="region_id" name="region_id">
+                <option value="">—</option>
+                {% for region in region_choices %}
+                    <option value="{{ region.id }}" {{ 'selected' if news and news.region_id == region.id }}>{{ region.name }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">Новость появится ещё и на странице «Новости» этой региональной федерации.</div>
+        </div>
         <div class="form-check mb-3">
             <input type="checkbox" class="form-check-input" id="is_published" name="is_published"
                    {{ 'checked' if news and news.is_published }}>

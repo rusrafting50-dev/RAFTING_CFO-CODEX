@@ -106,6 +106,55 @@
                     {% else %}
                         <p class="text-muted mb-0">На {{ now.year }} год мероприятия пока не запланированы.</p>
                     {% endif %}
+                {% elif section == 'news' %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
+                    {% if region_news_cards %}
+                        <div class="row g-4">
+                            <div class="col-lg-9">
+                                <div class="row row-cols-1 row-cols-sm-2 g-4">
+                                    {% for item in region_news_cards %}
+                                        <div class="col">
+                                            <a href="{{ url_for('main.news_detail', news_id=item.id) }}" class="news-card-link">
+                                                <div class="card h-100 news-card">
+                                                    <div class="card-img-placeholder"
+                                                         {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
+                                                    <div class="card-body">
+                                                        <h3 class="h6 news-card-title">{{ item.title }}</h3>
+                                                        {% set item_excerpt = (item.description or item.content)|striptags %}
+                                                        <p class="news-card-excerpt">{{ item_excerpt[:120] }}{% if item_excerpt|length > 120 %}…{% endif %}</p>
+                                                        <p class="news-card-date">
+                                                            {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-lg-3">
+                                <div class="official-panel">
+                                    <h2 class="official-panel-title">Новости</h2>
+                                    {% if region_news_sidebar %}
+                                        <div class="official-list">
+                                            {% for item in region_news_sidebar %}
+                                                <div class="official-item">
+                                                    <span class="official-item-date">
+                                                        {{ item.published_at.strftime('%d.%m.%Y') if item.published_at else '' }}
+                                                    </span>
+                                                    <span class="official-item-title">{{ item.title }}</span>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <p class="official-empty">Больше новостей пока нет.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Новостей пока нет.</p>
+                    {% endif %}
                 {% elif section == 'referees' %}
                     <h2 class="h5 mb-3">{{ section_label }}</h2>
                     {{ referees_table(region_referees) }}
