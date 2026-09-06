@@ -75,20 +75,20 @@
                         <table class="table table-zebra align-middle">
                             <thead>
                                 <tr class="site-table-header">
-                                    <th>Статус соревнований</th>
+                                    <th>Наименование соревнований</th>
                                     <th>Виды программы</th>
                                     <th>Сроки проведения</th>
                                     <th>Место проведения</th>
                                     <th>Проводящие организации</th>
-                                    <th>Главный судья</th>
-                                    <th>Главный секретарь</th>
+                                    <th>Контакты организаторов</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for item in calendar_applications %}
                                     <tr>
                                         <td>
-                                            <a href="{{ url_for('competitions.calendar_application_view', application_id=item.id) }}">{{ item.status or 'Без названия' }}</a>
+                                            <a href="{{ url_for('competitions.calendar_application_view', application_id=item.id) }}">{{ item.competition_name or 'Без названия' }}</a>
                                         </td>
                                         <td>{{ [item.age_groups, item.boat_classes]|select|join(' — ') }}</td>
                                         <td>
@@ -99,8 +99,12 @@
                                         </td>
                                         <td>{{ [item.location_subject, item.location_details]|select|join(', ') }}</td>
                                         <td>{{ item.organizations or '' }}</td>
-                                        <td>{{ item.chief_judge_name or '' }}</td>
-                                        <td>{{ item.chief_secretary_name or '' }}</td>
+                                        <td>{{ [item.federation_contact_name, item.federation_contact_phone, item.federation_contact_email]|select|join(', ') }}</td>
+                                        <td>
+                                            {% if item.can_manage %}
+                                                <a class="btn btn-sm btn-outline-primary" href="{{ url_for('competitions.calendar_application_edit', application_id=item.id) }}">Изменить</a>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

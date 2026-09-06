@@ -846,6 +846,7 @@ class CalendarPlanApplication(db.Model):
     submitted_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    competition_name = db.Column(db.String(255))  # Наименование соревнований
     status = db.Column(db.String(200))  # Статус соревнований
     # Возрастная группа и классы судов — как в форме «Добавить соревнование»
     # в COREZ (раздел «Классификация соревнований»): несколько строк

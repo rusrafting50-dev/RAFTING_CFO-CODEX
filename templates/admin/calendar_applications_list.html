@@ -19,7 +19,7 @@
             <div class="card-header d-flex justify-content-between align-items-center gap-2 flex-wrap">
                 <button class="btn btn-link text-decoration-none p-0 text-start" type="button"
                         data-bs-toggle="collapse" data-bs-target="#app-{{ application.id }}">
-                    <strong>{{ application.status or 'Без названия' }}</strong>
+                    <strong>{{ application.competition_name or 'Без названия' }}</strong>
                     — {{ [application.age_groups, application.boat_classes]|select|join(' — ') }}
                     — {{ application.start_date.strftime('%d.%m.%Y') if application.start_date else '' }}{% if application.end_date and application.end_date != application.start_date %}&ndash;{{ application.end_date.strftime('%d.%m.%Y') }}{% endif %}
                     — {{ application.location_subject or '' }}
@@ -41,6 +41,7 @@
 
                     <h2 class="h6 mb-2">Основные данные</h2>
                     <dl class="row mb-3">
+                        <dt class="col-sm-3">Наименование соревнований</dt><dd class="col-sm-9">{{ application.competition_name or '—' }}</dd>
                         <dt class="col-sm-3">Статус соревнований</dt><dd class="col-sm-9">{{ application.status or '—' }}</dd>
                         <dt class="col-sm-3">Возрастная группа</dt><dd class="col-sm-9">{{ application.age_groups or '—' }}</dd>
                         <dt class="col-sm-3">Классы судов</dt><dd class="col-sm-9">{{ application.boat_classes or '—' }}</dd>

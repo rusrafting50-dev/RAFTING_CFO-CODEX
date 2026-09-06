@@ -134,6 +134,11 @@ def calendar():
     can_submit_calendar_application = (
         current_user.is_authenticated and current_user.role in ('region_rep', 'admin')
     )
+    # Ссылка «Изменить» прямо в строке таблицы — тот же _can_manage(),
+    # что на странице заявки; can_manage — временный атрибут объекта, не
+    # колонка, нужен только для рендера этого шаблона.
+    for application in calendar_applications:
+        application.can_manage = _can_manage(application)
 
     return render_template(
         'competitions/calendar.html', competitions=competitions, year=year,
@@ -698,6 +703,7 @@ def _calendar_boat_classes_from_form(form):
 
 
 def _fill_calendar_application_fields(application, form):
+    application.competition_name = form.get('competition_name', '').strip() or None
     application.status = form.get('status', '').strip() or None
     application.age_groups = _calendar_age_groups_from_form(form)
     application.boat_classes = _calendar_boat_classes_from_form(form)

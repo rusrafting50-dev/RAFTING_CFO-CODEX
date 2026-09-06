@@ -10,6 +10,11 @@
             <h2 class="h6 mb-3">Основные данные</h2>
             <div class="row g-3 mb-4">
                 <div class="col-12">
+                    <label class="form-label">Наименование соревнований</label>
+                    <input type="text" name="competition_name" class="form-control"
+                           value="{{ application.competition_name or '' if application else '' }}">
+                </div>
+                <div class="col-12">
                     <label class="form-label">Статус соревнований</label>
                     <select name="status" class="form-select">
                         <option value="">— выберите статус —</option>
