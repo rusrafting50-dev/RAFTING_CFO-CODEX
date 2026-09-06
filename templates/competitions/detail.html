@@ -173,23 +173,27 @@
                             {% endif %}
                         </div>
 
-                        <div class="row g-4">
-                            <div class="col-lg-6">
-                                <h2 class="h5 mb-3">ИНФОРМАЦИЯ</h2>
-                                {{ document_cards(info_documents) }}
-                            </div>
-                            <div class="col-lg-6">
-                                <h2 class="h5 mb-3">ДОКУМЕНТЫ СОРЕВНОВАНИЙ</h2>
-                                {{ document_cards(competition_documents_docs) }}
-                            </div>
+                        <div class="tab-content" id="infoTabsContent">
+                            {% for item in info_documents %}
+                                <div class="tab-pane fade {{ 'show active' if loop.first }}" id="info-pane-{{ loop.index }}" role="tabpanel">
+                                    <h2 class="h5 mb-3">{{ item.label }}</h2>
+                                    {{ document_cards([item]) }}
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
                     <div class="col-lg-3">
                         {% if can_submit_application %}
-                            <a href="{{ url_for('competitions.application_new', competition_id=competition.id) }}" class="btn btn-primary w-100">Подать заявку команды</a>
+                            <a href="{{ url_for('competitions.application_new', competition_id=competition.id) }}" class="btn btn-primary w-100 mb-3">Подать заявку команды</a>
                         {% elif not current_user.is_authenticated %}
-                            <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-outline-secondary w-100">Войти, чтобы подать заявку</a>
+                            <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-outline-secondary w-100 mb-3">Войти, чтобы подать заявку</a>
                         {% endif %}
+                        <div class="council-button-list" role="tablist">
+                            {% for item in info_documents %}
+                                <button class="council-button council-button-white {{ 'active' if loop.first }}" id="info-btn-{{ loop.index }}"
+                                        data-bs-toggle="tab" data-bs-target="#info-pane-{{ loop.index }}" type="button" role="tab">{{ item.button_label }}</button>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>

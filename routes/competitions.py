@@ -67,25 +67,20 @@ AGE_GROUPS = [
     'Юноши (до 16 лет)', 'Девушки (до 16 лет)',
 ]
 
-# Карточки документов в блоке «Информация» на вкладке «О соревнованиях» —
-# фиксированный набор, показывается всегда (даже если файл ещё не
-# загружен), чтобы было видно, что именно нужно загрузить. doc_type
-# должен быть среди COMPETITION_DOC_TYPE_CHOICES в routes/admin.py —
-# ровно оттуда админ и загружает файл под конкретную карточку.
+# Кнопки материалов в сайдбаре вкладки «О соревнованиях», под кнопкой
+# «Подать заявку команды» — фиксированный набор, показывается всегда
+# (даже если файл ещё не загружен), чтобы было видно, что именно нужно
+# загрузить. doc_type должен быть среди COMPETITION_DOC_TYPE_CHOICES в
+# routes/admin.py — ровно оттуда админ и загружает файл под конкретную
+# кнопку. button_label — короткая подпись самой кнопки, heading_label —
+# полное название, которое появляется заголовком под баннером при
+# нажатии (то же название, что было у кнопки до сокращения).
 INFO_DOCUMENT_TYPES = [
-    ('регламент', 'Регламент спортивных соревнований'),
-    ('программа', 'Программа соревнований'),
-    ('состав_гск', 'Состав главной судейской коллегии'),
-    ('график_допуска', 'График прохождения комиссии по допуску'),
-    ('расписание', 'Расписание тренировок'),
-]
-
-# Карточки документов в блоке «Документы соревнований» на той же
-# вкладке — тот же приём, что INFO_DOCUMENT_TYPES.
-COMPETITION_DOCUMENTS_TYPES = [
-    ('справка_о_судьях', 'Справка о квалификации и составе судейской коллегии'),
-    ('справка_о_субъектах', 'Справка о количестве регионов, принявших участие в соревнованиях'),
-    ('протокол_совещания_гск', 'Протокол совещания ГСК с представителями команд'),
+    ('регламент', 'РЕГЛАМЕНТ', 'Регламент спортивных соревнований'),
+    ('программа', 'ПРОГРАММА', 'Программа соревнований'),
+    ('состав_гск', 'СОСТАВ ГСК', 'Состав главной судейской коллегии'),
+    ('график_допуска', 'КОМИССИЯ ПО ДОПУСКУ', 'График прохождения комиссии по допуску'),
+    ('расписание', 'ТРЕНИРОВКИ', 'Расписание тренировок'),
 ]
 
 # Порядок и подписи дисциплин на вкладке "Результаты" (второй ряд меню).
@@ -424,12 +419,11 @@ def detail(competition_id):
     ]
 
     info_documents = [
-        {'doc_type': doc_type, 'label': label, 'docs': documents_by_type.get(doc_type, [])}
-        for doc_type, label in INFO_DOCUMENT_TYPES
-    ]
-    competition_documents_docs = [
-        {'doc_type': doc_type, 'label': label, 'docs': documents_by_type.get(doc_type, [])}
-        for doc_type, label in COMPETITION_DOCUMENTS_TYPES
+        {
+            'doc_type': doc_type, 'button_label': button_label, 'label': heading_label,
+            'docs': documents_by_type.get(doc_type, []),
+        }
+        for doc_type, button_label, heading_label in INFO_DOCUMENT_TYPES
     ]
 
     # Шапка/футер той региональной федерации, где проходит соревнование
@@ -448,7 +442,6 @@ def detail(competition_id):
         documents_by_type=documents_by_type,
         results_groups=results_groups,
         info_documents=info_documents,
-        competition_documents_docs=competition_documents_docs,
         applications=applications, total_athletes=total_athletes,
         can_submit_application=can_submit_application, application_logos=application_logos,
         region=region,
