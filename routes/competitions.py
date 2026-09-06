@@ -111,6 +111,14 @@ def calendar():
     без деления по вкладкам ЦФО/Регионы/Клубы) + ссылки в архив трёх
     предыдущих лет."""
     year = date.today().year
+    # Какая из вкладок ОФИЦИАЛЬНЫЕ/ФОРМИРОВАНИЕ открыта — по query-параметру,
+    # а не якорю (#tab-forming): якорь на сервер не попадает, поэтому
+    # страница сперва отрисовалась бы с вкладкой по умолчанию и только
+    # потом переключилась JS-ом на нужную — заметная перемигивание при
+    # переходе со страницы заявки ("К списку заявок"/"Отмена").
+    active_tab = request.args.get('tab')
+    if active_tab not in ('official', 'forming'):
+        active_tab = 'official'
 
     competitions = (
         Competition.query.filter(extract('year', Competition.start_date) == year)
@@ -136,7 +144,7 @@ def calendar():
     )
 
     return render_template(
-        'competitions/calendar.html', competitions=competitions, year=year,
+        'competitions/calendar.html', competitions=competitions, year=year, active_tab=active_tab,
         archive_years=archive_years, regulations_category=regulations_category,
         calendar_applications=calendar_applications,
         can_submit_calendar_application=can_submit_calendar_application,
@@ -749,7 +757,7 @@ def calendar_application_new():
         db.session.add(application)
         db.session.commit()
         flash('Заявка сохранена.', 'success')
-        return redirect(url_for('competitions.calendar') + '#tab-forming')
+        return redirect(url_for('competitions.calendar', tab='forming'))
 
     return render_template(
         'competitions/calendar_application_form.html', application=None,
@@ -770,7 +778,7 @@ def calendar_application_edit(application_id):
         _fill_calendar_application_fields(application, request.form)
         db.session.commit()
         flash('Заявка обновлена.', 'success')
-        return redirect(url_for('competitions.calendar') + '#tab-forming')
+        return redirect(url_for('competitions.calendar', tab='forming'))
 
     return render_template(
         'competitions/calendar_application_form.html', application=application,
@@ -799,4 +807,4 @@ def calendar_application_delete(application_id):
     db.session.delete(application)
     db.session.commit()
     flash('Заявка удалена.', 'success')
-    return redirect(url_for('competitions.calendar') + '#tab-forming')
+    return redirect(url_for('competitions.calendar', tab='forming'))

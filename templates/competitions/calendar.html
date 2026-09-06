@@ -10,11 +10,11 @@
 
         <ul class="news-submenu mb-4" id="calendarSubTabs" role="tablist">
             <li role="presentation">
-                <button class="active" id="tab-official-btn" data-bs-toggle="tab"
+                <button class="{{ 'active' if active_tab == 'official' }}" id="tab-official-btn" data-bs-toggle="tab"
                         data-bs-target="#tab-official" type="button" role="tab">ОФИЦИАЛЬНЫЕ</button>
             </li>
             <li role="presentation">
-                <button id="tab-forming-btn" data-bs-toggle="tab"
+                <button class="{{ 'active' if active_tab == 'forming' }}" id="tab-forming-btn" data-bs-toggle="tab"
                         data-bs-target="#tab-forming" type="button" role="tab">ФОРМИРОВАНИЕ</button>
             </li>
             <li role="presentation">
@@ -23,7 +23,7 @@
         </ul>
 
         <div class="tab-content" id="calendarSubTabsContent">
-            <div class="tab-pane fade show active" id="tab-official" role="tabpanel">
+            <div class="tab-pane fade {{ 'show active' if active_tab == 'official' }}" id="tab-official" role="tabpanel">
                 {% if competitions %}
                     <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
                         {% for competition in competitions %}
@@ -60,7 +60,7 @@
                     <p class="text-muted">На {{ year }} год соревнования пока не запланированы.</p>
                 {% endif %}
             </div>
-            <div class="tab-pane fade" id="tab-forming" role="tabpanel">
+            <div class="tab-pane fade {{ 'show active' if active_tab == 'forming' }}" id="tab-forming" role="tabpanel">
                 <div class="d-flex justify-content-end mb-3">
                     {% if can_submit_calendar_application %}
                         <a href="{{ url_for('competitions.calendar_application_new') }}" class="btn btn-sm btn-primary">Подать заявку</a>
