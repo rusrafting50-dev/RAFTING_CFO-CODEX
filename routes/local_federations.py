@@ -57,6 +57,7 @@ def detail(local_federation_id):
     return render_template(
         'local_federations/detail.html', local_federation=local_federation,
         sidebar_items=_sidebar_items(local_federation, None),
+        region=local_federation.region,
     )
 
 
@@ -88,4 +89,5 @@ def section(local_federation_id, section):
         sidebar_items=_sidebar_items(local_federation, section),
         section=section, section_label=section_label,
         members_by_body=members_by_body, body_labels=BODY_LABELS,
+        region=local_federation.region,
     )
