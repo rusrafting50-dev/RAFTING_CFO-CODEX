@@ -25,7 +25,7 @@
                     </select>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Возрастная группа и классы судов</label>
+                    <label class="form-label">Виды программы</label>
                     {% set age_group_list = (application.age_groups.split(' / ') if application and application.age_groups else ['']) %}
                     {% set chosen_boat_classes = (application.boat_classes.split(' ') if application and application.boat_classes else []) %}
                     <div id="ageGroupRows">
@@ -77,7 +77,7 @@
                            value="{{ application.location_details or '' if application else '' }}">
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Организации, проводящие соревнования</label>
+                    <label class="form-label">Проводящая организация</label>
                     <textarea name="organizations" class="form-control" rows="2">{{ application.organizations or '' if application else '' }}</textarea>
                 </div>
                 <div class="col-12">

@@ -79,7 +79,7 @@
                                     <th>Виды программы</th>
                                     <th>Сроки проведения</th>
                                     <th>Место проведения</th>
-                                    <th>Проводящие организации</th>
+                                    <th>Проводящая организация</th>
                                     <th>Контакты организаторов</th>
                                 </tr>
                             </thead>
@@ -91,9 +91,8 @@
                                         </td>
                                         <td>
                                             {% if item.age_groups %}
-                                                {% set boat_classes_text = item.boat_classes.split(' ')|join(', ') if item.boat_classes else '' %}
                                                 {% for age_group in item.age_groups.split(' / ') %}
-                                                    <div>{{ [age_group, boat_classes_text]|select|join(' ') }}</div>
+                                                    <div>{{ [age_group, item.boat_classes]|select|join(' ') }}</div>
                                                 {% endfor %}
                                             {% endif %}
                                         </td>
