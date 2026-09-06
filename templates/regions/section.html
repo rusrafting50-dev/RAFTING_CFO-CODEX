@@ -109,11 +109,13 @@
                         {% endif %}
                     </div>
                     {% if councils_flat_list is not none %}
-                        <div class="council-button-list">
+                        <ul class="news-submenu mb-4">
                             {% for council in councils_flat_list %}
-                                <a class="council-button" href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
+                                <li role="presentation">
+                                    <a href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
+                                </li>
                             {% endfor %}
-                        </div>
+                        </ul>
                     {% elif council_categories %}
                         <ul class="news-submenu mb-4">
                             {% for category in council_categories %}
