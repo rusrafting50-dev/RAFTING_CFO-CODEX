@@ -428,28 +428,35 @@ def section(region_id, section):
 def _councils_sidebar_items(region, active_council_id=None):
     """Боковое меню страницы конкретной коллегии/совета — полностью
     заменяет общее меню «О федерации» (тот же приём, что
-    _team_sidebar_items()): только категории (CouncilCategory) с
-    раскрывающимся списком советов внутри (kind='category', как
-    категории документов в _sidebar_items()), без «Федерация»/
-    «Руководство»/... Название категории само по себе ведёт на список
-    «Коллегии и советы» этой федерации, отфильтрованный по ней.
+    _team_sidebar_items()): вверху — ссылка «Коллегии и советы» назад на
+    список (regions.section, section='councils'), затем категории
+    (CouncilCategory) с раскрывающимся списком советов внутри
+    (kind='category', как категории документов в _sidebar_items()), без
+    «Федерация»/«Руководство»/... Название категории само по себе ведёт
+    на список «Коллегии и советы» этой федерации, отфильтрованный по ней.
 
     Если советы есть только в одной категории — та же логика, что в
     section() для основного списка «Коллегии и советы»: вместо одной
     категории с раскрывающимся списком выводятся сразу сами советы
     (kind='link'), без категории-обёртки — чтобы меню на странице
     отдельного совета совпадало со списком, с которого на неё попали."""
+    back_link = {
+        'kind': 'link',
+        'label': 'Коллегии и советы',
+        'url': url_for('regions.section', region_id=region.id, section='councils'),
+        'active': False,
+    }
     categories = CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all()
     categories_with_councils = [c for c in categories if c.councils]
     if len(categories_with_councils) == 1:
-        return [{
+        return [back_link] + [{
             'kind': 'link',
             'label': council.name,
             'url': url_for('regions.council_detail', region_id=region.id, council_id=council.id),
             'active': council.id == active_council_id,
         } for council in categories_with_councils[0].councils]
 
-    items = []
+    items = [back_link]
     for category in categories:
         sections = [{
             'label': council.name,
