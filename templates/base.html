@@ -175,7 +175,11 @@
                         <img src="{{ url_for('static', filename='img/icon_max.png') }}" alt="">
                     </a>
                 </div>
-                <img class="footer-logo" src="{{ url_for('static', filename='img/ФРР_лого_серый.png') }}" alt="Федерация рафтинга России">
+                {% if region and (region.logo_white_path or region.logo_path) %}
+                    <img class="footer-logo" src="{{ url_for('static', filename=region.logo_white_path or region.logo_path) }}" alt="{{ region.name }}">
+                {% else %}
+                    <img class="footer-logo" src="{{ url_for('static', filename='img/ФРР_лого_серый.png') }}" alt="Федерация рафтинга России">
+                {% endif %}
             </div>
         </div>
         <hr>
