@@ -12,13 +12,10 @@
                 <div class="doc-list-item">
                     <p class="news-row-date">{{ doc.uploaded_at|ru_date_full if doc.uploaded_at else '' }}</p>
                     <div class="d-flex justify-content-between align-items-start gap-3">
-                        <div>
-                            <h3 class="doc-list-title">{{ item.label }}</h3>
-                            <button type="button" class="btn btn-sm btn-primary doc-copy-link"
-                                    data-url="{{ url_for('static', filename=doc.file_path, _external=True) }}">
-                                Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
-                            </button>
-                        </div>
+                        <button type="button" class="btn btn-sm btn-primary doc-copy-link"
+                                data-url="{{ url_for('static', filename=doc.file_path, _external=True) }}">
+                            Скопировать ссылку <span class="doc-copy-icon" aria-hidden="true"></span>
+                        </button>
                         <a class="doc-open-link text-center text-nowrap" href="{{ url_for('static', filename=doc.file_path) }}"
                            target="_blank" rel="noopener">
                             {% if icon_file %}
@@ -33,7 +30,6 @@
             {% endfor %}
         {% else %}
             <div class="doc-list-item doc-list-item-empty">
-                <h3 class="doc-list-title">{{ item.label }}</h3>
                 <p class="text-muted small mb-0">Пока не загружено.</p>
             </div>
         {% endif %}
