@@ -1,4 +1,5 @@
 """Региональные федерации субъектов ЦФО."""
+import re
 from datetime import date
 
 from flask import Blueprint, abort, render_template, request, url_for
@@ -134,6 +135,20 @@ TEAM_GENDER_BY_CATEGORY = {
 # странице сборной, странице отдельного спортсмена и на страницах-
 # заглушках TEAM_MENU_STUB_SECTIONS (см. выше).
 TEAM_MENU_SECTION_KEYS = {'team'} | set(TEAM_MENU_STUB_LABELS)
+
+# Убирает суффикс «область»/«обл.» из названия субъекта РФ перед
+# сравнением с местом проведения мероприятия (Event.location) — см.
+# section()/events_archive() ниже: RegionalFederation.subject_name
+# обычно хранится полным словом («Московская область»), а в свободном
+# тексте места проведения семинара часто встречается сокращение
+# («Московская обл.») — без нормализации подстрока не находится. Годится
+# для всех регионов ЦФО — все они «область», кроме Москвы (у неё
+# суффикса нет, регулярное выражение её не затронет).
+_REGION_SUFFIX_RE = re.compile(r'\bобл(?:асть)?\.?', re.IGNORECASE)
+
+
+def _region_core(text):
+    return _REGION_SUFFIX_RE.sub('', text or '').strip().lower()
 
 
 def _clubs_by_name():
@@ -400,19 +415,22 @@ def section(region_id, section):
             # прямо в свободном тексте Event.location (то же поле, что
             # показано на странице мероприятия как «Место проведения») —
             # тот же приём, что для Competition.location, если бы у него
-            # не было своего чистого поля. Следующий год — в отличие от
+            # не было своего чистого поля; _region_core() убирает суффикс
+            # «область»/«обл.» с обеих сторон перед сравнением — иначе
+            # «Московская обл.» в тексте места проведения не совпадёт с
+            # «Московская область» в subject_name. Следующий год — в отличие от
             # главной страницы «Мероприятия» (routes/events.py: index(),
             # только текущий год) — чтобы уже анонсированные мероприятия
             # начала следующего года не проваливались в архив раньше
             # времени.
-            subject_name = region.subject_name.strip().lower()
+            subject_core = _region_core(region.subject_name)
             region_events = [
                 e for e in (
                     Event.query.filter(extract('year', Event.start_date).in_([year, year + 1]))
                     .order_by(Event.start_date.asc())
                     .all()
                 )
-                if e.location and subject_name in e.location.strip().lower()
+                if e.location and subject_core in _region_core(e.location)
             ]
 
     region_news_cards = []
@@ -510,7 +528,7 @@ def events_archive(region_id):
     region_events = []
     years = []
     if region.subject_name:
-        subject_name = region.subject_name.strip().lower()
+        subject_core = _region_core(region.subject_name)
         query = Event.query
         if year:
             query = query.filter(extract('year', Event.start_date) == year)
@@ -518,12 +536,12 @@ def events_archive(region_id):
             query = query.filter(Event.start_date < date.today())
         region_events = [
             e for e in query.order_by(Event.start_date.desc()).all()
-            if e.location and subject_name in e.location.strip().lower()
+            if e.location and subject_core in _region_core(e.location)
         ]
         years = sorted(
             {
                 e.start_date.year for e in Event.query.all()
-                if e.start_date and e.location and subject_name in e.location.strip().lower()
+                if e.start_date and e.location and subject_core in _region_core(e.location)
                 and e.start_date < date.today()
             },
             reverse=True,
