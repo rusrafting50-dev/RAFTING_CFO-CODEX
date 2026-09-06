@@ -13,8 +13,9 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from models import (
     Athlete, Banner, CalendarPlanApplication, Club, Competition, CompetitionApplication,
-    CompetitionDocument, Council, CouncilCategory, CouncilMember, CouncilPage, Document,
-    DocumentCategory, DocumentSection, EquipmentItem, EquipmentPageText, Event, FederationMember,
+    CompetitionDocument, Council, CouncilCategory, CouncilMember, CouncilPage,
+    DeletedDocumentTaxonomyEntry, Document, DocumentCategory, DocumentSection, EquipmentItem,
+    EquipmentPageText, Event, FederationMember,
     FederationRegistrationRequest, LocalFederation, MediaAlbum, MediaAlbumPhoto, MediaVideo, News,
     NewsCategory, NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee,
     RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
@@ -732,6 +733,11 @@ def document_category_edit(category_id):
 @roles_required('admin', 'editor')
 def document_category_delete(category_id):
     category = DocumentCategory.query.get_or_404(category_id)
+    # Запоминаем удаление — иначе категория из «сеющего» списка вроде
+    # COMPETITION_DOCUMENT_TAXONOMY (auth.py: ensure_competition_document_taxonomy)
+    # заново появится при следующем запуске сервера, так как код не может
+    # отличить «ещё не создана» от «удалена вручную».
+    db.session.add(DeletedDocumentTaxonomyEntry(scope=category.scope, category_name=category.name))
     db.session.delete(category)
     db.session.commit()
     flash('Категория удалена. Уже загруженные документы с этим значением не изменятся.', 'success')
@@ -777,6 +783,12 @@ def document_section_edit(section_id):
 @roles_required('admin', 'editor')
 def document_section_delete(section_id):
     section = DocumentSection.query.get_or_404(section_id)
+    # См. комментарий в document_category_delete — тот же приём, на
+    # случай если раздел (а не только вся категория) пришёл из сеющего
+    # списка (в COMPETITION_DOCUMENT_TAXONOMY у категорий есть разделы).
+    db.session.add(DeletedDocumentTaxonomyEntry(
+        scope=section.category.scope, category_name=section.category.name, section_name=section.name,
+    ))
     db.session.delete(section)
     db.session.commit()
     flash('Раздел удалён. Уже загруженные документы с этим значением не изменятся.', 'success')

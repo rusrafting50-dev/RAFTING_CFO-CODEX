@@ -2,7 +2,10 @@
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager
 
-from models import Document, DocumentCategory, DocumentSection, News, NewsCategory, NewsLevel, db, User
+from models import (
+    DeletedDocumentTaxonomyEntry, Document, DocumentCategory, DocumentSection, News, NewsCategory,
+    NewsLevel, db, User,
+)
 
 login_manager = LoginManager()
 login_manager.login_view = 'admin.login'
@@ -291,24 +294,41 @@ def ensure_competition_document_taxonomy():
     моменту успел разойтись (например, вручную удалили часть пунктов),
     из-за чего миграция молча пропускалась и новые категории так и не
     появлялись. Эта функция устроена проще и идемпотентна — можно
-    спокойно вызывать при каждом старте сервера, а не один раз."""
+    спокойно вызывать при каждом старте сервера, а не один раз.
+
+    Категория/раздел, названием совпадающие с записью из
+    DeletedDocumentTaxonomyEntry (админ удалил её через панель
+    управления — см. routes/admin.py: document_category_delete/
+    document_section_delete), заново не создаются — иначе удалённое
+    возвращалось бы обратно при каждом перезапуске сервера, потому что
+    без этого списка функция не может отличить «ещё не создан» от
+    «удалён вручную»."""
     existing_categories = {
         category.name: category
         for category in DocumentCategory.query.filter_by(scope='соревнования').all()
     }
+    deleted_entries = DeletedDocumentTaxonomyEntry.query.filter_by(scope='соревнования').all()
+    deleted_categories = {entry.category_name for entry in deleted_entries if not entry.section_name}
+    deleted_sections = {
+        (entry.category_name, entry.section_name) for entry in deleted_entries if entry.section_name
+    }
+
     changed = False
     for category_order, (name, section_names) in enumerate(COMPETITION_DOCUMENT_TAXONOMY):
         category = existing_categories.get(name)
         if not category:
+            if name in deleted_categories:
+                continue
             category = DocumentCategory(name=name, scope='соревнования', sort_order=category_order)
             db.session.add(category)
             db.session.flush()
             changed = True
         existing_section_names = {section.name for section in category.sections}
         for section_order, section_name in enumerate(section_names):
-            if section_name not in existing_section_names:
-                db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=section_order))
-                changed = True
+            if section_name in existing_section_names or (name, section_name) in deleted_sections:
+                continue
+            db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=section_order))
+            changed = True
     if changed:
         db.session.commit()
 

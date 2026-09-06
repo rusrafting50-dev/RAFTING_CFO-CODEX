@@ -253,6 +253,25 @@ class DocumentSection(db.Model):
     )
 
 
+class DeletedDocumentTaxonomyEntry(db.Model):
+    """Категория или раздел из «сеющих» списков вроде
+    COMPETITION_DOCUMENT_TAXONOMY (auth.py), удалённые администратором
+    через панель управления, — список «не восстанавливать» для функций
+    вида ensure_competition_document_taxonomy(), которые при каждом
+    старте сервера заново добавляют отсутствующие по названию категории/
+    разделы (чтобы новые пункты таксономии подхватывались на уже
+    работающих сайтах) и без этого списка не могут отличить «ещё не
+    создан» от «удалён вручную».
+
+    section_name пустой (None) — удалена вся категория целиком; иначе
+    удалён конкретный раздел внутри неё (сама категория могла остаться)."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    scope = db.Column(db.String(30), nullable=False)
+    category_name = db.Column(db.String(100), nullable=False)
+    section_name = db.Column(db.String(100))
+
+
 class EquipmentPageText(db.Model):
     """Вводный текст страницы «Оборудование и снаряжение» (Соревнования)
     — свой у каждой аудитории (audience: 'спортсмены'/'организаторы',
