@@ -607,3 +607,23 @@
 
     textareas.forEach(buildEditor);
 })();
+
+// Активация вкладки Bootstrap (data-bs-toggle="tab") по хэшу в адресе
+// страницы при загрузке — сами вкладки переключаются по клику, но
+// прямая ссылка с хэшем (например, "Отмена"/"К списку заявок" со
+// страницы заявки на ЕКП обратно на #tab-forming) без этого всегда
+// открывала бы первую вкладку, а не ту, что была в адресе.
+(function () {
+    if (!window.location.hash) {
+        return;
+    }
+    var trigger;
+    try {
+        trigger = document.querySelector('[data-bs-toggle="tab"][data-bs-target="' + window.location.hash + '"]');
+    } catch (e) {
+        return;
+    }
+    if (trigger && window.bootstrap && window.bootstrap.Tab) {
+        window.bootstrap.Tab.getOrCreateInstance(trigger).show();
+    }
+})();
