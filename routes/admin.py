@@ -41,7 +41,7 @@ def no_cache(response):
     return response
 
 
-ALLOWED_DOCUMENT_EXTENSIONS = {'pdf', 'docx'}
+ALLOWED_DOCUMENT_EXTENSIONS = {'pdf', 'doc', 'docx', 'xls'}
 ALLOWED_IMAGE_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp'}
 SYNC_SOURCES = ['COREZ', 'REGTEAM_RAFTING', 'SPORTS_REFEREE']
 
@@ -827,7 +827,7 @@ def documents_new():
         file_path = None
         if has_file:
             if not allowed_document(file.filename):
-                flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
+                flash('Допустимые форматы файлов: PDF, DOC, DOCX, XLS.', 'error')
                 return render_template('admin/document_form.html', **form_kwargs)
 
             filename = safe_upload_filename(file.filename)
@@ -886,7 +886,7 @@ def documents_edit(document_id):
 
         if has_file:
             if not allowed_document(file.filename):
-                flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
+                flash('Допустимые форматы файлов: PDF, DOC, DOCX, XLS.', 'error')
                 return render_template('admin/document_form.html', **form_kwargs)
 
             filename = safe_upload_filename(file.filename)
@@ -1151,7 +1151,7 @@ def competition_document_new(competition_id):
         return redirect(url_for('admin.competition_documents', competition_id=competition.id))
 
     if not allowed_document(file.filename):
-        flash('Допустимые форматы файлов: PDF, DOCX.', 'error')
+        flash('Допустимые форматы файлов: PDF, DOC, DOCX, XLS.', 'error')
         return redirect(url_for('admin.competition_documents', competition_id=competition.id))
 
     filename = safe_upload_filename(file.filename)
