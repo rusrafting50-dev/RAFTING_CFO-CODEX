@@ -1,0 +1,37 @@
+{# Сетка карточек соревнований — competitions/calendar.html (вкладка
+   «Официальные») и regions/section.html (раздел «Календарный план»
+   конкретной федерации, где показаны те же соревнования, отфильтрованные
+   по Competition.subject_name), чтобы разметка карточки не дублировалась. #}
+{% macro comp_cards(competitions) %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+        {% for competition in competitions %}
+            <div class="col">
+                <a class="comp-card" href="{{ url_for('competitions.detail', competition_id=competition.id) }}">
+                    {% if not competition.logo_path %}
+                        {% set photo_class = ' comp-card-photo-empty' %}
+                    {% elif static_image_has_transparency(competition.logo_path) %}
+                        {% set photo_class = ' comp-card-photo-white' %}
+                    {% else %}
+                        {% set photo_class = '' %}
+                    {% endif %}
+                    <div class="comp-card-photo{{ photo_class }}">
+                        {% if competition.logo_path %}
+                            <div class="comp-card-logo">
+                                <img src="{{ url_for('static', filename=competition.logo_path) }}" alt="{{ competition.name }}">
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="comp-card-body">
+                        <h3 class="comp-card-name">{{ competition.name }}</h3>
+                        <p class="comp-card-dates">
+                            {{ competition.start_date.strftime('%d.%m.%Y') if competition.start_date else '' }}
+                            {% if competition.end_date and competition.end_date != competition.start_date %}
+                                &ndash; {{ competition.end_date.strftime('%d.%m.%Y') }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% endmacro %}

@@ -1,8 +1,11 @@
 """Региональные федерации субъектов ЦФО."""
+from datetime import date
+
 from flask import Blueprint, abort, render_template, request, url_for
+from sqlalchemy import extract
 
 from models import (
-    Athlete, Club, Council, CouncilCategory, CouncilMember, CouncilPage, Document, DocumentCategory,
+    Athlete, Club, Competition, Council, CouncilCategory, CouncilMember, CouncilPage, Document, DocumentCategory,
     DocumentSection, LocalFederation, News, RegionalFederation, db,
 )
 
@@ -11,11 +14,14 @@ bp = Blueprint('regions', __name__)
 # «Функциональные» разделы бокового меню «О федерации» — со своими
 # реальными данными (в отличие от категорий документов ниже). goals —
 # свободный текст, RegionalFederation.goals_text (поле «Направления
-# деятельности» в админке); для leadership/calendar пока нет своей
-# модели данных — раздел открывается с заглушкой «материалы пока не
-# добавлены», как и на других страницах сайта, где источник данных ещё
-# не подключён; team — реальные данные из REGTEAM_RAFTING (см. section()
-# ниже), contacts — поля RegionalFederation.
+# деятельности» в админке); для leadership пока нет своей модели данных
+# — раздел открывается с заглушкой «материалы пока не добавлены», как и
+# на других страницах сайта, где источник данных ещё не подключён;
+# calendar — соревнования из COREZ (см. section() ниже), те же карточки,
+# что на странице Соревнования/Календарный план/Официальные,
+# отфильтрованные по Competition.subject_name; team — реальные данные
+# из REGTEAM_RAFTING (см. section() ниже), contacts — поля
+# RegionalFederation.
 #
 # 'clubs' сюда не входит: этот раздел убран из бокового меню «О
 # федерации» по просьбе федерации, но сама страница остаётся рабочей —
@@ -323,6 +329,24 @@ def section(region_id, section):
             LocalFederation.query.filter_by(region_id=region.id).order_by(LocalFederation.name).all()
         )
 
+    region_competitions = []
+    if section == 'calendar' and region.subject_name:
+        # Те же соревнования текущего года, что на странице Соревнования/
+        # Календарный план/Официальные (см. competitions.calendar()),
+        # отфильтрованные по субъекту РФ этой федерации — тот же приём
+        # сравнения без учёта регистра/пробелов, что для Athlete/Referee.territory
+        # в _team_roster()/_team_coaches().
+        subject_name = region.subject_name.strip().lower()
+        year = date.today().year
+        region_competitions = [
+            c for c in (
+                Competition.query.filter(extract('year', Competition.start_date) == year)
+                .order_by(Competition.start_date.asc())
+                .all()
+            )
+            if c.subject_name and c.subject_name.strip().lower() == subject_name
+        ]
+
     team_roster = []
     team_gender = None
     team_category = None
@@ -381,7 +405,7 @@ def section(region_id, section):
         team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(team_gender, []),
         team_coaches=team_coaches, region_local_federations=region_local_federations,
         council_categories=council_categories, active_council_category_id=active_council_category_id,
-        councils_flat_list=councils_flat_list,
+        councils_flat_list=councils_flat_list, region_competitions=region_competitions,
     )
 
 

@@ -156,6 +156,7 @@ def sync_competitions():
         competition.start_date = start_date
         competition.end_date = end_date
         competition.location = item.get('location')
+        competition.subject_name = item.get('subject_name')
         competition.status = item.get('status')
         competition.age_group = item.get('age_group')
         competition.boat_class = item.get('boat_class')

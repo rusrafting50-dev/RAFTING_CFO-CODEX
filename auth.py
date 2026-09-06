@@ -133,6 +133,7 @@ def ensure_schema():
     _ensure_column(inspector, 'competition', 'registration_number', 'VARCHAR(100)')
     _ensure_column(inspector, 'competition', 'logo_path', 'VARCHAR(500)')
     _ensure_column(inspector, 'competition', 'disciplines', 'VARCHAR(255)')
+    _ensure_column(inspector, 'competition', 'subject_name', 'VARCHAR(255)')
     _ensure_column(inspector, 'event', 'category', 'VARCHAR(100)')
     _ensure_column(inspector, 'event', 'program_hours', 'VARCHAR(20)')
     _ensure_column(inspector, 'event', 'qualification_exam', 'VARCHAR(10)')

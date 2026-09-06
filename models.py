@@ -82,6 +82,13 @@ class Competition(db.Model):
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
     location = db.Column(db.String(255))
+    # Субъект РФ (напр. "Тверская область") — отдельно от location
+    # (свободный адрес места проведения): используется, чтобы показать
+    # соревнование ещё и на календарном плане той региональной федерации,
+    # чей RegionalFederation.subject_name совпадает (см. routes/regions.py:
+    # section(), сравнение без учёта регистра — тот же приём, что для
+    # Athlete/Referee.territory).
+    subject_name = db.Column(db.String(255))
     status = db.Column(db.String(50))  # анонс / идёт / завершены
     source_id = db.Column(db.Integer)  # ID в базе COREZ
     # Из карточки соревнования COREZ — для отображения в том же виде на сайте.
