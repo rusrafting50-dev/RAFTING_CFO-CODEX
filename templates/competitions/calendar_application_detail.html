@@ -21,8 +21,16 @@
         <dl class="row mb-4">
             <dt class="col-sm-4">Наименование соревнований</dt><dd class="col-sm-8">{{ application.competition_name or '—' }}</dd>
             <dt class="col-sm-4">Статус соревнований</dt><dd class="col-sm-8">{{ application.status or '—' }}</dd>
-            <dt class="col-sm-4">Возрастная группа</dt><dd class="col-sm-8">{{ application.age_groups or '—' }}</dd>
-            <dt class="col-sm-4">Классы судов</dt><dd class="col-sm-8">{{ application.boat_classes or '—' }}</dd>
+            <dt class="col-sm-4">Виды программы</dt>
+            <dd class="col-sm-8">
+                {% if application.age_groups %}
+                    {% for age_group in application.age_groups.split(' / ') %}
+                        <div>{{ [age_group, application.boat_classes]|select|join(' ') }}</div>
+                    {% endfor %}
+                {% else %}
+                    —
+                {% endif %}
+            </dd>
             <dt class="col-sm-4">Сроки проведения</dt>
             <dd class="col-sm-8">
                 {{ application.start_date.strftime('%d.%m.%Y') if application.start_date else '—' }}
@@ -32,7 +40,7 @@
             </dd>
             <dt class="col-sm-4">Место проведения — субъект РФ</dt><dd class="col-sm-8">{{ application.location_subject or '—' }}</dd>
             <dt class="col-sm-4">Место проведения — район; город; объект спорта</dt><dd class="col-sm-8">{{ application.location_details or '—' }}</dd>
-            <dt class="col-sm-4">Организации, проводящие соревнования</dt><dd class="col-sm-8" style="white-space: pre-line;">{{ application.organizations or '—' }}</dd>
+            <dt class="col-sm-4">Проводящая организация</dt><dd class="col-sm-8" style="white-space: pre-line;">{{ application.organizations or '—' }}</dd>
             <dt class="col-sm-4">Программа соревнований</dt><dd class="col-sm-8" style="white-space: pre-line;">{{ application.program_schedule or '—' }}</dd>
         </dl>
 
