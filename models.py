@@ -186,6 +186,15 @@ class Event(db.Model):
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
     location = db.Column(db.String(255))
+    # Субъект РФ (напр. "Тверская область") — отдельно от location
+    # (свободный адрес места проведения): из блока «Положение о семинаре»
+    # в SPORTS_REFEREE (Seminar.polozhenie_federation_region, «Субъект
+    # Российской Федерации» федерации-организатора). Используется, чтобы
+    # показать мероприятие ещё и на странице «Мероприятия» той
+    # региональной федерации, чей RegionalFederation.subject_name
+    # совпадает (см. routes/regions.py: section(), сравнение без учёта
+    # регистра — тот же приём, что для Competition.subject_name).
+    subject_name = db.Column(db.String(255))
     status = db.Column(db.String(50))  # анонс / идёт / завершён
     # Срок подачи заявок — из блока «Положение о семинаре» в SPORTS_REFEREE
     # (Seminar.polozhenie_applications_deadline), не из start_date/end_date

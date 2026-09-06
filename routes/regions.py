@@ -6,7 +6,7 @@ from sqlalchemy import extract
 
 from models import (
     Athlete, Club, Competition, Council, CouncilCategory, CouncilMember, CouncilPage, Document, DocumentCategory,
-    DocumentSection, LocalFederation, News, Referee, RegionalFederation, db,
+    DocumentSection, Event, LocalFederation, News, Referee, RegionalFederation, db,
 )
 
 bp = Blueprint('regions', __name__)
@@ -24,18 +24,21 @@ bp = Blueprint('regions', __name__)
 # реальные данные из REGTEAM_RAFTING (см. section() ниже); referees —
 # реальные данные из SPORTS_REFEREE (та же таблица, что на общей
 # странице «Судьи», отфильтрованная по Referee.territory — см. section()
-# ниже); contacts — поля RegionalFederation.
+# ниже); events — мероприятия из SPORTS_REFEREE (см. section() ниже),
+# те же карточки, что на странице «Мероприятия», отфильтрованные по
+# Event.subject_name, тот же приём, что 'calendar'; contacts — поля
+# RegionalFederation.
 #
-# 'clubs' и 'calendar' сюда (FEDERATION_SIDEBAR_LAYOUT ниже) не входят —
-# в сайдбар «О федерации» не выводятся, но сами страницы остаются
-# рабочими: на 'clubs' по-прежнему ведёт пункт «Клубы» в шапке сайта и
-# подвале (base.html), на 'calendar' — пункт «Соревнования» в шапке;
-# 'calendar' к тому же заменён в сайдбаре на категорию документов
-# «Календарный план» (см. FEDERATION_SIDEBAR_LAYOUT/
-# auth.py: add_federation_calendar_document_category) — карточки живых
-# соревнований и загружаемый документ «Календарный план» это две разные
-# вещи. Раздел/маршрут поэтому не удаляется, а только перестаёт быть
-# пунктом этого меню.
+# 'clubs', 'calendar' и 'events' сюда (FEDERATION_SIDEBAR_LAYOUT ниже) не
+# входят — в сайдбар «О федерации» не выводятся, но сами страницы
+# остаются рабочими: на 'clubs' по-прежнему ведёт пункт «Клубы» в шапке
+# сайта и подвале (base.html), на 'calendar' и 'events' — пункты
+# «Соревнования»/«Мероприятия» в шапке; 'calendar' к тому же заменён в
+# сайдбаре на категорию документов «Календарный план» (см.
+# FEDERATION_SIDEBAR_LAYOUT/auth.py: add_federation_calendar_document_category)
+# — карточки живых соревнований и загружаемый документ «Календарный план»
+# это две разные вещи. Разделы/маршруты поэтому не удаляются, а только
+# перестают быть пунктами этого меню.
 FUNCTIONAL_SECTIONS = [
     ('goals', 'Направления деятельности'),
     ('leadership', 'Руководство'),
@@ -44,6 +47,7 @@ FUNCTIONAL_SECTIONS = [
     ('calendar', 'Календарный план'),
     ('team', 'Сборная команда'),
     ('referees', 'Спортивные судьи'),
+    ('events', 'Мероприятия'),
     ('contacts', 'Контакты'),
 ]
 FUNCTIONAL_SECTION_LABELS = dict(FUNCTIONAL_SECTIONS)
@@ -373,6 +377,22 @@ def section(region_id, section):
             key=lambda r: r.full_name,
         )
 
+    region_events = []
+    if section == 'events' and region.subject_name:
+        # Те же мероприятия текущего года, что на странице «Мероприятия»
+        # (см. routes/events.py: index()), отфильтрованные по субъекту РФ
+        # этой федерации — тот же приём, что region_competitions выше.
+        subject_name = region.subject_name.strip().lower()
+        year = date.today().year
+        region_events = [
+            e for e in (
+                Event.query.filter(extract('year', Event.start_date) == year)
+                .order_by(Event.start_date.asc())
+                .all()
+            )
+            if e.subject_name and e.subject_name.strip().lower() == subject_name
+        ]
+
     team_roster = []
     team_gender = None
     team_category = None
@@ -432,7 +452,7 @@ def section(region_id, section):
         team_coaches=team_coaches, region_local_federations=region_local_federations,
         council_categories=council_categories, active_council_category_id=active_council_category_id,
         councils_flat_list=councils_flat_list, region_competitions=region_competitions,
-        region_referees=region_referees,
+        region_referees=region_referees, region_events=region_events,
     )
 
 

@@ -2,6 +2,7 @@
 {% from "clubs/_cards.html" import club_cards, club_cards_script %}
 {% from "local_federations/_cards.html" import local_federation_cards %}
 {% from "competitions/_cards.html" import comp_cards %}
+{% from "events/_cards.html" import event_cards %}
 {% from "_referees_table.html" import referees_table %}
 {% from "regions/_athlete_photo.html" import athlete_photo %}
 
@@ -97,6 +98,13 @@
                         {{ comp_cards(region_competitions) }}
                     {% else %}
                         <p class="text-muted mb-0">Соревнования пока не запланированы.</p>
+                    {% endif %}
+                {% elif section == 'events' %}
+                    <h2 class="h5 mb-3">{{ section_label }}</h2>
+                    {% if region_events %}
+                        {{ event_cards(region_events) }}
+                    {% else %}
+                        <p class="text-muted mb-0">На {{ now.year }} год мероприятия пока не запланированы.</p>
                     {% endif %}
                 {% elif section == 'referees' %}
                     <h2 class="h5 mb-3">{{ section_label }}</h2>

@@ -139,6 +139,7 @@ def ensure_schema():
     _ensure_column(inspector, 'event', 'qualification_exam', 'VARCHAR(10)')
     _ensure_column(inspector, 'event', 'leader_full_name', 'VARCHAR(255)')
     _ensure_column(inspector, 'event', 'applications_deadline', 'DATE')
+    _ensure_column(inspector, 'event', 'subject_name', 'VARCHAR(255)')
     _ensure_column(inspector, 'seminar_application_submission', 'origin', "VARCHAR(20) NOT NULL DEFAULT 'site'")
     _ensure_column(inspector, 'seminar_application_submission', 'updated_at', 'DATETIME')
     _ensure_nullable(inspector, 'seminar_application_submission', 'submitted_by_id')
