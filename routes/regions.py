@@ -151,6 +151,28 @@ def _region_core(text):
     return _REGION_SUFFIX_RE.sub('', text or '').strip().lower()
 
 
+def find_region_for_subject(text):
+    """Ищет региональную федерацию, чей subject_name соответствует
+    переданному тексту — Competition.subject_name (чистое поле) или
+    Event.location (свободный текст места проведения), с нормализацией
+    через _region_core() в обе стороны. Используется, чтобы показать
+    шапку/футер той федерации на странице конкретного соревнования или
+    мероприятия уровня 'регион'/'отделение' (routes/competitions.py,
+    routes/events.py: detail()) — если оно не относится ко всему ЦФО
+    целиком (Competition.level == 'цфо'), то место его проведения
+    однозначно принадлежит какой-то одной региональной федерации (в том
+    числе, если соревнование клубное — сам клуб всегда в одном регионе,
+    отдельно искать конкретный клуб не нужно)."""
+    core = _region_core(text)
+    if not core:
+        return None
+    for region in RegionalFederation.query.filter(RegionalFederation.subject_name.isnot(None)).all():
+        region_core = _region_core(region.subject_name)
+        if region_core and region_core in core:
+            return region
+    return None
+
+
 def _clubs_by_name():
     """Клубы по названию в нижнем регистре — Athlete.organization
     сопоставляется с Club.name строкой, а не внешним ключом (REGTEAM_RAFTING

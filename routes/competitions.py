@@ -12,6 +12,7 @@ from models import (
     CompetitionDocument, Document, DocumentCategory, DocumentSection, EquipmentItem,
     EquipmentPageText, RegionalFederation, db,
 )
+from routes.regions import find_region_for_subject
 from utils import safe_upload_filename
 
 bp = Blueprint('competitions', __name__)
@@ -431,6 +432,16 @@ def detail(competition_id):
         for doc_type, label in COMPETITION_DOCUMENTS_TYPES
     ]
 
+    # Шапка/футер той региональной федерации, где проходит соревнование
+    # (или к которой относится клуб — сам клуб всегда в одном регионе,
+    # поэтому этого же сопоставления по subject_name достаточно), а не
+    # ЦФО по умолчанию — только если оно не уровня ЦФО целиком (см.
+    # routes/regions.py: find_region_for_subject()).
+    region = (
+        find_region_for_subject(competition.subject_name)
+        if competition.level in ('регион', 'отделение') else None
+    )
+
     return render_template(
         'competitions/detail.html',
         competition=competition,
@@ -440,6 +451,7 @@ def detail(competition_id):
         competition_documents_docs=competition_documents_docs,
         applications=applications, total_athletes=total_athletes,
         can_submit_application=can_submit_application, application_logos=application_logos,
+        region=region,
     )
 
 

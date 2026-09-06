@@ -10,6 +10,7 @@ from models import (
     Document, DocumentCategory, DocumentSection, Event, EventDocument, EventLecturer, RegionalFederation,
     SeminarApplicationSubmission, SeminarApplicationSubmissionParticipant, db,
 )
+from routes.regions import find_region_for_subject
 
 bp = Blueprint('events', __name__)
 
@@ -202,12 +203,20 @@ def detail(event_id):
         protocol_document.protocol_rows = rows
         protocol_document.protocol_columns = columns
 
+    # Шапка/футер той региональной федерации, где проходит мероприятие
+    # (или к которой относится клуб — сам клуб всегда в одном регионе,
+    # поэтому этого же сопоставления по месту проведения достаточно) —
+    # у Event, в отличие от Competition, нет уровня ЦФО/регион/отделение,
+    # поэтому сопоставление пробуется всегда (см. routes/regions.py:
+    # find_region_for_subject()).
+    region = find_region_for_subject(event.location)
+
     return render_template(
         'events/detail.html', event=event,
         applications=applications, total_participants=total_participants,
         can_submit_application=can_submit_application, application_logos=application_logos,
         polozhenie_document=polozhenie_document, lecturers=lecturers,
-        protocol_document=protocol_document,
+        protocol_document=protocol_document, region=region,
     )
 
 
