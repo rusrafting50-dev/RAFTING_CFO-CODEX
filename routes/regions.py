@@ -26,7 +26,9 @@ bp = Blueprint('regions', __name__)
 # странице «Судьи», отфильтрованная по Referee.territory — см. section()
 # ниже); events — мероприятия из SPORTS_REFEREE (см. section() ниже),
 # те же карточки, что на странице «Мероприятия», отфильтрованные по
-# Event.subject_name, тот же приём, что 'calendar'; news — новости этой
+# наличию субъекта РФ в свободном тексте Event.location (у Event, в
+# отличие от Competition, нет отдельного чистого поля с субъектом места
+# проведения); news — новости этой
 # федерации (см. section() ниже) — в отличие от Competition/Event, у
 # News нет внешнего источника с субъектом РФ, поэтому связь прямая,
 # News.region_id, задаётся вручную в админке (admin/news_form.html);
@@ -389,8 +391,16 @@ def section(region_id, section):
         if region.subject_name:
             # Мероприятия текущего и следующего года (прошедшие, идущие и
             # предстоящие — без фильтра по статусу), отфильтрованные по
-            # субъекту РФ этой федерации — тот же приём, что
-            # region_competitions выше. Следующий год — в отличие от
+            # субъекту РФ этой федерации. В отличие от Competition (COREZ
+            # присылает отдельное чистое поле субъект_рф_название), у
+            # Event нет надёжного отдельного поля с субъектом места
+            # проведения — Seminar.polozhenie_federation_region относится
+            # к федерации-организатору семинара, а не месту его
+            # проведения, и часто не заполнен вовсе. Поэтому субъект ищем
+            # прямо в свободном тексте Event.location (то же поле, что
+            # показано на странице мероприятия как «Место проведения») —
+            # тот же приём, что для Competition.location, если бы у него
+            # не было своего чистого поля. Следующий год — в отличие от
             # главной страницы «Мероприятия» (routes/events.py: index(),
             # только текущий год) — чтобы уже анонсированные мероприятия
             # начала следующего года не проваливались в архив раньше
@@ -402,7 +412,7 @@ def section(region_id, section):
                     .order_by(Event.start_date.asc())
                     .all()
                 )
-                if e.subject_name and e.subject_name.strip().lower() == subject_name
+                if e.location and subject_name in e.location.strip().lower()
             ]
 
     region_news_cards = []
@@ -490,8 +500,10 @@ def section(region_id, section):
 def events_archive(region_id):
     """Архив мероприятий федерации — тот же приём, что events.archive()
     на главном сайте (routes/events.py), но список мероприятий
-    отфильтрован по субъекту РФ этой федерации (Event.subject_name), как
-    и на её собственной странице «Мероприятия» (section() выше)."""
+    отфильтрован по субъекту РФ этой федерации — поиск в свободном тексте
+    Event.location, как и на её собственной странице «Мероприятия»
+    (section() выше, там подробный комментарий, почему не отдельное
+    поле)."""
     region = RegionalFederation.query.get_or_404(region_id)
     year = request.args.get('year', type=int)
 
@@ -506,12 +518,12 @@ def events_archive(region_id):
             query = query.filter(Event.start_date < date.today())
         region_events = [
             e for e in query.order_by(Event.start_date.desc()).all()
-            if e.subject_name and e.subject_name.strip().lower() == subject_name
+            if e.location and subject_name in e.location.strip().lower()
         ]
         years = sorted(
             {
                 e.start_date.year for e in Event.query.all()
-                if e.start_date and e.subject_name and e.subject_name.strip().lower() == subject_name
+                if e.start_date and e.location and subject_name in e.location.strip().lower()
                 and e.start_date < date.today()
             },
             reverse=True,

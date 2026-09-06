@@ -358,7 +358,6 @@ def sync_events():
         event.end_date = end_date
         event.applications_deadline = applications_deadline
         event.location = item.get('location')
-        event.subject_name = item.get('subject_name')
         event.status = item.get('status')
         event.category = item.get('category')
         event.program_hours = item.get('program_hours')
