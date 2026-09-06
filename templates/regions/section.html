@@ -108,7 +108,13 @@
                             <p class="text-muted mb-0">Материалы пока не добавлены.</p>
                         {% endif %}
                     </div>
-                    {% if council_categories %}
+                    {% if councils_flat_list is not none %}
+                        <div class="council-button-list">
+                            {% for council in councils_flat_list %}
+                                <a class="council-button" href="{{ url_for('regions.council_detail', region_id=region.id, council_id=council.id) }}">{{ council.name }}</a>
+                            {% endfor %}
+                        </div>
+                    {% elif council_categories %}
                         <ul class="news-submenu mb-4">
                             {% for category in council_categories %}
                                 <li role="presentation">

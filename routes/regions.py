@@ -356,11 +356,22 @@ def section(region_id, section):
 
     council_categories = []
     active_council_category_id = None
+    councils_flat_list = None
     if section == 'councils':
         council_categories = CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all()
-        active_council_category_id = request.args.get('category', type=int)
-        if active_council_category_id not in {c.id for c in council_categories}:
-            active_council_category_id = council_categories[0].id if council_categories else None
+        # Если советы есть только в одной категории — вкладки категорий
+        # (Иные/Постоянные/...) не показываются, кнопки советов этой
+        # единственной непустой категории выводятся сразу, без выбора
+        # категории; общее для всех региональных федераций правило, так
+        # как категории/советы — общий для всех список (см. models.py:
+        # CouncilCategory/Council), а не свой у каждой федерации.
+        categories_with_councils = [c for c in council_categories if c.councils]
+        if len(categories_with_councils) == 1:
+            councils_flat_list = categories_with_councils[0].councils
+        else:
+            active_council_category_id = request.args.get('category', type=int)
+            if active_council_category_id not in {c.id for c in council_categories}:
+                active_council_category_id = council_categories[0].id if council_categories else None
 
     if section in TEAM_MENU_SECTION_KEYS:
         sidebar_items = _team_sidebar_items(region, active_key=section, team_gender=team_gender, team_category=team_category)
@@ -374,6 +385,7 @@ def section(region_id, section):
         team_genders=TEAM_GENDERS, team_categories=TEAM_CATEGORIES_BY_GENDER.get(team_gender, []),
         team_coaches=team_coaches, region_local_federations=region_local_federations,
         council_categories=council_categories, active_council_category_id=active_council_category_id,
+        councils_flat_list=councils_flat_list,
     )
 
 
@@ -384,9 +396,25 @@ def _councils_sidebar_items(region, active_council_id=None):
     раскрывающимся списком советов внутри (kind='category', как
     категории документов в _sidebar_items()), без «Федерация»/
     «Руководство»/... Название категории само по себе ведёт на список
-    «Коллегии и советы» этой федерации, отфильтрованный по ней."""
+    «Коллегии и советы» этой федерации, отфильтрованный по ней.
+
+    Если советы есть только в одной категории — та же логика, что в
+    section() для основного списка «Коллегии и советы»: вместо одной
+    категории с раскрывающимся списком выводятся сразу сами советы
+    (kind='link'), без категории-обёртки — чтобы меню на странице
+    отдельного совета совпадало со списком, с которого на неё попали."""
+    categories = CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all()
+    categories_with_councils = [c for c in categories if c.councils]
+    if len(categories_with_councils) == 1:
+        return [{
+            'kind': 'link',
+            'label': council.name,
+            'url': url_for('regions.council_detail', region_id=region.id, council_id=council.id),
+            'active': council.id == active_council_id,
+        } for council in categories_with_councils[0].councils]
+
     items = []
-    for category in CouncilCategory.query.order_by(CouncilCategory.sort_order, CouncilCategory.name).all():
+    for category in categories:
         sections = [{
             'label': council.name,
             'url': url_for('regions.council_detail', region_id=region.id, council_id=council.id),
