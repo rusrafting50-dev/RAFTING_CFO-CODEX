@@ -92,7 +92,7 @@
                                         <td>
                                             {% if item.age_groups %}
                                                 {% for age_group in item.age_groups.split(' / ') %}
-                                                    <div>{{ [age_group, item.boat_classes]|select|join(' ') }}</div>
+                                                    <div style="white-space: nowrap;">{{ [age_group, item.boat_classes]|select|join(' ') }}</div>
                                                 {% endfor %}
                                             {% endif %}
                                         </td>

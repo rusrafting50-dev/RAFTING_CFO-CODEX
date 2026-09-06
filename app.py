@@ -103,19 +103,19 @@ def format_ru_date_range(start, end):
 def format_numeric_date_range(start, end):
     """Диапазон дат цифрами для таблицы заявок на включение в ЕКП
     (competitions/calendar.html, столбец «Сроки проведения»): "23 -
-    24.5.2026" (тот же месяц и год — начало без месяца/года), "23.5 -
-    24.6.2026" (тот же год, месяц разный — начало с месяцем без года),
-    иначе — обе даты полностью ("30.12.2026 - 2.1.2027"). День всегда
-    двумя цифрами, месяц — без ведущего нуля."""
+    24.05.2026" (тот же месяц и год — начало без месяца/года), "23.05 -
+    24.06.2026" (тот же год, месяц разный — начало с месяцем без года),
+    иначе — обе даты полностью ("30.12.2026 - 02.01.2027"). День и
+    месяц всегда двумя цифрами."""
     if not start:
         return ''
     if not end or end == start:
-        return f'{start.day:02d}.{start.month}.{start.year}'
+        return f'{start.day:02d}.{start.month:02d}.{start.year}'
     if start.year == end.year:
         if start.month == end.month:
-            return f'{start.day:02d} - {end.day:02d}.{end.month}.{end.year}'
-        return f'{start.day:02d}.{start.month} - {end.day:02d}.{end.month}.{end.year}'
-    return f'{start.day:02d}.{start.month}.{start.year} - {end.day:02d}.{end.month}.{end.year}'
+            return f'{start.day:02d} - {end.day:02d}.{end.month:02d}.{end.year}'
+        return f'{start.day:02d}.{start.month:02d} - {end.day:02d}.{end.month:02d}.{end.year}'
+    return f'{start.day:02d}.{start.month:02d}.{start.year} - {end.day:02d}.{end.month:02d}.{end.year}'
 
 
 def event_status_label(value):
