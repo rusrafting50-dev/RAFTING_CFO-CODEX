@@ -211,7 +211,7 @@
                             <div class="row row-cols-1 row-cols-sm-2 g-4">
                                 {% for item in latest_news %}
                                     <div class="col">
-                                        <a href="{{ url_for('main.news') }}" class="news-card-link">
+                                        <a href="{{ url_for('main.news_detail', news_id=item.id) }}" class="news-card-link">
                                             <div class="card h-100 news-card">
                                                 <div class="card-img-placeholder"
                                                      {% if item.image_path %}style="background-image: url('{{ url_for('static', filename=item.image_path) }}')"{% endif %}></div>
