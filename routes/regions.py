@@ -51,25 +51,28 @@ TEAM_MENU_STUB_LABELS = dict(TEAM_MENU_STUB_SECTIONS)
 SECTION_KEYS = {key for key, _ in FUNCTIONAL_SECTIONS} | {'clubs'} | set(TEAM_MENU_STUB_LABELS)
 
 # Расположение пунктов бокового меню «О федерации» между «Федерация»
-# вверху и «Контакты» внизу (последней) — чередование категорий
-# документов страницы федерации (scope='федерация', сколько их сейчас
-# есть — см. auth.py: FEDERATION_DOCUMENT_TAXONOMY) с функциональными разделами из
-# FUNCTIONAL_SECTIONS в заданных федерацией местах. Сама категория,
-# оказавшаяся в очередном слоте 'category', и порядок категорий между
-# собой — определяются DocumentCategory.sort_order (задаётся в панели
-# управления кнопками ▲/▼, admin/document_taxonomy.html), а не этим
-# списком — здесь зафиксированы только места функциональных разделов
-# относительно категорий (четвёртая категория в списке сейчас —
-# «Положение о межмуниципальных...», её слот идёт последним перед
-# «Сборная команда»). 'goals' — первым пунктом, до всех категорий
-# документов, как раньше был «Цели и задачи».
+# вверху и «Контакты» внизу (последней). Все категории документов
+# страницы федерации (scope='федерация', сколько их сейчас есть — см.
+# auth.py: FEDERATION_DOCUMENT_TAXONOMY) выводятся вместе, одним блоком,
+# в единственном слоте 'categories' — сразу после «Календарный план»,
+# перед «Сборная команда»; порядок категорий между собой определяется
+# DocumentCategory.sort_order (задаётся в панели управления кнопками
+# ▲/▼, admin/document_taxonomy.html). Раньше слотов 'category' было
+# несколько (под каждую из тогдашних четырёх категорий отдельно) — при
+# удалении части категорий через панель управления (например, остаётся
+# только «Положение о межмуниципальных...») единственная оставшаяся
+# попадала в ПЕРВЫЙ слот по порядку, а не в тот, что реально нужен, и
+# сама сдвинуть её было нельзя (сортировать ▲/▼ можно только относительно
+# других категорий, а она осталась одна) — единый слот исключает эту
+# путаницу при любом числе категорий: 0, 1 или несколько.
 FEDERATION_SIDEBAR_LAYOUT = [
     ('functional', 'goals'),
-    'category', ('functional', 'leadership'),
+    ('functional', 'leadership'),
     ('functional', 'local_federations'),
     ('functional', 'councils'),
-    'category', 'category', ('functional', 'calendar'),
-    'category', ('functional', 'team'),
+    ('functional', 'calendar'),
+    'categories',
+    ('functional', 'team'),
 ]
 
 # Раздел «Сборная команда»: верхняя строка — пол (мужские/женские),
@@ -243,7 +246,7 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
     раскрывашки, как и функциональные разделы и «Контакты» (kind='link').
     Текущий пункт выводится не строкой списка, а плашкой-заголовком
     (см. regions/_sidebar.html)."""
-    ordered_categories = iter(
+    categories = (
         DocumentCategory.query.filter_by(scope='федерация')
         .order_by(DocumentCategory.sort_order, DocumentCategory.name)
         .all()
@@ -258,9 +261,8 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
     }]
 
     for slot in FEDERATION_SIDEBAR_LAYOUT:
-        if slot == 'category':
-            category = next(ordered_categories, None)
-            if category:
+        if slot == 'categories':
+            for category in categories:
                 items.append(_category_sidebar_item(region, category, active_category, active_doc_section))
         else:
             _, key = slot
@@ -277,12 +279,6 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
                     'url': url_for('regions.documents', region_id=region.id),
                     'active': active_section == 'all_documents',
                 })
-
-    # Категории сверх заранее расставленных слотов (например, новая
-    # категория, добавленная в панели управления) — довешиваются в конец,
-    # перед функциональными разделами, а не пропадают из меню молча.
-    for category in ordered_categories:
-        items.append(_category_sidebar_item(region, category, active_category, active_doc_section))
 
     items.append({
         'kind': 'link',
