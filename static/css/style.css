@@ -3126,15 +3126,6 @@ table.table-zebra tbody tr:nth-child(even) {
     gap: 10px;
 }
 
-/* Модификатор — та же кнопка в один горизонтальный ряд вместо столбца
-   (страница мероприятия, events/detail.html: «Положение о мероприятии»/
-   «Лекторский состав»/... — переключатели вкладок внутри вкладки «О
-   мероприятии», см. .council-button.active ниже). */
-.council-button-list-row {
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-
 .council-button {
     display: flex;
     flex-direction: column;

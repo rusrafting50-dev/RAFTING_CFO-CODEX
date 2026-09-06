@@ -60,20 +60,9 @@
                             {% endif %}
                         </div>
 
-                        <div class="council-button-list council-button-list-row mb-4" role="tablist">
-                            <button class="council-button council-button-white active" id="info-polozhenie-btn"
-                                    data-bs-toggle="tab" data-bs-target="#info-polozhenie" type="button" role="tab">Положение о мероприятии</button>
-                            <button class="council-button council-button-white" id="info-lecturers-btn"
-                                    data-bs-toggle="tab" data-bs-target="#info-lecturers" type="button" role="tab">Лекторский состав</button>
-                            {% if event.qualification_exam == 'Да' %}
-                                <button class="council-button council-button-white" id="info-qualification-btn"
-                                        data-bs-toggle="tab" data-bs-target="#info-qualification" type="button" role="tab">Квалификационный зачёт</button>
-                            {% endif %}
-                            <button class="council-button council-button-white" id="info-protocol-btn"
-                                    data-bs-toggle="tab" data-bs-target="#info-protocol" type="button" role="tab">Протокол семинара</button>
-                        </div>
                         <div class="tab-content" id="infoTabsContent">
                             <div class="tab-pane fade show active" id="info-polozhenie" role="tabpanel">
+                                <h2 class="h5 mb-3">Положение о мероприятии</h2>
                                 {% if polozhenie_document and polozhenie_document.file_path %}
                                     <p class="mb-0">
                                         <a href="{{ url_for('static', filename=polozhenie_document.file_path) }}" download>{{ polozhenie_document.title }}</a>
@@ -83,6 +72,7 @@
                                 {% endif %}
                             </div>
                             <div class="tab-pane fade" id="info-lecturers" role="tabpanel">
+                                <h2 class="h5 mb-3">Лекторский состав</h2>
                                 {% if lecturers %}
                                     <div class="table-responsive">
                                         <table class="table table-zebra align-middle">
@@ -110,10 +100,12 @@
                             </div>
                             {% if event.qualification_exam == 'Да' %}
                                 <div class="tab-pane fade" id="info-qualification" role="tabpanel">
+                                    <h2 class="h5 mb-3">Квалификационный зачёт</h2>
                                     <p class="text-muted mb-0">Материалы пока не добавлены.</p>
                                 </div>
                             {% endif %}
                             <div class="tab-pane fade" id="info-protocol" role="tabpanel">
+                                <h2 class="h5 mb-3">Протокол семинара</h2>
                                 {% if protocol_document and protocol_document.protocol_rows %}
                                     <div class="table-responsive">
                                         <table class="table table-zebra align-middle">
@@ -141,10 +133,22 @@
                     </div>
                     <div class="col-lg-3">
                         {% if can_submit_application %}
-                            <a href="{{ url_for('events.application_new', event_id=event.id) }}" class="btn btn-primary w-100">Подать заявку</a>
+                            <a href="{{ url_for('events.application_new', event_id=event.id) }}" class="btn btn-primary w-100 mb-3">Подать заявку</a>
                         {% elif not current_user.is_authenticated %}
-                            <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-outline-secondary w-100">Войти, чтобы подать заявку</a>
+                            <a href="{{ url_for('admin.login', next=request.path) }}" class="btn btn-outline-secondary w-100 mb-3">Войти, чтобы подать заявку</a>
                         {% endif %}
+                        <div class="council-button-list" role="tablist">
+                            <button class="council-button council-button-white active" id="info-polozhenie-btn"
+                                    data-bs-toggle="tab" data-bs-target="#info-polozhenie" type="button" role="tab">Положение о мероприятии</button>
+                            <button class="council-button council-button-white" id="info-lecturers-btn"
+                                    data-bs-toggle="tab" data-bs-target="#info-lecturers" type="button" role="tab">Лекторский состав</button>
+                            {% if event.qualification_exam == 'Да' %}
+                                <button class="council-button council-button-white" id="info-qualification-btn"
+                                        data-bs-toggle="tab" data-bs-target="#info-qualification" type="button" role="tab">Квалификационный зачёт</button>
+                            {% endif %}
+                            <button class="council-button council-button-white" id="info-protocol-btn"
+                                    data-bs-toggle="tab" data-bs-target="#info-protocol" type="button" role="tab">Протокол семинара</button>
+                        </div>
                     </div>
                 </div>
             </div>
