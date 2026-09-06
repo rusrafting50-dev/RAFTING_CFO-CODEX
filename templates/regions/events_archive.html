@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "events/_cards.html" import event_cards %}
+
+{% block title %}Архив мероприятий — {{ region.name }} — Федерация рафтинга ЦФО{% endblock %}
+{% block description %}Архив мероприятий: {{ region.name }}{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <div class="row g-4">
+            <div class="col-lg-9">
+                <h2 class="h5 mb-3">Архив мероприятий</h2>
+
+                {% if years %}
+                    <div class="mb-4 d-flex flex-wrap gap-2">
+                        <a class="btn btn-sm {{ 'btn-primary' if not selected_year else 'btn-outline-primary' }}"
+                           href="{{ url_for('regions.events_archive', region_id=region.id) }}">Все годы</a>
+                        {% for y in years %}
+                            <a class="btn btn-sm {{ 'btn-primary' if selected_year == y else 'btn-outline-primary' }}"
+                               href="{{ url_for('regions.events_archive', region_id=region.id, year=y) }}">{{ y }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if events %}
+                    {{ event_cards(events) }}
+                {% else %}
+                    <p class="text-muted mb-0">Мероприятий не найдено.</p>
+                {% endif %}
+            </div>
+            <div class="col-lg-3">
+                {% include "regions/_sidebar.html" with context %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

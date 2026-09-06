@@ -382,20 +382,28 @@ def section(region_id, section):
         )
 
     region_events = []
-    if section == 'events' and region.subject_name:
-        # Те же мероприятия текущего года, что на странице «Мероприятия»
-        # (см. routes/events.py: index()), отфильтрованные по субъекту РФ
-        # этой федерации — тот же приём, что region_competitions выше.
-        subject_name = region.subject_name.strip().lower()
+    events_archive_years = []
+    if section == 'events':
         year = date.today().year
-        region_events = [
-            e for e in (
-                Event.query.filter(extract('year', Event.start_date) == year)
-                .order_by(Event.start_date.asc())
-                .all()
-            )
-            if e.subject_name and e.subject_name.strip().lower() == subject_name
-        ]
+        events_archive_years = [year - 1, year - 2, year - 3]
+        if region.subject_name:
+            # Мероприятия текущего и следующего года (прошедшие, идущие и
+            # предстоящие — без фильтра по статусу), отфильтрованные по
+            # субъекту РФ этой федерации — тот же приём, что
+            # region_competitions выше. Следующий год — в отличие от
+            # главной страницы «Мероприятия» (routes/events.py: index(),
+            # только текущий год) — чтобы уже анонсированные мероприятия
+            # начала следующего года не проваливались в архив раньше
+            # времени.
+            subject_name = region.subject_name.strip().lower()
+            region_events = [
+                e for e in (
+                    Event.query.filter(extract('year', Event.start_date).in_([year, year + 1]))
+                    .order_by(Event.start_date.asc())
+                    .all()
+                )
+                if e.subject_name and e.subject_name.strip().lower() == subject_name
+            ]
 
     region_news_cards = []
     region_news_sidebar = []
@@ -474,6 +482,48 @@ def section(region_id, section):
         councils_flat_list=councils_flat_list, region_competitions=region_competitions,
         region_referees=region_referees, region_events=region_events,
         region_news_cards=region_news_cards, region_news_sidebar=region_news_sidebar,
+        events_archive_years=events_archive_years,
+    )
+
+
+@bp.route('/<int:region_id>/events/archive')
+def events_archive(region_id):
+    """Архив мероприятий федерации — тот же приём, что events.archive()
+    на главном сайте (routes/events.py), но список мероприятий
+    отфильтрован по субъекту РФ этой федерации (Event.subject_name), как
+    и на её собственной странице «Мероприятия» (section() выше)."""
+    region = RegionalFederation.query.get_or_404(region_id)
+    year = request.args.get('year', type=int)
+
+    region_events = []
+    years = []
+    if region.subject_name:
+        subject_name = region.subject_name.strip().lower()
+        query = Event.query
+        if year:
+            query = query.filter(extract('year', Event.start_date) == year)
+        else:
+            query = query.filter(Event.start_date < date.today())
+        region_events = [
+            e for e in query.order_by(Event.start_date.desc()).all()
+            if e.subject_name and e.subject_name.strip().lower() == subject_name
+        ]
+        years = sorted(
+            {
+                e.start_date.year for e in Event.query.all()
+                if e.start_date and e.subject_name and e.subject_name.strip().lower() == subject_name
+                and e.start_date < date.today()
+            },
+            reverse=True,
+        )
+
+    return render_template(
+        'regions/events_archive.html', region=region, events=region_events,
+        years=years, selected_year=year,
+        # active_section='events' — тот же приём, что section='events': эта
+        # ссылка не входит в FEDERATION_SIDEBAR_LAYOUT, поэтому ни один
+        # пункт меню не подсвечивается (а не 'Федерация' по умолчанию).
+        sidebar_items=_sidebar_items(region, active_section='events'),
     )
 
 

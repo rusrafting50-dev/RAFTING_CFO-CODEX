@@ -104,8 +104,15 @@
                     {% if region_events %}
                         {{ event_cards(region_events) }}
                     {% else %}
-                        <p class="text-muted mb-0">На {{ now.year }} год мероприятия пока не запланированы.</p>
+                        <p class="text-muted mb-0">Мероприятия пока не запланированы.</p>
                     {% endif %}
+
+                    <h2 class="h5 mt-5 mb-3">Архив</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for y in events_archive_years %}
+                            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('regions.events_archive', region_id=region.id, year=y) }}">{{ y }}</a>
+                        {% endfor %}
+                    </div>
                 {% elif section == 'news' %}
                     <h2 class="h5 mb-3">{{ section_label }}</h2>
                     {% if region_news_cards %}

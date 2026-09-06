@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "events/_cards.html" import event_cards %}
 
 {% block title %}Архив мероприятий — Федерация рафтинга ЦФО{% endblock %}
 {% block description %}Архив мероприятий по годам{% endblock %}
@@ -19,35 +20,7 @@
         {% endif %}
 
         {% if events %}
-            <div class="table-responsive">
-                <table class="table table-zebra align-middle">
-                    <thead>
-                        <tr class="site-table-header">
-                            <th>Даты</th>
-                            <th>Наименование</th>
-                            <th>Тип</th>
-                            <th>Место проведения</th>
-                            <th>Статус</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for event in events %}
-                            <tr>
-                                <td>
-                                    {{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '' }}
-                                    {% if event.end_date and event.end_date != event.start_date %}
-                                        &ndash; {{ event.end_date.strftime('%d.%m.%Y') }}
-                                    {% endif %}
-                                </td>
-                                <td><a href="{{ url_for('events.detail', event_id=event.id) }}">{{ event.name }}</a></td>
-                                <td>{{ event.event_type }}</td>
-                                <td>{{ event.location }}</td>
-                                <td>{{ event.status|event_status_label(event.applications_deadline) }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            {{ event_cards(events) }}
         {% else %}
             <p class="text-muted">Мероприятий не найдено.</p>
         {% endif %}
