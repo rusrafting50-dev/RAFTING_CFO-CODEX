@@ -380,8 +380,16 @@ FEDERATION_DOCUMENT_TAXONOMY = [
         'Коллегия судей', 'Тренерский совет', 'Совет клубов',
     ]),
     ('Лицензирование и сертификация', []),
-    ('Положение о межмуниципальных и региональных спортивных соревнованиях по виду спорта «рафтинг»', []),
+    ('Положение о межмуниципальных и региональных официальных спортивных соревнованиях', []),
 ]
+
+# Прежнее название последней категории — нужно только
+# rename_federation_regulations_category(), чтобы разово переименовать
+# уже существующую категорию (и документы под ней) на уже работающих
+# сайтах, а не только в новых, которые ещё ни разу не сидировались.
+_OLD_FEDERATION_REGULATIONS_NAME = (
+    'Положение о межмуниципальных и региональных спортивных соревнованиях по виду спорта «рафтинг»'
+)
 
 
 def seed_federation_document_taxonomy():
@@ -398,6 +406,30 @@ def seed_federation_document_taxonomy():
             for section_order, section_name in enumerate(section_names):
                 db.session.add(DocumentSection(category_id=category.id, name=section_name, sort_order=section_order))
         db.session.commit()
+
+
+def rename_federation_regulations_category():
+    """Разовое переименование категории «Положение о межмуниципальных и
+    региональных спортивных соревнованиях по виду спорта «рафтинг»»
+    (scope='федерация') в короткое «Положение о межмуниципальных и
+    региональных официальных спортивных соревнованиях» — тот же приём,
+    что rename_competition_regulations_category(). Переносит и уже
+    загруженные документы (Document.doc_category хранит название
+    категории строкой, а не ссылкой — при переименовании категории он
+    сам не меняется). Не трогает ничего, если категория уже
+    переименована (обычный случай при повторных запусках) или названа
+    по-другому вручную."""
+    category = DocumentCategory.query.filter_by(
+        scope='федерация', name=_OLD_FEDERATION_REGULATIONS_NAME,
+    ).first()
+    if not category:
+        return
+    new_name = 'Положение о межмуниципальных и региональных официальных спортивных соревнованиях'
+    if DocumentCategory.query.filter_by(scope='федерация', name=new_name).first():
+        return
+    Document.query.filter_by(doc_category=_OLD_FEDERATION_REGULATIONS_NAME).update({'doc_category': new_name})
+    category.name = new_name
+    db.session.commit()
 
 
 def restore_federation_goals_section():

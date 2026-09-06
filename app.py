@@ -11,7 +11,8 @@ from auth import (
     create_default_admin, ensure_competition_document_taxonomy, ensure_schema,
     fix_legacy_document_taxonomy_order, login_manager,
     remove_local_branches_document_section, rename_competition_regulations_category,
-    rename_seminar_news_category, restore_federation_goals_section,
+    rename_federation_regulations_category, rename_seminar_news_category,
+    restore_federation_goals_section,
     seed_equipment_document_taxonomy, seed_event_document_taxonomy,
     seed_federation_document_taxonomy, seed_news_taxonomy,
 )
@@ -372,6 +373,7 @@ def create_app():
         seed_event_document_taxonomy()
         seed_equipment_document_taxonomy()
         seed_federation_document_taxonomy()
+        rename_federation_regulations_category()
         restore_federation_goals_section()
         remove_local_branches_document_section()
         fix_legacy_document_taxonomy_order()

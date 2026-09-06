@@ -51,9 +51,9 @@ TEAM_MENU_STUB_LABELS = dict(TEAM_MENU_STUB_SECTIONS)
 SECTION_KEYS = {key for key, _ in FUNCTIONAL_SECTIONS} | {'clubs'} | set(TEAM_MENU_STUB_LABELS)
 
 # Расположение пунктов бокового меню «О федерации» между «Федерация»
-# вверху и «Контакты»/«Все» внизу — чередование категорий документов
-# страницы федерации (scope='федерация', сколько их сейчас есть — см.
-# auth.py: FEDERATION_DOCUMENT_TAXONOMY) с функциональными разделами из
+# вверху и «Контакты» внизу (последней) — чередование категорий
+# документов страницы федерации (scope='федерация', сколько их сейчас
+# есть — см. auth.py: FEDERATION_DOCUMENT_TAXONOMY) с функциональными разделами из
 # FUNCTIONAL_SECTIONS в заданных федерацией местах. Сама категория,
 # оказавшаяся в очередном слоте 'category', и порядок категорий между
 # собой — определяются DocumentCategory.sort_order (задаётся в панели
@@ -231,9 +231,9 @@ def _team_sidebar_items(region, active_key, roster=None, current_athlete_id=None
 
 def _sidebar_items(region, active_section=None, active_category=None, active_doc_section=None):
     """Пункты бокового меню «О федерации»: «Федерация» вверху (ссылка на
-    обзорную страницу), затем FEDERATION_SIDEBAR_LAYOUT, затем
-    «Контакты» и «Все» (сбрасывает фильтр документов) — самыми
-    последними.
+    обзорную страницу), затем FEDERATION_SIDEBAR_LAYOUT (с «Документы» —
+    сбрасывает фильтр документов — сразу после «Коллегии и советы»),
+    затем «Контакты» последним пунктом.
 
     Категории документов (scope='федерация') с разделами рендерятся как
     раскрывающиеся пункты со своими разделами внутри (kind='category') —
@@ -270,6 +270,13 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
                 'url': url_for('regions.section', region_id=region.id, section=key),
                 'active': active_section == key,
             })
+            if key == 'councils':
+                items.append({
+                    'kind': 'link',
+                    'label': 'Документы',
+                    'url': url_for('regions.documents', region_id=region.id),
+                    'active': active_section == 'all_documents',
+                })
 
     # Категории сверх заранее расставленных слотов (например, новая
     # категория, добавленная в панели управления) — довешиваются в конец,
@@ -282,12 +289,6 @@ def _sidebar_items(region, active_section=None, active_category=None, active_doc
         'label': 'Контакты',
         'url': url_for('regions.section', region_id=region.id, section='contacts'),
         'active': active_section == 'contacts',
-    })
-    items.append({
-        'kind': 'link',
-        'label': 'Все',
-        'url': url_for('regions.documents', region_id=region.id),
-        'active': active_section == 'all_documents',
     })
     return items
 
