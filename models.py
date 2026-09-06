@@ -209,6 +209,48 @@ class Event(db.Model):
     source_id = db.Column(db.Integer)  # ID в базе SPORTS_REFEREE
 
 
+class EventDocument(db.Model):
+    """Документы мероприятия — тот же приём, что CompetitionDocument.
+
+    doc_type='положение' — файл, загружается вручную через панель
+    управления (admin/event_documents.html), как «Положение о
+    соревнованиях» у Competition — своего генератора файла на сайте нет,
+    сайт данные не редактирует, только показывает то, что загрузили.
+
+    doc_type='протокол' — структурированные данные из SPORTS_REFEREE
+    (results_data, JSON-список строк, как CompetitionDocument.results_data
+    для протоколов COREZ) — приходят через POST /api/sync/event-protocols
+    при нажатии «Отправить на сайт» у семинара."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
+    doc_type = db.Column(db.String(50))  # положение / протокол
+    title = db.Column(db.String(255))
+    file_path = db.Column(db.String(500))
+    results_data = db.Column(db.Text)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    is_published = db.Column(db.Boolean, default=True, nullable=False)
+
+    event = db.relationship('Event', backref=db.backref('documents', cascade='all, delete-orphan'))
+
+
+class EventLecturer(db.Model):
+    """Лекторский состав мероприятия — поступает из SPORTS_REFEREE
+    (Seminar.SeminarLecturer) через POST /api/sync/event-lecturers при
+    нажатии «Отправить на сайт» у семинара. Список каждый раз заменяется
+    целиком (см. routes/api.py: sync_event_lecturers) — как и сам список
+    лекторов в SPORTS_REFEREE, где нет отдельных id, устойчивых между
+    отправками."""
+
+    id = db.Column(db.Integer, primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
+    full_name = db.Column(db.String(255), nullable=False)
+    region = db.Column(db.String(255))  # субъект РФ
+    qualification = db.Column(db.String(100))  # квалификация спортивного судьи
+
+    event = db.relationship('Event', backref=db.backref('lecturers', cascade='all, delete-orphan'))
+
+
 class DocumentCategory(db.Model):
     """Категории нормативных документов — определяют пункты бокового меню
     на странице «Рафтинг ЦФО» (список документов), редактируются в панели

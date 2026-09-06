@@ -1,0 +1,45 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'events' %}
+
+{% block title %}Мероприятия — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <h1 class="h4 mb-2">Мероприятия</h1>
+    <p class="text-muted">
+        Список мероприятий, лекторский состав и протокол семинара поступают автоматически
+        из SPORTS_REFEREE. Здесь можно загрузить только «Положение о мероприятии» —
+        для него, в отличие от протокола, нет отдельной синхронизации.
+    </p>
+
+    {% if events %}
+        <div class="table-responsive">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Даты</th>
+                        <th>Наименование</th>
+                        <th>Статус</th>
+                        <th>Документы</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                        <tr>
+                            <td>{{ event.start_date.strftime('%d.%m.%Y') if event.start_date else '' }}</td>
+                            <td>{{ event.name }}</td>
+                            <td>{{ event.status }}</td>
+                            <td>
+                                <a class="btn btn-sm btn-outline-primary"
+                                   href="{{ url_for('admin.event_documents', event_id=event.id) }}">
+                                    Документы ({{ event.documents|length }})
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Мероприятия пока не поступили из SPORTS_REFEREE.</p>
+    {% endif %}
+{% endblock %}

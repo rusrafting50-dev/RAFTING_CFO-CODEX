@@ -1,4 +1,5 @@
 """Мероприятия: семинары судей, тренеров, руководителей."""
+import json
 from datetime import date, datetime
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
@@ -6,7 +7,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import extract
 
 from models import (
-    Document, DocumentCategory, DocumentSection, Event, RegionalFederation,
+    Document, DocumentCategory, DocumentSection, Event, EventDocument, EventLecturer, RegionalFederation,
     SeminarApplicationSubmission, SeminarApplicationSubmissionParticipant, db,
 )
 
@@ -177,10 +178,36 @@ def detail(event_id):
     )
     logo_lookup = _federation_logo_lookup()
     application_logos = {a.id: _match_logo(logo_lookup, a.organization_name) for a in applications}
+
+    polozhenie_document = EventDocument.query.filter_by(
+        event_id=event.id, doc_type='положение', is_published=True,
+    ).first()
+
+    lecturers = EventLecturer.query.filter_by(event_id=event.id).order_by(EventLecturer.full_name).all()
+
+    protocol_document = EventDocument.query.filter_by(
+        event_id=event.id, doc_type='протокол', is_published=True,
+    ).first()
+    if protocol_document and protocol_document.results_data:
+        # Протокол пришёл от SPORTS_REFEREE как структурированные данные —
+        # строим таблицу, тот же приём, что для протоколов COREZ
+        # (routes/competitions.py: detail()). Столбцы — объединение ключей
+        # всех строк с сохранением порядка появления.
+        rows = json.loads(protocol_document.results_data)
+        columns = []
+        for row in rows:
+            for key in row.keys():
+                if key not in columns:
+                    columns.append(key)
+        protocol_document.protocol_rows = rows
+        protocol_document.protocol_columns = columns
+
     return render_template(
         'events/detail.html', event=event,
         applications=applications, total_participants=total_participants,
         can_submit_application=can_submit_application, application_logos=application_logos,
+        polozhenie_document=polozhenie_document, lecturers=lecturers,
+        protocol_document=protocol_document,
     )
 
 

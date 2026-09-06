@@ -74,10 +74,39 @@
                         </div>
                         <div class="tab-content" id="infoTabsContent">
                             <div class="tab-pane fade show active" id="info-polozhenie" role="tabpanel">
-                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                                {% if polozhenie_document and polozhenie_document.file_path %}
+                                    <p class="mb-0">
+                                        <a href="{{ url_for('static', filename=polozhenie_document.file_path) }}" download>{{ polozhenie_document.title }}</a>
+                                    </p>
+                                {% else %}
+                                    <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                                {% endif %}
                             </div>
                             <div class="tab-pane fade" id="info-lecturers" role="tabpanel">
-                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                                {% if lecturers %}
+                                    <div class="table-responsive">
+                                        <table class="table table-zebra align-middle">
+                                            <thead>
+                                                <tr class="site-table-header">
+                                                    <th>ФИО</th>
+                                                    <th>Регион</th>
+                                                    <th>Квалификация</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for lecturer in lecturers %}
+                                                    <tr>
+                                                        <td>{{ lecturer.full_name }}</td>
+                                                        <td>{{ lecturer.region or '' }}</td>
+                                                        <td>{{ lecturer.qualification or '' }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                                {% endif %}
                             </div>
                             {% if event.qualification_exam == 'Да' %}
                                 <div class="tab-pane fade" id="info-qualification" role="tabpanel">
@@ -85,7 +114,28 @@
                                 </div>
                             {% endif %}
                             <div class="tab-pane fade" id="info-protocol" role="tabpanel">
-                                <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                                {% if protocol_document and protocol_document.protocol_rows %}
+                                    <div class="table-responsive">
+                                        <table class="table table-zebra align-middle">
+                                            <thead>
+                                                <tr class="site-table-header">
+                                                    {% for column in protocol_document.protocol_columns %}<th>{{ column }}</th>{% endfor %}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for row in protocol_document.protocol_rows %}
+                                                    <tr>
+                                                        {% for column in protocol_document.protocol_columns %}
+                                                            <td>{{ row.get(column, '') }}</td>
+                                                        {% endfor %}
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted mb-0">Материалы пока не добавлены.</p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

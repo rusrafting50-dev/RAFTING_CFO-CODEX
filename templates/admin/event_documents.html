@@ -1,0 +1,111 @@
+{% extends "admin/base_admin.html" %}
+{% set active = 'events' %}
+
+{% block title %}Документы: {{ event.name }} — Панель администратора{% endblock %}
+
+{% block admin_content %}
+    <p class="mb-1"><a href="{{ url_for('admin.events_list') }}">&laquo; Мероприятия</a></p>
+    <h1 class="h4 mb-4">Документы: {{ event.name }}</h1>
+
+    {% if documents %}
+        <div class="table-responsive mb-4">
+            <table class="table table-zebra align-middle">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Тип</th>
+                        <th>Название</th>
+                        <th>Загружен</th>
+                        <th>Источник</th>
+                        <th class="text-center">Опубликован</th>
+                        {% if current_user.role in ('admin', 'editor') %}<th>Действия</th>{% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                        <tr>
+                            <td>{{ document.doc_type }}</td>
+                            <td>{{ document.title }}</td>
+                            <td>{{ document.uploaded_at.strftime('%d.%m.%Y') if document.uploaded_at else '' }}</td>
+                            <td>
+                                {% if document.results_data %}
+                                    <span class="badge bg-info text-dark">данные SPORTS_REFEREE</span>
+                                {% elif document.file_path %}
+                                    <a href="{{ url_for('static', filename=document.file_path) }}" download>Скачать файл</a>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <input type="checkbox" class="form-check-input doc-publish-toggle"
+                                       {{ 'checked' if document.is_published }}
+                                       {{ 'disabled' if current_user.role not in ('admin', 'editor') }}
+                                       data-url="{{ url_for('admin.event_document_toggle_publish', event_id=event.id, document_id=document.id) }}">
+                            </td>
+                            {% if current_user.role in ('admin', 'editor') %}
+                                <td>
+                                    {% if document.file_path %}
+                                        <form method="post"
+                                              action="{{ url_for('admin.event_document_delete', event_id=event.id, document_id=document.id) }}"
+                                              onsubmit="return confirm('Удалить документ?');">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-muted">Документы к этому мероприятию пока не загружены.</p>
+    {% endif %}
+
+    {% if current_user.role in ('admin', 'editor') %}
+        <h2 class="h5 mb-3">Загрузить документ</h2>
+        <form method="post" enctype="multipart/form-data"
+              action="{{ url_for('admin.event_document_new', event_id=event.id) }}"
+              class="card p-4">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="doc_type" class="form-label">Тип документа</label>
+                    <select class="form-select" id="doc_type" name="doc_type" required>
+                        <option value="">—</option>
+                        {% for choice in doc_type_choices %}
+                            <option value="{{ choice }}">{{ choice }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="title" class="form-label">Название документа</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="file" class="form-label">Файл (PDF, DOC, DOCX, XLS)</label>
+                <input type="file" class="form-control" id="file" name="file" accept=".pdf,.doc,.docx,.xls" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Загрузить</button>
+        </form>
+    {% endif %}
+
+    <script>
+        (function () {
+            document.querySelectorAll('.doc-publish-toggle').forEach(function (checkbox) {
+                checkbox.addEventListener('change', function () {
+                    checkbox.disabled = true;
+                    fetch(checkbox.dataset.url, {method: 'POST'})
+                        .then(function (response) {
+                            if (!response.ok) throw new Error('request failed');
+                            checkbox.disabled = false;
+                        })
+                        .catch(function () {
+                            checkbox.checked = !checkbox.checked;
+                            checkbox.disabled = false;
+                            alert('Не удалось изменить публикацию — попробуйте ещё раз.');
+                        });
+                });
+            });
+        })();
+    </script>
+{% endblock %}

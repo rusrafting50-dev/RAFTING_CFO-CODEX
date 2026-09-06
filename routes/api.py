@@ -14,7 +14,7 @@ from functools import wraps
 from flask import Blueprint, current_app, jsonify, request
 
 from models import (
-    Athlete, Competition, CompetitionDocument, Event, Referee,
+    Athlete, Competition, CompetitionDocument, Event, EventDocument, EventLecturer, Referee,
     SeminarApplicationSubmission, SeminarApplicationSubmissionParticipant, SyncLog, db,
 )
 from utils import safe_upload_filename
@@ -28,6 +28,8 @@ SOURCE_BY_SYNC_TYPE = {
     'events': 'SPORTS_REFEREE',
     'seminar_applications': 'SPORTS_REFEREE',
     'protocols': 'COREZ',
+    'event_lecturers': 'SPORTS_REFEREE',
+    'event_protocols': 'SPORTS_REFEREE',
 }
 
 PROTOCOL_DOC_TYPES = (
@@ -528,6 +530,90 @@ def sync_protocols():
         'status': 'ok', 'received': len(items),
         'created': created, 'updated': updated, 'skipped': skipped, 'errors': errors,
     })
+
+
+@bp.route('/sync/event-lecturers', methods=['POST'])
+@require_api_key
+def sync_event_lecturers():
+    """Принимает от SPORTS_REFEREE лекторский состав семинара — тело вида
+    {"event_source_id": ..., "items": [{"full_name": ..., "region": ...,
+    "qualification": ...}, ...]}. Список каждый раз заменяется целиком
+    (удаляются прежние EventLecturer этого мероприятия) — так же, как сам
+    список лекторов пересобирается в SPORTS_REFEREE при каждой отправке,
+    без устойчивых между отправками id."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({'error': 'Тело запроса должно быть JSON вида {"event_source_id": ..., "items": [...]}.'}), 400
+
+    event_source_id = payload.get('event_source_id')
+    items = payload.get('items')
+    if event_source_id is None or not isinstance(items, list):
+        return jsonify({'error': 'Нужны event_source_id и items (список).'}), 400
+
+    event = Event.query.filter_by(source_id=event_source_id).first()
+    if event is None:
+        return jsonify({'error': f'event_source_id={event_source_id}: мероприятие не найдено'}), 404
+
+    EventLecturer.query.filter_by(event_id=event.id).delete()
+    created = 0
+    skipped = 0
+    for item in items:
+        full_name = (item.get('full_name') or '').strip()
+        if not full_name:
+            skipped += 1
+            continue
+        db.session.add(EventLecturer(
+            event_id=event.id, full_name=full_name,
+            region=item.get('region'), qualification=item.get('qualification'),
+        ))
+        created += 1
+
+    db.session.commit()
+    log_sync('event_lecturers', created, message=f'мероприятие source_id={event_source_id}: {created} лекторов, пропущено: {skipped}')
+
+    return jsonify({'status': 'ok', 'received': len(items), 'created': created, 'skipped': skipped, 'errors': []})
+
+
+@bp.route('/sync/event-protocols', methods=['POST'])
+@require_api_key
+def sync_event_protocols():
+    """Принимает от SPORTS_REFEREE структурированный протокол семинара —
+    тело вида {"event_source_id": ..., "doc_type": "протокол", "title": ...,
+    "rows": [...]}. Тот же приём, что sync_protocols() для COREZ: находит
+    существующий EventDocument с тем же doc_type (у мероприятия протокол
+    один, в отличие от соревнования — сравнение по title не нужно) или
+    создаёт новый."""
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify({'error': 'Тело запроса должно быть JSON вида {"event_source_id": ..., "doc_type": ..., "rows": [...]}.'}), 400
+
+    event_source_id = payload.get('event_source_id')
+    doc_type = payload.get('doc_type') or 'протокол'
+    title = payload.get('title') or 'Протокол семинара'
+    rows = payload.get('rows')
+
+    if event_source_id is None or not isinstance(rows, list):
+        return jsonify({'error': 'Нужны event_source_id и rows (список).'}), 400
+
+    event = Event.query.filter_by(source_id=event_source_id).first()
+    if event is None:
+        return jsonify({'error': f'event_source_id={event_source_id}: мероприятие не найдено'}), 404
+
+    document = EventDocument.query.filter_by(event_id=event.id, doc_type=doc_type).first()
+    if document is None:
+        document = EventDocument(event_id=event.id, doc_type=doc_type)
+        db.session.add(document)
+        created, updated = 1, 0
+    else:
+        created, updated = 0, 1
+
+    document.title = title
+    document.results_data = json.dumps(rows, ensure_ascii=False)
+
+    db.session.commit()
+    log_sync('event_protocols', created + updated, message=f'мероприятие source_id={event_source_id}: строк {len(rows)}')
+
+    return jsonify({'status': 'ok', 'received': len(rows), 'created': created, 'updated': updated, 'errors': []})
 
 
 @bp.route('/status')

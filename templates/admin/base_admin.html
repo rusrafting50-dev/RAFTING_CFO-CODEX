@@ -15,6 +15,10 @@
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'competitions' }}"
                            href="{{ url_for('admin.competitions_list') }}">Соревнования</a>
                     {% endif %}
+                    {% if current_user.can_access('events') %}
+                        <a class="list-group-item list-group-item-action {{ 'active' if active == 'events' }}"
+                           href="{{ url_for('admin.events_list') }}">Мероприятия</a>
+                    {% endif %}
                     {% if current_user.can_access('documents') %}
                         <a class="list-group-item list-group-item-action {{ 'active' if active == 'documents' }}"
                            href="{{ url_for('admin.documents_list') }}">Документы</a>

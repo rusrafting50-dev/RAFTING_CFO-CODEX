@@ -15,7 +15,7 @@ from models import (
     Athlete, Banner, CalendarPlanApplication, Club, Competition, CompetitionApplication,
     CompetitionDocument, Council, CouncilCategory, CouncilMember, CouncilPage,
     DeletedDocumentTaxonomyEntry, Document, DocumentCategory, DocumentSection, EquipmentItem,
-    EquipmentPageText, Event, FederationMember,
+    EquipmentPageText, Event, EventDocument, FederationMember,
     FederationRegistrationRequest, LocalFederation, MediaAlbum, MediaAlbumPhoto, MediaVideo, News,
     NewsCategory, NewsImage, NewsLevel, PartnerLogo, PasswordResetRequest, Referee,
     RegionalFederation, SeminarApplicationSubmission, SyncLog, User, db,
@@ -91,6 +91,7 @@ def region_choices():
 SECTION_CHOICES = [
     ('news', 'Новости'),
     ('competitions', 'Соревнования'),
+    ('events', 'Мероприятия'),
     ('documents', 'Документы'),
     ('members', 'Члены органов'),
     ('regions', 'Регионы ЦФО'),
@@ -128,6 +129,11 @@ COMPETITION_DOC_TYPE_CHOICES = [
     'справка_о_субъектах', 'справка_о_судьях', 'заявки',
     'стартовый_протокол', 'протокол_результатов',
 ]
+
+# Протокол мероприятия загружать вручную не нужно — приходит из
+# SPORTS_REFEREE через POST /api/sync/event-protocols (routes/api.py),
+# структурированными данными, как и протоколы соревнований из COREZ.
+EVENT_DOC_TYPE_CHOICES = ['положение']
 
 
 def roles_required(*roles):
@@ -1208,6 +1214,95 @@ def competition_document_toggle_publish(competition_id, document_id):
     document = CompetitionDocument.query.filter_by(
         id=document_id, competition_id=competition_id,
     ).first_or_404()
+    document.is_published = not document.is_published
+    db.session.commit()
+    return ('', 204)
+
+
+# ---------- Мероприятия (документы — «Положение о мероприятии») ----------
+# Список мероприятий, лекторский состав и протокол — синхронизируются
+# автоматически из SPORTS_REFEREE (routes/api.py), здесь только не
+# синхронизируемый файл «Положение о мероприятии» — тот же приём, что
+# «Положение о соревновании» у Competition (COMPETITION_DOC_TYPE_CHOICES).
+
+@bp.route('/events')
+@section_required('events')
+def events_list():
+    events = Event.query.order_by(Event.start_date.desc()).all()
+    return render_template('admin/events_list.html', active='events', events=events)
+
+
+@bp.route('/events/<int:event_id>/documents')
+@section_required('events')
+def event_documents(event_id):
+    event = Event.query.get_or_404(event_id)
+    documents = (
+        EventDocument.query.filter_by(event_id=event_id)
+        .order_by(EventDocument.doc_type)
+        .all()
+    )
+    return render_template(
+        'admin/event_documents.html', active='events',
+        event=event, documents=documents,
+        doc_type_choices=EVENT_DOC_TYPE_CHOICES,
+    )
+
+
+@bp.route('/events/<int:event_id>/documents/new', methods=['POST'])
+@section_required('events')
+@roles_required('admin', 'editor')
+def event_document_new(event_id):
+    event = Event.query.get_or_404(event_id)
+    doc_type = request.form.get('doc_type')
+    title = request.form.get('title', '').strip()
+    file = request.files.get('file')
+
+    if doc_type not in EVENT_DOC_TYPE_CHOICES or not title or not file or file.filename == '':
+        flash('Тип документа, название и файл обязательны.', 'error')
+        return redirect(url_for('admin.event_documents', event_id=event.id))
+
+    if not allowed_document(file.filename):
+        flash('Допустимые форматы файлов: PDF, DOC, DOCX, XLS.', 'error')
+        return redirect(url_for('admin.event_documents', event_id=event.id))
+
+    filename = safe_upload_filename(file.filename)
+    unique_name = f"{datetime.utcnow():%Y%m%d%H%M%S}_{filename}"
+    upload_dir = current_app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_dir, exist_ok=True)
+    file.save(os.path.join(upload_dir, unique_name))
+
+    document = EventDocument(
+        event_id=event.id, doc_type=doc_type, title=title,
+        file_path=f"uploads/{unique_name}",
+    )
+    db.session.add(document)
+    db.session.commit()
+    flash('Документ мероприятия загружен.', 'success')
+    return redirect(url_for('admin.event_documents', event_id=event.id))
+
+
+@bp.route('/events/<int:event_id>/documents/<int:document_id>/delete', methods=['POST'])
+@section_required('events')
+@roles_required('admin', 'editor')
+def event_document_delete(event_id, document_id):
+    document = EventDocument.query.filter_by(id=document_id, event_id=event_id).first_or_404()
+
+    if document.file_path:
+        file_path = os.path.join(current_app.root_path, 'static', document.file_path)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+    db.session.delete(document)
+    db.session.commit()
+    flash('Документ удалён.', 'success')
+    return redirect(url_for('admin.event_documents', event_id=event_id))
+
+
+@bp.route('/events/<int:event_id>/documents/<int:document_id>/toggle-publish', methods=['POST'])
+@section_required('events')
+@roles_required('admin', 'editor')
+def event_document_toggle_publish(event_id, document_id):
+    document = EventDocument.query.filter_by(id=document_id, event_id=event_id).first_or_404()
     document.is_published = not document.is_published
     db.session.commit()
     return ('', 204)
