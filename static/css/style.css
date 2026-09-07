@@ -333,6 +333,15 @@ header.scrolled {
         url('../img/hero.svg') center/cover no-repeat;
     color: #fff;
     padding: 32px 0 40px;
+    text-decoration: none;
+}
+
+/* .hero — теперь ссылка на новость, когда она есть (main/index.html):
+   цвет и так уже #fff у самого блока, здесь только чтобы hover не
+   подчёркивал заголовок/текст поверх фото. */
+a.hero:hover {
+    color: #fff;
+    text-decoration: none;
 }
 
 .hero h1,

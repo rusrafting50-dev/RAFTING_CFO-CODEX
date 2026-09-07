@@ -4,23 +4,27 @@
 {% block description %}Новости, соревнования и мероприятия Федерации рафтинга Центрального федерального округа{% endblock %}
 
 {% block content %}
-    <section class="hero"
-              {% if hero_news and hero_news.image_path %}
-              style="background: center/cover no-repeat url('{{ url_for('static', filename=hero_news.image_path) }}')"
-              {% endif %}>
-        <div class="container text-center">
-            {% if hero_news %}
+    {% if hero_news %}
+        <a class="hero" href="{{ url_for('main.news_detail', news_id=hero_news.id) }}"
+           {% if hero_news.image_path %}
+           style="background: center/cover no-repeat url('{{ url_for('static', filename=hero_news.image_path) }}')"
+           {% endif %}>
+            <div class="container text-center">
                 {% set hero_excerpt = (hero_news.description or hero_news.content)|striptags %}
                 <h1>{{ hero_news.title }}</h1>
                 <p class="lead mb-0">
                     {{ hero_excerpt[:140] }}{% if hero_excerpt|length > 140 %}…{% endif %}
                 </p>
-            {% else %}
+            </div>
+        </a>
+    {% else %}
+        <section class="hero">
+            <div class="container text-center">
                 <h1>Федерация рафтинга Центрального федерального округа</h1>
                 <p class="lead mb-0">Соревнования, сборная команда и судейство рафтинга в регионах ЦФО</p>
-            {% endif %}
-        </div>
-    </section>
+            </div>
+        </section>
+    {% endif %}
 
     <div class="home-content">
     <div class="container py-5">
