@@ -7,6 +7,9 @@
     {% for item in items %}
         {% if item.docs %}
             {% for doc in item.docs %}
+                {% if doc.results_data %}
+                {{ results_table(doc, show_title=False) }}
+                {% else %}
                 {% set ext = doc.file_path|file_extension %}
                 {% set icon_file = 'pdf_icon_48.png' if ext == 'pdf' else ('word_icon_48.png' if ext in ('doc', 'docx') else ('excel_icon_48.png' if ext in ('xls', 'xlsx') else None)) %}
                 <div class="doc-list-item">
@@ -27,6 +30,7 @@
                         </a>
                     </div>
                 </div>
+                {% endif %}
             {% endfor %}
         {% else %}
             <div class="doc-list-item doc-list-item-empty">
@@ -36,10 +40,10 @@
     {% endfor %}
 {% endmacro %}
 
-{% macro results_table(doc) %}
+{% macro results_table(doc, show_title=True) %}
     {% set попытка_подколонки = ('время', 'штраф', 'итог') %}
     {% set есть_попытки = ('1 попытка, время' in doc.protocol_columns) %}
-    <h3 class="h6">{{ doc.title }}</h3>
+    {% if show_title %}<h3 class="h6">{{ doc.title }}</h3>{% endif %}
     <div class="table-responsive mb-4">
         <table class="table table-sm table-zebra align-middle">
             <thead>
@@ -196,10 +200,13 @@
 
             <div class="tab-pane fade" id="tab-news" role="tabpanel"></div>
             <div class="tab-pane fade" id="tab-entries" role="tabpanel">
+                {% for doc in team_documents %}
+                    {{ results_table(doc) }}
+                {% endfor %}
                 {% if applications %}
                     <p class="text-muted small mb-3">Заявок подано: {{ applications|length }}, спортсменов: {{ total_athletes }}</p>
                 {% endif %}
-                {% if not applications %}
+                {% if not applications and not team_documents %}
                     <p class="text-muted">Заявок пока нет.</p>
                 {% else %}
                     <div class="org-card-list">

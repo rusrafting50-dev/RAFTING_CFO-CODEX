@@ -390,6 +390,7 @@ def detail(competition_id):
 
     documents_by_type = {}
     results_by_type = {}
+    team_documents = []  # «команды» из COREZ — на вкладку «Команды», а не «Протоколы»
     for document in documents:
         if document.results_data:
             # Протокол пришёл от COREZ как структурированные данные — строим таблицу.
@@ -409,6 +410,8 @@ def detail(competition_id):
         # на "Протоколы".
         if document.doc_type in result_doc_types:
             results_by_type.setdefault(document.doc_type, []).append(document)
+        elif document.doc_type == 'команды':
+            team_documents.append(document)
         else:
             documents_by_type.setdefault(document.doc_type, []).append(document)
 
@@ -441,6 +444,7 @@ def detail(competition_id):
         competition=competition,
         documents_by_type=documents_by_type,
         results_groups=results_groups,
+        team_documents=sorted(team_documents, key=lambda d: d.id),  # в порядке отправки COREZ: R4 м, R4 ж, R6 м, R6 ж
         info_documents=info_documents,
         applications=applications, total_athletes=total_athletes,
         can_submit_application=can_submit_application, application_logos=application_logos,
